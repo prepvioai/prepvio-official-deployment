@@ -25,6 +25,7 @@ const Interview = () => {
         companyType: interview.companyType,
         messages: interview.messages || [],
         solvedProblems: interview.solvedProblems || [],
+        highlightClips: interview.highlightClips || [],
         startedAt: interview.startedAt,
         completedAt: interview.completedAt,
         timestamp: Date.now(),
@@ -32,7 +33,7 @@ const Interview = () => {
     );
 
     // Open in new tab
-    window.open("/interview-preview", "_blank", "noopener,noreferrer");
+    window.open(`/interview-preview?sessionId=${interview._id}`, "_blank", "noopener,noreferrer");
   };
 
   const openReport = (url) => {

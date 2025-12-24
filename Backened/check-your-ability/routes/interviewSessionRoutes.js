@@ -38,7 +38,7 @@ router.post("/start", verifyToken, async (req, res) => {
 router.patch("/complete/:sessionId", verifyToken, async (req, res) => {
   try {
     const { sessionId } = req.params;
-    const { reportUrl, messages, solvedProblems } = req.body;
+    const { reportUrl, messages, solvedProblems, highlightClips } = req.body;
 
     if (!reportUrl) {
       return res.status(400).json({ message: "Report URL is required" });
@@ -56,6 +56,7 @@ router.patch("/complete/:sessionId", verifyToken, async (req, res) => {
     session.reportUrl = reportUrl;
     session.messages = messages || [];
     session.solvedProblems = solvedProblems || [];
+    session.highlightClips = highlightClips || [];
     session.status = "completed";
     session.completedAt = new Date();
 
@@ -81,7 +82,7 @@ router.get("/my", verifyToken, async (req, res) => {
     })
       .sort({ startedAt: -1 })
       .select(
-        "role companyType startedAt completedAt reportUrl messages solvedProblems status"
+        "role companyType startedAt completedAt reportUrl messages solvedProblems highlightClips status"
       );
 
     res.json({
@@ -102,7 +103,7 @@ router.get("/:sessionId", verifyToken, async (req, res) => {
 
     const session = await InterviewSession.findOne({
       _id: sessionId,
-      user: req.userId,
+      userId: req.userId,
     });
 
     if (!session) {

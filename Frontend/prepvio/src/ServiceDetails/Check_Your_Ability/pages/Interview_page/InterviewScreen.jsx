@@ -95,8 +95,8 @@ const CodeEditorModal = ({ isOpen, onClose, problem, onSuccess, onSkip }) => {
           language === "python"
             ? `\n\nprint(${problem.functionName}(${args}))`
             : language === "cpp"
-            ? `\n#include <iostream>\nint main() {\n  std::cout << ${problem.functionName}(${args}) << std::endl;\n  return 0;\n}`
-            : `\n\nconsole.log(${problem.functionName}(${args}));`;
+              ? `\n#include <iostream>\nint main() {\n  std::cout << ${problem.functionName}(${args}) << std::endl;\n  return 0;\n}`
+              : `\n\nconsole.log(${problem.functionName}(${args}));`;
 
         const userCode = `${code}\n${executionBoilerplate}`;
 
@@ -216,11 +216,10 @@ const CodeEditorModal = ({ isOpen, onClose, problem, onSuccess, onSkip }) => {
               <button
                 onClick={handleRun}
                 disabled={loading}
-                className={`px-6 py-2 rounded-lg font-semibold shadow-lg transition ${
-                  loading
+                className={`px-6 py-2 rounded-lg font-semibold shadow-lg transition ${loading
                     ? "bg-gray-600 cursor-not-allowed"
                     : "bg-green-600 hover:bg-green-500 transform hover:scale-105"
-                }`}
+                  }`}
               >
                 {loading ? "Running..." : "Run Code"}
               </button>
@@ -268,21 +267,19 @@ const CodeEditorModal = ({ isOpen, onClose, problem, onSuccess, onSkip }) => {
                 output.map((res, idx) => (
                   <div
                     key={idx}
-                    className={`p-3 rounded mb-3 border ${
-                      res.id === 0
+                    className={`p-3 rounded mb-3 border ${res.id === 0
                         ? "bg-gray-700 border-gray-600"
                         : res.passed
-                        ? "bg-green-900 border-green-700"
-                        : "bg-red-900 border-red-700"
-                    }`}
+                          ? "bg-green-900 border-green-700"
+                          : "bg-red-900 border-red-700"
+                      }`}
                   >
                     {res.id !== 0 ? (
                       <>
                         <strong className="text-lg">Test {res.id}:</strong>{" "}
                         <span
-                          className={`font-bold ${
-                            res.passed ? "text-green-300" : "text-red-300"
-                          }`}
+                          className={`font-bold ${res.passed ? "text-green-300" : "text-red-300"
+                            }`}
                         >
                           {res.passed ? "PASSED" : "FAILED"}
                         </span>
@@ -395,11 +392,10 @@ const SolvedProblemsModal = ({ isOpen, onClose, problems }) => {
                 selected.testResults.map((r, idx) => (
                   <div
                     key={idx}
-                    className={`p-3 mb-2 rounded border ${
-                      r.passed
+                    className={`p-3 mb-2 rounded border ${r.passed
                         ? "bg-green-900 border-green-600"
                         : "bg-red-900 border-red-600"
-                    }`}
+                      }`}
                   >
                     <p><strong>Input:</strong> {r.input}</p>
                     <p><strong>Expected:</strong> {r.expected}</p>
@@ -448,84 +444,84 @@ function DynamicModel({ speechText, onSpeechEnd, ...props }) {
   const morphKeys = nodes?.rp_carla_rigged_001_geo?.morphTargetDictionary || {};
 
   useEffect(() => {
-  if (!speechText) {
-    setChars([]);
-    setCurrentCharIndex(0);
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+    if (!speechText) {
+      setChars([]);
+      setCurrentCharIndex(0);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      return;
     }
-    return;
-  }
 
-  window.speechSynthesis.cancel();
+    window.speechSynthesis.cancel();
 
-  const utterance = new SpeechSynthesisUtterance(speechText);
-  utterance.rate = 1.2;
+    const utterance = new SpeechSynthesisUtterance(speechText);
+    utterance.rate = 1.2;
 
-  // --- FEMALE VOICE SELECTION ---
-  let voices = window.speechSynthesis.getVoices();
+    // --- FEMALE VOICE SELECTION ---
+    let voices = window.speechSynthesis.getVoices();
 
-  const setFemaleVoice = () => {
-    voices = window.speechSynthesis.getVoices();
-    const femaleVoice =
-      voices.find(v => v.name.toLowerCase().includes("female")) ||
-      voices.find(v => v.name.toLowerCase().includes("woman")) ||
-      voices.find(v => v.name.toLowerCase().includes("samantha")) || // iOS/macOS
-      voices.find(v => v.name.toLowerCase().includes("zira")) ||     // Windows
-      voices.find(v => v.name.toLowerCase().includes("google us")) ||// Chrome
-      voices[0];
+    const setFemaleVoice = () => {
+      voices = window.speechSynthesis.getVoices();
+      const femaleVoice =
+        voices.find(v => v.name.toLowerCase().includes("female")) ||
+        voices.find(v => v.name.toLowerCase().includes("woman")) ||
+        voices.find(v => v.name.toLowerCase().includes("samantha")) || // iOS/macOS
+        voices.find(v => v.name.toLowerCase().includes("zira")) ||     // Windows
+        voices.find(v => v.name.toLowerCase().includes("google us")) ||// Chrome
+        voices[0];
 
-    utterance.voice = femaleVoice;
-  };
+      utterance.voice = femaleVoice;
+    };
 
-  if (voices.length === 0) {
-    window.speechSynthesis.onvoiceschanged = setFemaleVoice;
-  } else {
-    setFemaleVoice();
-  }
-
-  utterance.onend = () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    setCurrentCharIndex(0);
-    if (onSpeechEnd) onSpeechEnd();
-  };
-
-  utterance.onerror = () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    if (onSpeechEnd) onSpeechEnd();
-  };
-
-  // --- SPEAK WITH FEMALE VOICE ---
-  window.speechSynthesis.speak(utterance);
-
-  const textChars = speechText.toLowerCase().split('');
-  setChars(textChars);
-
-  let i = 0;
-  intervalRef.current = setInterval(() => {
-    if (i < textChars.length) {
-      setCurrentCharIndex(i);
-      i++;
+    if (voices.length === 0) {
+      window.speechSynthesis.onvoiceschanged = setFemaleVoice;
     } else {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+      setFemaleVoice();
     }
-  }, 150);
 
-  return () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-  };
-}, [speechText, onSpeechEnd]);
+    utterance.onend = () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      setCurrentCharIndex(0);
+      if (onSpeechEnd) onSpeechEnd();
+    };
+
+    utterance.onerror = () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      if (onSpeechEnd) onSpeechEnd();
+    };
+
+    // --- SPEAK WITH FEMALE VOICE ---
+    window.speechSynthesis.speak(utterance);
+
+    const textChars = speechText.toLowerCase().split('');
+    setChars(textChars);
+
+    let i = 0;
+    intervalRef.current = setInterval(() => {
+      if (i < textChars.length) {
+        setCurrentCharIndex(i);
+        i++;
+      } else {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    }, 150);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [speechText, onSpeechEnd]);
 
 
   useEffect(() => {
@@ -630,7 +626,7 @@ const generateReportContent = (messages, company, role) => {
 const InterviewScreen = ({
   companyType = "Tech Startup",
   role = "Full Stack Developer",
-  setStage = () => {},
+  setStage = () => { },
   userId = "user1"
 }) => {
   const userVideoRef = useRef(null);
@@ -638,14 +634,18 @@ const InterviewScreen = ({
   const chatEndRef = useRef(null);
   const recognitionRef = useRef(null);
   const speechBufferRef = useRef("");
-const location = useLocation();
+  const location = useLocation();
+  const highlightBufferRef = useRef([]);
 
-const isPreview = location.state?.isPreview === true;
-const previewSession = location.state?.previewSession;
+  const isPreview = location.state?.isPreview === true;
+  const previewSession = location.state?.previewSession;
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [currentQuestionText, setCurrentQuestionText] = useState("");
 
 
 
-  
+
+
 
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [cameraAllowed, setCameraAllowed] = useState(false);
@@ -664,10 +664,20 @@ const previewSession = location.state?.previewSession;
   const [solvedProblems, setSolvedProblems] = useState([]);
   const [showSolvedProblems, setShowSolvedProblems] = useState(false);
   const [deviationWarnings, setDeviationWarnings] = useState(0);
+  const FRAME_INTERVAL = 1000; // 1 frame per second
+
 
   const captureFrame = () => {
   const video = userVideoRef.current;
-  if (!video) return null;
+
+  if (
+    !video ||
+    video.readyState < 2 ||        // ❗ video not ready
+    video.videoWidth === 0 ||
+    video.videoHeight === 0
+  ) {
+    return null;
+  }
 
   const canvas = document.createElement("canvas");
   canvas.width = video.videoWidth;
@@ -678,6 +688,8 @@ const previewSession = location.state?.previewSession;
 
   return canvas.toDataURL("image/jpeg", 0.6);
 };
+
+
 
 
   // NEW: track how many coding problems attempted in this coding round
@@ -726,22 +738,28 @@ const previewSession = location.state?.previewSession;
   }, [navigate, endInterview]);
 
   useEffect(() => {
-  if (isPreview && previewSession?.messages) {
-    setChatMessages(previewSession.messages);
-    setSolvedProblems(previewSession.solvedProblems || []);
-    setCameraAllowed(true); // bypass loader screen
-  }
-}, [isPreview, previewSession]);
+    if (isPreview && previewSession?.messages) {
+      setChatMessages(previewSession.messages);
+      setSolvedProblems(previewSession.solvedProblems || []);
+      setCameraAllowed(true); // bypass loader screen
+    }
+  }, [isPreview, previewSession]);
 
 
   // Add this hook in your InterviewScreen component
-// Replace the existing useEffect for frame capture
+  // Replace the existing useEffect for frame capture
 
-// Replace your frame capture useEffect with this debugged version
+  // Replace your frame capture useEffect with this debugged version
+
+  // Add this updated useEffect for frame capture in InterviewScreen.jsx
+// Replace the existing frame capture useEffect with this version
+
+// Add this updated useEffect for frame capture in InterviewScreen.jsx
+// Replace the existing frame capture useEffect with this version
 
 useEffect(() => {
   const sessionId = location.state?.sessionId;
-  
+
   if (!sessionId) {
     console.warn("⚠️ No sessionId found - nervousness detection disabled");
     return;
@@ -755,9 +773,9 @@ useEffect(() => {
 
   const interval = setInterval(() => {
     frameCount++;
-    
+
     const frame = captureFrame();
-    
+
     if (!frame) {
       console.warn(`⚠️ Frame ${frameCount}: Capture returned null`);
       return;
@@ -776,51 +794,69 @@ useEffect(() => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         sessionId: sessionId,
-        frame: frame
+        frame: frame,
+        questionIndex: currentQuestionIndex  // ✅ Send current question
       })
     })
-    .then(res => {
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-      }
-      return res.json();
-    })
-    .then(data => {
-      successCount++;
-      
-      if (data.nervous && data.imagePath) {
-        console.log(`🟡 Frame ${frameCount}: NERVOUS detected (${data.score.toFixed(2)})`);
-        
-        // Store in backend memory
-        return fetch("http://localhost:5000/api/nervous-frame", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sessionId: sessionId,
-            imagePath: data.imageBase64,
-            score: data.score
-          })
-        });
-      } else {
-        console.log(`✅ Frame ${frameCount}: Analyzed (score: ${data.score?.toFixed(2) || "N/A"})`);
-      }
-    })
-    .catch(err => {
-      errorCount++;
-      console.error(`❌ Frame ${frameCount} failed:`, err.message);
-      
-      // Log stats every 10 errors
-      if (errorCount % 10 === 0) {
-        console.warn(`📊 Stats: ${successCount} success, ${errorCount} errors out of ${frameCount} frames`);
-      }
-    });
-  }, 4000); // Every 4 seconds
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        return res.json();
+      })
+      .then(data => {
+        successCount++;
+
+        // ✅ NEW: Store highlight with Cloudinary URL
+        if (
+          data.nervous &&
+          data.imageUrl  // ✅ Check for Cloudinary URL
+        ) {
+          const existing = highlightBufferRef.current[currentQuestionIndex];
+
+          // Only update if this is a higher score
+          if (data.nervous && data.imageUrl) {
+  highlightBufferRef.current.push({
+    questionIndex: currentQuestionIndex,
+    questionText: currentQuestionText,
+    nervousScore: data.score,
+    confidence: data.confidence,
+    imageUrl: data.imageUrl,
+    timestamp: new Date().toLocaleTimeString(),
+    capturedAt: new Date(),
+  });
+
+  console.log(
+    `🟡 Highlight appended for Q${currentQuestionIndex}`,
+    data.imageUrl
+  );
+}
+
+        }
+      })
+      .catch(err => {
+        errorCount++;
+        console.error(`❌ Frame ${frameCount} failed:`, err.message);
+
+        // Log stats every 10 errors
+        if (errorCount % 10 === 0) {
+          console.warn(`📊 Stats: ${successCount} success, ${errorCount} errors out of ${frameCount} frames`);
+        }
+      });
+  }, 1000); // Every 1 second (faster detection)
 
   return () => {
     clearInterval(interval);
     console.log(`📹 Detection stopped. Final stats: ${successCount} success, ${errorCount} errors out of ${frameCount} frames`);
+    
+    // ✅ Cleanup session data on unmount
+    fetch("http://127.0.0.1:5050/cleanup-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId })
+    }).catch(err => console.error("Cleanup failed:", err));
   };
-}, [location.state?.sessionId]);
+}, [location.state?.sessionId, currentQuestionIndex, currentQuestionText]);
 
 
   useEffect(() => {
@@ -1003,9 +1039,9 @@ Keep it concise and actionable.`;
     const example = problem.example ? `Example:\n${problem.example}` : "";
     const tests = problem.testCases?.length
       ? "\nTest Cases:\n" +
-        problem.testCases.map(
-          (tc, i) => `${i + 1}. Input: ${tc.input} → Expected: ${tc.expected}`
-        ).join("\n")
+      problem.testCases.map(
+        (tc, i) => `${i + 1}. Input: ${tc.input} → Expected: ${tc.expected}`
+      ).join("\n")
       : "";
 
     return `${title}\n\n${desc}\n\n${example}${tests}\n\nYou can use the Code Editor to solve this problem.`;
@@ -1027,144 +1063,144 @@ Keep it concise and actionable.`;
   // The editor will now be opened only when AI asks a coding question and we fetch one canonical problem.
 
   const handleSendMessage = useCallback(
-  async (text) => {
-    const messageToSend = text.trim();
-    if (!messageToSend || isLoadingAI || isSpeaking) return;
+    async (text) => {
+      const messageToSend = text.trim();
+      if (!messageToSend || isLoadingAI || isSpeaking) return;
 
-    // Stop speech recognition
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      recognitionRef.current = null;
-      setIsRecording(false);
-    }
+      // Stop speech recognition
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+        recognitionRef.current = null;
+        setIsRecording(false);
+      }
 
-    setError(null);
-    setInputValue("");
+      setError(null);
+      setInputValue("");
 
-    const lastAiMessage =
-      chatMessages.filter((m) => m.sender === "AI").slice(-1)[0];
-    const lastAiQuestion = lastAiMessage ? lastAiMessage.text : "";
+      const lastAiMessage =
+        chatMessages.filter((m) => m.sender === "AI").slice(-1)[0];
+      const lastAiQuestion = lastAiMessage ? lastAiMessage.text : "";
 
-    const userMsg = {
-      sender: "User",
-      text: messageToSend,
-      time: new Date().toLocaleTimeString(),
-      stage: interviewStage,
-      feedback: null,
-    };
+      const userMsg = {
+        sender: "User",
+        text: messageToSend,
+        time: new Date().toLocaleTimeString(),
+        stage: interviewStage,
+        feedback: null,
+      };
 
-    setChatMessages((prev) => [...prev, userMsg]);
+      setChatMessages((prev) => [...prev, userMsg]);
 
-    // -----------------------------------------
-    // COUNT QUESTIONS PER STAGE
-    // -----------------------------------------
-    const aiCount = (stage) =>
-      chatMessages.filter(
-        (m) => m.sender === "AI" && m.stage === stage
-      ).length;
+      // -----------------------------------------
+      // COUNT QUESTIONS PER STAGE
+      // -----------------------------------------
+      const aiCount = (stage) =>
+        chatMessages.filter(
+          (m) => m.sender === "AI" && m.stage === stage
+        ).length;
 
-    const introQ = aiCount("intro");
-    const transQ = aiCount("transition");
-    const techQ = aiCount("technical");
+      const introQ = aiCount("intro");
+      const transQ = aiCount("transition");
+      const techQ = aiCount("technical");
 
-    // -----------------------------------------
-    // STAGE TRANSITIONS (NO DEADLOCKS)
-    // -----------------------------------------
+      // -----------------------------------------
+      // STAGE TRANSITIONS (NO DEADLOCKS)
+      // -----------------------------------------
 
-    // INTRO → TRANSITION
-    if (interviewStage === "intro" && introQ >= 2) {
-      const msg =
-        "Great. Let’s move forward. I’ll now ask you a few pre-technical questions.";
-      setInterviewStage("transition");
-      setIsLoadingAI(false);
+      // INTRO → TRANSITION
+      if (interviewStage === "intro" && introQ >= 2) {
+        const msg =
+          "Great. Let’s move forward. I’ll now ask you a few pre-technical questions.";
+        setInterviewStage("transition");
+        setIsLoadingAI(false);
 
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          sender: "AI",
-          text: msg,
-          time: new Date().toLocaleTimeString(),
-          stage: "transition",
-        },
-      ]);
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            sender: "AI",
+            text: msg,
+            time: new Date().toLocaleTimeString(),
+            stage: "transition",
+          },
+        ]);
 
-      textToSpeech(msg);
-      return;
-    }
+        textToSpeech(msg);
+        return;
+      }
 
-    // TRANSITION → TECHNICAL
-    if (interviewStage === "transition" && transQ >= 1) {
-      const msg =
-        "Now let’s begin the technical round. I’ll ask you concept-based questions.";
-      setInterviewStage("technical");
-      setIsLoadingAI(false);
+      // TRANSITION → TECHNICAL
+      if (interviewStage === "transition" && transQ >= 1) {
+        const msg =
+          "Now let’s begin the technical round. I’ll ask you concept-based questions.";
+        setInterviewStage("technical");
+        setIsLoadingAI(false);
 
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          sender: "AI",
-          text: msg,
-          time: new Date().toLocaleTimeString(),
-          stage: "technical",
-        },
-      ]);
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            sender: "AI",
+            text: msg,
+            time: new Date().toLocaleTimeString(),
+            stage: "technical",
+          },
+        ]);
 
-      textToSpeech(msg);
-      return;
-    }
+        textToSpeech(msg);
+        return;
+      }
 
-    // TECHNICAL → CODING
-    if (interviewStage === "technical" && techQ >= 4) {
-      const msg =
-        "That concludes the technical round. We will now move to the coding round.";
+      // TECHNICAL → CODING
+      if (interviewStage === "technical" && techQ >= 4) {
+        const msg =
+          "That concludes the technical round. We will now move to the coding round.";
 
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          sender: "AI",
-          text: msg,
-          time: new Date().toLocaleTimeString(),
-          stage: "technical",
-        },
-      ]);
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            sender: "AI",
+            text: msg,
+            time: new Date().toLocaleTimeString(),
+            stage: "technical",
+          },
+        ]);
 
-      textToSpeech(msg);
+        textToSpeech(msg);
 
-      setTimeout(async () => {
-        setInterviewStage("coding");
-        try {
-          const { problem } = await fetchAndFormatCodingProblem();
-          setCodingProblem(problem);
+        setTimeout(async () => {
+          setInterviewStage("coding");
+          try {
+            const { problem } = await fetchAndFormatCodingProblem();
+            setCodingProblem(problem);
 
-          setChatMessages((prev) => [
-            ...prev,
-            {
-              sender: "AI",
-              text: "Your first coding problem is ready. Please open the Code Editor.",
-              time: new Date().toLocaleTimeString(),
-              stage: "coding",
-            },
-          ]);
+            setChatMessages((prev) => [
+              ...prev,
+              {
+                sender: "AI",
+                text: "Your first coding problem is ready. Please open the Code Editor.",
+                time: new Date().toLocaleTimeString(),
+                stage: "coding",
+              },
+            ]);
 
-          setTimeout(() => setIsCodeEditorOpen(true), 600);
-        } catch (err) {
-          setError("Failed to generate coding problem.");
-        }
-      }, 1000);
+            setTimeout(() => setIsCodeEditorOpen(true), 600);
+          } catch (err) {
+            setError("Failed to generate coding problem.");
+          }
+        }, 1000);
 
-      return;
-    }
+        return;
+      }
 
-    // -----------------------------------------
-    // NORMAL AI QUESTION FLOW
-    // -----------------------------------------
-    setIsLoadingAI(true);
+      // -----------------------------------------
+      // NORMAL AI QUESTION FLOW
+      // -----------------------------------------
+      setIsLoadingAI(true);
 
-    try {
-  let systemInstruction = "";
+      try {
+        let systemInstruction = "";
 
-  if (interviewStage === "intro")
-    systemInstruction = `
+        if (interviewStage === "intro")
+          systemInstruction = `
 You are an AI interviewer in the INTRO round.
 
 RULES:
@@ -1174,8 +1210,8 @@ RULES:
 - Do NOT add explanations, examples, or follow-ups.
 `;
 
-  else if (interviewStage === "transition")
-    systemInstruction = `
+        else if (interviewStage === "transition")
+          systemInstruction = `
 You are an AI interviewer in the TRANSITION round.
 
 RULES:
@@ -1185,8 +1221,8 @@ RULES:
 - No explanations or follow-ups.
 `;
 
-  else if (interviewStage === "technical")
-    systemInstruction = `
+        else if (interviewStage === "technical")
+          systemInstruction = `
 You are an AI interviewer in the TECHNICAL round.
 
 RULES:
@@ -1196,14 +1232,14 @@ RULES:
 - No multi-part questions.
 `;
 
-  else if (interviewStage === "coding")
-    systemInstruction = `
+        else if (interviewStage === "coding")
+          systemInstruction = `
 You are in the CODING round.
 Do NOT ask questions. Wait for the user to solve the problem.
 `;
 
-  else if (interviewStage === "final")
-    systemInstruction = `
+        else if (interviewStage === "final")
+          systemInstruction = `
 You are an AI interviewer in the FINAL round.
 
 RULES:
@@ -1212,265 +1248,271 @@ RULES:
 - Be concise and professional.
 `;
 
-  const formattedHistory = formatHistoryForFireworks([
-    ...chatMessages,
-    userMsg,
-  ]);
+        const formattedHistory = formatHistoryForFireworks([
+          ...chatMessages,
+          userMsg,
+        ]);
 
-  const aiReplyRaw = await fetchFireworksContent(
-    formattedHistory,
-    systemInstruction
-  );
+        const aiReplyRaw = await fetchFireworksContent(
+          formattedHistory,
+          systemInstruction
+        );
 
-  // 🔒 HARD SAFETY: trim to max 25 words
-  const aiReply = aiReplyRaw
-    .split(" ")
-    .slice(0, 25)
-    .join(" ");
+        // 🔒 HARD SAFETY: trim to max 25 words
+        const aiReply = aiReplyRaw
+          .split(" ")
+          .slice(0, 25)
+          .join(" ");
 
-  const feedback = await generateFeedbackForAnswer(
-    messageToSend,
-    lastAiQuestion
-  );
+        // ✅ TRACK CURRENT QUESTION
+        setCurrentQuestionIndex(prev => prev + 1);
+        setCurrentQuestionText(aiReply);
 
-  setChatMessages((prev) => {
-    const updated = [...prev];
-    const idx = updated.map((m) => m.sender).lastIndexOf("User");
-    if (idx !== -1) updated[idx].feedback = feedback;
-    return updated;
-  });
 
-  setChatMessages((prev) => [
-    ...prev,
-    {
-      sender: "AI",
-      text: aiReply,
-      time: new Date().toLocaleTimeString(),
-      stage: interviewStage,
+        const feedback = await generateFeedbackForAnswer(
+          messageToSend,
+          lastAiQuestion
+        );
+
+        setChatMessages((prev) => {
+          const updated = [...prev];
+          const idx = updated.map((m) => m.sender).lastIndexOf("User");
+          if (idx !== -1) updated[idx].feedback = feedback;
+          return updated;
+        });
+
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            sender: "AI",
+            text: aiReply,
+            time: new Date().toLocaleTimeString(),
+            stage: interviewStage,
+          },
+        ]);
+
+        textToSpeech(aiReply);
+      }
+      catch (err) {
+        console.error("AI Error:", err);
+        setError("AI failed to respond.");
+      } finally {
+        setIsLoadingAI(false);
+      }
     },
-  ]);
-
-  textToSpeech(aiReply);
-}
-catch (err) {
-      console.error("AI Error:", err);
-      setError("AI failed to respond.");
-    } finally {
-      setIsLoadingAI(false);
-    }
-  },
-  [
-    isLoadingAI,
-    isSpeaking,
-    chatMessages,
-    interviewStage,
-    formatHistoryForFireworks,
-    fetchFireworksContent,
-    generateFeedbackForAnswer,
-    fetchAndFormatCodingProblem,
-    textToSpeech,
-  ]
-);
+    [
+      isLoadingAI,
+      isSpeaking,
+      chatMessages,
+      interviewStage,
+      formatHistoryForFireworks,
+      fetchFireworksContent,
+      generateFeedbackForAnswer,
+      fetchAndFormatCodingProblem,
+      textToSpeech,
+    ]
+  );
 
 
 
   const startSpeechRecognition = useCallback(() => {
-  if (isLoadingAI || isSpeaking) return;
+    if (isLoadingAI || isSpeaking) return;
 
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    setError("Speech Recognition not supported in this browser.");
-    return;
-  }
-
-  // NEW: buffer to store spoken text reliably
-  const speechBufferRefLocal = speechBufferRef; 
-  speechBufferRefLocal.current = "";
-
-  if (recognitionRef.current && isRecording) {
-    recognitionRef.current.stop();
-    return;
-  }
-
-  const recognition = new SpeechRecognition();
-  recognition.lang = "en-US";
-  recognition.continuous = false;
-  recognition.interimResults = false;
-  recognitionRef.current = recognition;
-
-  recognition.onstart = () => {
-    setIsRecording(true);
-    setError(null);
-  };
-
-  let autoSendTimer = null;
-
-  recognition.onresult = (e) => {
-    const transcript = Array.from(e.results)
-      .map(result => result[0].transcript)
-      .join("");
-
-    // Store transcript in REF (✔ FIX)
-    speechBufferRefLocal.current = transcript;
-    setInputValue(transcript);
-
-    if (autoSendTimer) {
-      clearTimeout(autoSendTimer);
-      autoSendTimer = null;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setError("Speech Recognition not supported in this browser.");
+      return;
     }
-  };
 
-  recognition.onerror = (e) => {
-    console.error("Speech Recognition Error:", e);
-    if (e.error !== "no-speech") {
-      setError("Error in speech recognition: " + e.error);
+    // NEW: buffer to store spoken text reliably
+    const speechBufferRefLocal = speechBufferRef;
+    speechBufferRefLocal.current = "";
+
+    if (recognitionRef.current && isRecording) {
+      recognitionRef.current.stop();
+      return;
     }
-    setIsRecording(false);
-  };
 
-  recognition.onend = () => {
-    setIsRecording(false);
-    recognitionRef.current = null;
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognitionRef.current = recognition;
 
-    // Auto-send after 3 seconds of silence
-    autoSendTimer = setTimeout(() => {
-      const finalText = speechBufferRefLocal.current.trim();
+    recognition.onstart = () => {
+      setIsRecording(true);
+      setError(null);
+    };
 
-      if (finalText) {
-        handleSendMessage(finalText);
-        speechBufferRefLocal.current = "";
+    let autoSendTimer = null;
+
+    recognition.onresult = (e) => {
+      const transcript = Array.from(e.results)
+        .map(result => result[0].transcript)
+        .join("");
+
+      // Store transcript in REF (✔ FIX)
+      speechBufferRefLocal.current = transcript;
+      setInputValue(transcript);
+
+      if (autoSendTimer) {
+        clearTimeout(autoSendTimer);
+        autoSendTimer = null;
       }
-    }, 3000);
-  };
+    };
 
-  try {
-    recognition.start();
-  } catch (e) {
-    console.error("Recognition start failed:", e);
-    setIsRecording(false);
-  }
-}, [isLoadingAI, isSpeaking, isRecording, handleSendMessage]);
+    recognition.onerror = (e) => {
+      console.error("Speech Recognition Error:", e);
+      if (e.error !== "no-speech") {
+        setError("Error in speech recognition: " + e.error);
+      }
+      setIsRecording(false);
+    };
+
+    recognition.onend = () => {
+      setIsRecording(false);
+      recognitionRef.current = null;
+
+      // Auto-send after 3 seconds of silence
+      autoSendTimer = setTimeout(() => {
+        const finalText = speechBufferRefLocal.current.trim();
+
+        if (finalText) {
+          handleSendMessage(finalText);
+          speechBufferRefLocal.current = "";
+        }
+      }, 3000);
+    };
+
+    try {
+      recognition.start();
+    } catch (e) {
+      console.error("Recognition start failed:", e);
+      setIsRecording(false);
+    }
+  }, [isLoadingAI, isSpeaking, isRecording, handleSendMessage]);
 
 
   // Replace your existing handleEndInterview in InterviewScreen.jsx with this:
 
-const handleEndInterview = useCallback(async () => {
-  if (isLoadingAI || isSpeaking) return;
+  const handleEndInterview = useCallback(async () => {
+    if (isLoadingAI || isSpeaking) return;
 
-  if (window.speechSynthesis.speaking) {
-    window.speechSynthesis.cancel();
-  }
-  if (recognitionRef.current) {
-    recognitionRef.current.stop();
-    recognitionRef.current = null;
-  }
-
-  const reportText = generateReportContent(chatMessages, companyType, role);
-  const sanitizedRole = role.replace(/[^a-zA-Z0-9]/g, "_");
-  const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, "");
-  const filename = `${sanitizedRole}_Report_${timestamp}.pdf`;
-
-  setIsLoadingAI(true);
-  setError("Analyzing the Interview");
-
-  try {
-    // 1️⃣ Upload PDF
-    const response = await fetch(BACKEND_UPLOAD_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        filename,
-        content: reportText,
-        role,
-        companyType,
-        solvedProblems,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.details || data.error || "Upload failed");
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+    }
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
     }
 
-    console.log("✅ Uploaded Report URL:", data.publicUrl);
+    const reportText = generateReportContent(chatMessages, companyType, role);
+    const sanitizedRole = role.replace(/[^a-zA-Z0-9]/g, "_");
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, "");
+    const filename = `${sanitizedRole}_Report_${timestamp}.pdf`;
 
-    // 2️⃣ Save to InterviewSession in DB (with messages and solved problems)
-    const sessionId = location.state?.sessionId;
+    setIsLoadingAI(true);
+    setError("Analyzing the Interview");
 
-    if (sessionId) {
-      await fetch(
-        `http://localhost:5000/api/interview-session/complete/${sessionId}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            reportUrl: data.publicUrl,
-            messages: chatMessages, // ✅ Send messages
-            solvedProblems: solvedProblems, // ✅ Send solved problems
-          }),
-        }
+    try {
+      // 1️⃣ Upload PDF
+      const response = await fetch(BACKEND_UPLOAD_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename,
+          content: reportText,
+          role,
+          companyType,
+          solvedProblems,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.details || data.error || "Upload failed");
+      }
+
+      console.log("✅ Uploaded Report URL:", data.publicUrl);
+
+      // 2️⃣ Save to InterviewSession in DB (with messages and solved problems)
+      const sessionId = location.state?.sessionId;
+
+      if (sessionId) {
+        await fetch(
+          `http://localhost:5000/api/interview-session/complete/${sessionId}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              reportUrl: data.publicUrl,
+              messages: chatMessages, // ✅ Send messages
+              solvedProblems: solvedProblems, // ✅ Send solved problems
+              highlightClips: Object.values(highlightBufferRef.current),
+            }),
+          }
+        );
+
+        console.log("✅ Interview session updated with messages and solved problems");
+      } else {
+        console.warn("⚠️ No sessionId found. Interview not linked in DB.");
+      }
+
+      // 3️⃣ Optional local storage (UI convenience)
+      localStorage.setItem(
+        "interviewReport",
+        JSON.stringify({
+          role,
+          companyType,
+          reportUrl: data.publicUrl,
+          timestamp: new Date().toISOString(),
+        })
       );
-      
-      console.log("✅ Interview session updated with messages and solved problems");
-    } else {
-      console.warn("⚠️ No sessionId found. Interview not linked in DB.");
+
+      setError("✅ Report saved! Redirecting to summary page...");
+
+      setTimeout(() => {
+        setError(null);
+        navigate("/after-interview", { replace: true });
+      }, 2500);
+    } catch (err) {
+      console.error("❌ Interview completion failed:", err);
+      setError(`❌ Report upload failed: ${err.message}`);
+    } finally {
+      setIsLoadingAI(false);
     }
-
-    // 3️⃣ Optional local storage (UI convenience)
-    localStorage.setItem(
-      "interviewReport",
-      JSON.stringify({
-        role,
-        companyType,
-        reportUrl: data.publicUrl,
-        timestamp: new Date().toISOString(),
-      })
-    );
-
-    setError("✅ Report saved! Redirecting to summary page...");
-
-    setTimeout(() => {
-      setError(null);
-      navigate("/after-interview", { replace: true });
-    }, 2500);
-  } catch (err) {
-    console.error("❌ Interview completion failed:", err);
-    setError(`❌ Report upload failed: ${err.message}`);
-  } finally {
-    setIsLoadingAI(false);
-  }
-}, [
-  chatMessages,
-  solvedProblems, // ✅ Add to dependencies
-  companyType,
-  role,
-  isLoadingAI,
-  isSpeaking,
-  navigate,
-  location,
-]);
+  }, [
+    chatMessages,
+    solvedProblems, // ✅ Add to dependencies
+    companyType,
+    role,
+    isLoadingAI,
+    isSpeaking,
+    navigate,
+    location,
+  ]);
 
 
   useEffect(() => {
-  if (isPreview) return;
+    if (isPreview) return;
 
-  const startCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      });
-      setCameraAllowed(true);
-      userVideoRef.current.srcObject = stream;
-    } catch (err) {
-      setError("Camera/Mic access denied.");
-    }
-  };
+    const startCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true,
+        });
+        setCameraAllowed(true);
+        userVideoRef.current.srcObject = stream;
+      } catch (err) {
+        setError("Camera/Mic access denied.");
+      }
+    };
 
-  startCamera();
-}, [isPreview]);
+    startCamera();
+  }, [isPreview]);
 
 
   // --- Remove any "auto-generate coding question before greeting" logic.
@@ -1540,353 +1582,351 @@ then begin with an appropriate first question (example: "Can you tell me about y
   }
 
   return (
-  <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-blue-100 p-6">
-    <div className="max-w-7xl mx-auto">
-      <div className="bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl border border-white/50 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-blue-100 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl border border-white/50 p-8">
 
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              {companyType} — {role}
-            </h1>
-            <p className="text-sm text-gray-600">
-              Live AI-powered mock interview
-            </p>
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                {companyType} — {role}
+              </h1>
+              <p className="text-sm text-gray-600">
+                Live AI-powered mock interview
+              </p>
+            </div>
+
+            <button
+              onClick={handleEndInterview}
+              className="px-5 py-2 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center gap-2"
+            >
+              <PhoneOff size={18} />
+              End Interview
+            </button>
           </div>
 
-          <button
-            onClick={handleEndInterview}
-            className="px-5 py-2 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center gap-2"
-          >
-            <PhoneOff size={18} />
-            End Interview
-          </button>
-        </div>
+          {/* Main Grid */}
+          <div className="grid grid-cols-3 gap-6">
 
-        {/* Main Grid */}
-        <div className="grid grid-cols-3 gap-6">
-
-          {/* Left: Main Video */}
-          <div className="col-span-2 relative">
-            <div className="rounded-2xl overflow-hidden shadow-lg bg-black h-[420px] relative">
-               <div className="absolute top-4 left-4 bg-indigo-200/80 backdrop-blur px-4 py-2 rounded-full flex items-center gap-2">
+            {/* Left: Main Video */}
+            <div className="col-span-2 relative">
+              <div className="rounded-2xl overflow-hidden shadow-lg bg-black h-[420px] relative">
+                <div className="absolute top-4 left-4 bg-indigo-200/80 backdrop-blur px-4 py-2 rounded-full flex items-center gap-2">
                   <div className="w-8 h-8 bg-indigo-300 rounded-full flex items-center justify-center text-xs font-medium text-indigo-700">
                     TS
                   </div>
                   <span className="text-sm font-medium text-gray-800">Mrs. Tania Shahira</span>
                 </div>
-              {isPreview ? (
-  <div className="w-full h-full bg-black flex items-center justify-center text-gray-400">
-    Video disabled in preview
-  </div>
-) : (
-  <video
-    ref={userVideoRef}
-    autoPlay
-    playsInline
-    muted
-    className="w-full h-full object-cover scale-x-[-1]"
-  />
-)}
+                {isPreview ? (
+                  <div className="w-full h-full bg-black flex items-center justify-center text-gray-400">
+                    Video disabled in preview
+                  </div>
+                ) : (
+                  <video
+                    ref={userVideoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover scale-x-[-1]"
+                  />
+                )}
 
 
-              {/* AI Speaking Indicator */}
-              {isSpeaking && (
-                <div className="absolute top-4 left-4 bg-indigo-600 text-white px-4 py-1 rounded-full text-sm animate-pulse">
-                  Jenny is speaking…
+                {/* AI Speaking Indicator */}
+                {isSpeaking && (
+                  <div className="absolute top-4 left-4 bg-indigo-600 text-white px-4 py-1 rounded-full text-sm animate-pulse">
+                    Jenny is speaking…
+                  </div>
+                )}
+
+
+
+                {/* Control Bar */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4">
+
+                  {/* Mic */}
+                  <button
+                    onClick={startSpeechRecognition}
+                    className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg ${isRecording ? "bg-red-500" : "bg-white"
+                      }`}
+                  >
+                    <Mic className={isRecording ? "text-white" : "text-gray-700"} />
+                  </button>
+
+                  {/* Chat */}
+                  <button
+                    onClick={() => setIsChatOpen(true)}
+                    className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-lg"
+                  >
+                    <MessageSquare className="text-gray-700" />
+                  </button>
+
+                  {/* Code Editor */}
+                  <button
+                    onClick={() => setIsCodeEditorOpen(true)}
+                    className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-lg"
+                  >
+                    <Code className="text-gray-700" />
+                  </button>
+
+                  {/* Solved Problems */}
+                  {solvedProblems.length > 0 && (
+                    <button
+                      onClick={() => setShowSolvedProblems(true)}
+                      className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-lg hover:bg-indigo-50 transition"
+                      title="View Solved Problems"
+                    >
+                      <ListChecks className="text-indigo-600" />
+                    </button>
+                  )}
                 </div>
-              )}
 
-              
+              </div>
 
-              {/* Control Bar */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4">
-
-  {/* Mic */}
-  <button
-    onClick={startSpeechRecognition}
-    className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg ${
-      isRecording ? "bg-red-500" : "bg-white"
-    }`}
-  >
-    <Mic className={isRecording ? "text-white" : "text-gray-700"} />
-  </button>
-
-  {/* Chat */}
-  <button
-    onClick={() => setIsChatOpen(true)}
-    className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-lg"
-  >
-    <MessageSquare className="text-gray-700" />
-  </button>
-
-  {/* Code Editor */}
-  <button
-    onClick={() => setIsCodeEditorOpen(true)}
-    className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-lg"
-  >
-    <Code className="text-gray-700" />
-  </button>
-
-  {/* Solved Problems */}
-  {solvedProblems.length > 0 && (
-    <button
-      onClick={() => setShowSolvedProblems(true)}
-      className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-lg hover:bg-indigo-50 transition"
-      title="View Solved Problems"
-    >
-      <ListChecks className="text-indigo-600" />
-    </button>
-  )}
-</div>
-
+              {/* Notes */}
+              <div className="mt-6 bg-white/50 backdrop-blur rounded-xl p-5">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Interview Progress
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Current Stage: <strong>{interviewStage}</strong>
+                </p>
+              </div>
             </div>
 
-            {/* Notes */}
-            <div className="mt-6 bg-white/50 backdrop-blur rounded-xl p-5">
-              <h3 className="font-semibold text-gray-900 mb-2">
-                Interview Progress
-              </h3>
-              <p className="text-sm text-gray-600">
-                Current Stage: <strong>{interviewStage}</strong>
-              </p>
+            {/* Right Sidebar */}
+            <div className="space-y-4">
+
+              {/* AI Video */}
+              <div className="relative rounded-xl overflow-hidden shadow-lg h-48 bg-black">
+                <Canvas camera={{ position: [0, 0, 5] }}>
+                  <ambientLight intensity={0.6} />
+                  <Environment preset="studio" />
+                  <DynamicModel
+                    speechText={currentAiSpeech}
+                    onSpeechEnd={handleSpeechEnd}
+                  />
+                </Canvas>
+
+                <div className="absolute bottom-4 left-4 bg-indigo-200/80 backdrop-blur px-4 py-2 rounded-full flex items-center gap-2 shadow-md">
+                  <span className="text-sm font-medium text-gray-800">
+                    Ms. Jenny
+                  </span>
+                </div>
+
+              </div>
+
+              {/* Question List */}
+              <div className="bg-white/50 backdrop-blur rounded-xl p-4 flex flex-col h-[360px]">
+
+                {/* Messages (SCROLLABLE) */}
+                <div className="flex-1 overflow-y-auto pr-2">
+                  <h4 className="font-semibold text-gray-900 mb-3">
+                    Conversation
+                  </h4>
+
+                  {chatMessages.map((msg, idx) => (
+                    <div
+                      key={idx}
+                      className={`mb-3 text-sm ${msg.sender === "User"
+                          ? "text-right text-indigo-700"
+                          : "text-left text-gray-800"
+                        }`}
+                    >
+                      <p className="inline-block px-3 py-2 rounded-lg bg-white shadow">
+                        {msg.text}
+                      </p>
+                    </div>
+                  ))}
+
+                  {isLoadingAI && (
+                    <p className="text-sm text-gray-500 italic">
+                      Jenny is thinking…
+                    </p>
+                  )}
+                </div>
+
+                {/* INPUT BAR (FIXED, ALWAYS VISIBLE) */}
+                <div className="mt-3 pt-3 border-t border-gray-200 flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && inputValue.trim()) {
+                        handleSendMessage(inputValue);
+                      }
+                    }}
+                    placeholder="Type your answer here (testing)…"
+                    className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  />
+
+                  <button
+                    onClick={() => handleSendMessage(inputValue)}
+                    disabled={!inputValue.trim() || isLoadingAI || isSpeaking}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm disabled:opacity-50"
+                  >
+                    Send
+                  </button>
+                </div>
+              </div>
+
             </div>
           </div>
 
-          {/* Right Sidebar */}
-          <div className="space-y-4">
+          {/* Modals */}
+          {isCodeEditorOpen && (
+            <CodeEditorModal
+              isOpen={isCodeEditorOpen}
+              onClose={() => setIsCodeEditorOpen(false)}
+              problem={codingProblem}
 
-            {/* AI Video */}
-            <div className="relative rounded-xl overflow-hidden shadow-lg h-48 bg-black">
-              <Canvas camera={{ position: [0, 0, 5] }}>
-                <ambientLight intensity={0.6} />
-                <Environment preset="studio" />
-                <DynamicModel
-                  speechText={currentAiSpeech}
-                  onSpeechEnd={handleSpeechEnd}
-                />
-              </Canvas>
+              onSuccess={async (userCode, testResults) => {
+                // Save solved problem
+                setSolvedProblems((prev) => [
+                  ...prev,
+                  {
+                    problem: codingProblem,
+                    userCode,
+                    testResults,
+                    skipped: false,
+                    solvedAt: new Date().toISOString(),
+                  },
+                ]);
 
-             <div className="absolute bottom-4 left-4 bg-indigo-200/80 backdrop-blur px-4 py-2 rounded-full flex items-center gap-2 shadow-md">
-  <span className="text-sm font-medium text-gray-800">
-    Ms. Jenny
-  </span>
-</div>
+                setIsCodeEditorOpen(false);
 
-            </div>
+                // Increase coding count
+                setCodingCount((prev) => prev + 1);
 
-            {/* Question List */}
-            <div className="bg-white/50 backdrop-blur rounded-xl p-4 flex flex-col h-[360px]">
+                setTimeout(async () => {
+                  const nextCount = codingCount + 1;
 
-  {/* Messages (SCROLLABLE) */}
-  <div className="flex-1 overflow-y-auto pr-2">
-    <h4 className="font-semibold text-gray-900 mb-3">
-      Conversation
-    </h4>
+                  // If 3 problems completed → end coding round
+                  if (nextCount >= 3) {
+                    const msg =
+                      "Great work! That concludes the coding round. We will now move to the next round.";
 
-    {chatMessages.map((msg, idx) => (
-      <div
-        key={idx}
-        className={`mb-3 text-sm ${
-          msg.sender === "User"
-            ? "text-right text-indigo-700"
-            : "text-left text-gray-800"
-        }`}
-      >
-        <p className="inline-block px-3 py-2 rounded-lg bg-white shadow">
-          {msg.text}
-        </p>
-      </div>
-    ))}
+                    setChatMessages((prev) => [
+                      ...prev,
+                      {
+                        sender: "AI",
+                        text: msg,
+                        time: new Date().toLocaleTimeString(),
+                        stage: "post-coding",
+                      },
+                    ]);
 
-    {isLoadingAI && (
-      <p className="text-sm text-gray-500 italic">
-        Jenny is thinking…
-      </p>
-    )}
-  </div>
+                    textToSpeech(msg);
+                    setInterviewStage("final");
+                    return;
+                  }
 
-  {/* INPUT BAR (FIXED, ALWAYS VISIBLE) */}
-  <div className="mt-3 pt-3 border-t border-gray-200 flex items-center gap-2">
-    <input
-      type="text"
-      value={inputValue}
-      onChange={(e) => setInputValue(e.target.value)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" && inputValue.trim()) {
-          handleSendMessage(inputValue);
-        }
-      }}
-      placeholder="Type your answer here (testing)…"
-      className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-    />
+                  // Otherwise fetch next problem
+                  try {
+                    const { problem: nextProblem } =
+                      await fetchAndFormatCodingProblem();
 
-    <button
-      onClick={() => handleSendMessage(inputValue)}
-      disabled={!inputValue.trim() || isLoadingAI || isSpeaking}
-      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm disabled:opacity-50"
-    >
-      Send
-    </button>
-  </div>
-</div>
+                    setCodingProblem(nextProblem);
 
-          </div>
+                    setChatMessages((prev) => [
+                      ...prev,
+                      {
+                        sender: "AI",
+                        text:
+                          "A new coding problem has been generated. Please open the Code Editor to solve it.",
+                        time: new Date().toLocaleTimeString(),
+                        stage: "coding",
+                      },
+                    ]);
+
+                    setTimeout(() => setIsCodeEditorOpen(true), 500);
+                  } catch (err) {
+                    console.error(err);
+                    setError("Failed to fetch next coding problem.");
+                  }
+                }, 300);
+              }}
+
+              onSkip={async () => {
+                // Save skipped problem
+                setSolvedProblems((prev) => [
+                  ...prev,
+                  {
+                    problem: codingProblem,
+                    userCode: null,
+                    testResults: null,
+                    skipped: true,
+                    solvedAt: new Date().toISOString(),
+                  },
+                ]);
+
+                setIsCodeEditorOpen(false);
+
+                setCodingCount((prev) => prev + 1);
+
+                setTimeout(async () => {
+                  const nextCount = codingCount + 1;
+
+                  if (nextCount >= 3) {
+                    const msg =
+                      "That concludes the coding round. Let's move to the next round.";
+
+                    setChatMessages((prev) => [
+                      ...prev,
+                      {
+                        sender: "AI",
+                        text: msg,
+                        time: new Date().toLocaleTimeString(),
+                        stage: "post-coding",
+                      },
+                    ]);
+
+                    textToSpeech(msg);
+                    setInterviewStage("final");
+                    return;
+                  }
+
+                  try {
+                    const { problem: nextProblem } =
+                      await fetchAndFormatCodingProblem();
+
+                    setCodingProblem(nextProblem);
+
+                    setChatMessages((prev) => [
+                      ...prev,
+                      {
+                        sender: "AI",
+                        text:
+                          "A new coding problem has been generated. Please open the Code Editor to solve it.",
+                        time: new Date().toLocaleTimeString(),
+                        stage: "coding",
+                      },
+                    ]);
+
+                    setTimeout(() => setIsCodeEditorOpen(true), 500);
+                  } catch (err) {
+                    console.error(err);
+                    setError("Failed to fetch next coding problem.");
+                  }
+                }, 300);
+              }}
+            />
+          )}
+
+
+          {showSolvedProblems && (
+            <SolvedProblemsModal
+              isOpen={showSolvedProblems}
+              onClose={() => setShowSolvedProblems(false)}
+              problems={solvedProblems}
+            />
+          )}
         </div>
-
-        {/* Modals */}
-        {isCodeEditorOpen && (
-  <CodeEditorModal
-    isOpen={isCodeEditorOpen}
-    onClose={() => setIsCodeEditorOpen(false)}
-    problem={codingProblem}
-
-    onSuccess={async (userCode, testResults) => {
-      // Save solved problem
-      setSolvedProblems((prev) => [
-        ...prev,
-        {
-          problem: codingProblem,
-          userCode,
-          testResults,
-          skipped: false,
-          solvedAt: new Date().toISOString(),
-        },
-      ]);
-
-      setIsCodeEditorOpen(false);
-
-      // Increase coding count
-      setCodingCount((prev) => prev + 1);
-
-      setTimeout(async () => {
-        const nextCount = codingCount + 1;
-
-        // If 3 problems completed → end coding round
-        if (nextCount >= 3) {
-          const msg =
-            "Great work! That concludes the coding round. We will now move to the next round.";
-
-          setChatMessages((prev) => [
-            ...prev,
-            {
-              sender: "AI",
-              text: msg,
-              time: new Date().toLocaleTimeString(),
-              stage: "post-coding",
-            },
-          ]);
-
-          textToSpeech(msg);
-          setInterviewStage("final");
-          return;
-        }
-
-        // Otherwise fetch next problem
-        try {
-          const { problem: nextProblem } =
-            await fetchAndFormatCodingProblem();
-
-          setCodingProblem(nextProblem);
-
-          setChatMessages((prev) => [
-            ...prev,
-            {
-              sender: "AI",
-              text:
-                "A new coding problem has been generated. Please open the Code Editor to solve it.",
-              time: new Date().toLocaleTimeString(),
-              stage: "coding",
-            },
-          ]);
-
-          setTimeout(() => setIsCodeEditorOpen(true), 500);
-        } catch (err) {
-          console.error(err);
-          setError("Failed to fetch next coding problem.");
-        }
-      }, 300);
-    }}
-
-    onSkip={async () => {
-      // Save skipped problem
-      setSolvedProblems((prev) => [
-        ...prev,
-        {
-          problem: codingProblem,
-          userCode: null,
-          testResults: null,
-          skipped: true,
-          solvedAt: new Date().toISOString(),
-        },
-      ]);
-
-      setIsCodeEditorOpen(false);
-
-      setCodingCount((prev) => prev + 1);
-
-      setTimeout(async () => {
-        const nextCount = codingCount + 1;
-
-        if (nextCount >= 3) {
-          const msg =
-            "That concludes the coding round. Let's move to the next round.";
-
-          setChatMessages((prev) => [
-            ...prev,
-            {
-              sender: "AI",
-              text: msg,
-              time: new Date().toLocaleTimeString(),
-              stage: "post-coding",
-            },
-          ]);
-
-          textToSpeech(msg);
-          setInterviewStage("final");
-          return;
-        }
-
-        try {
-          const { problem: nextProblem } =
-            await fetchAndFormatCodingProblem();
-
-          setCodingProblem(nextProblem);
-
-          setChatMessages((prev) => [
-            ...prev,
-            {
-              sender: "AI",
-              text:
-                "A new coding problem has been generated. Please open the Code Editor to solve it.",
-              time: new Date().toLocaleTimeString(),
-              stage: "coding",
-            },
-          ]);
-
-          setTimeout(() => setIsCodeEditorOpen(true), 500);
-        } catch (err) {
-          console.error(err);
-          setError("Failed to fetch next coding problem.");
-        }
-      }, 300);
-    }}
-  />
-)}
-
-
-        {showSolvedProblems && (
-          <SolvedProblemsModal
-            isOpen={showSolvedProblems}
-            onClose={() => setShowSolvedProblems(false)}
-            problems={solvedProblems}
-          />
-        )}
       </div>
     </div>
-  </div>
-);
+  );
 
 };
 

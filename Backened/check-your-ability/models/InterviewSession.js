@@ -121,6 +121,18 @@ const interviewSessionSchema = new mongoose.Schema(
         solvedAt: Date,
       },
     ],
+    highlightClips: [
+  {
+    questionIndex: Number,
+    questionText: String,
+    timestamp: String,
+    nervousScore: Number,
+    confidence: Number,
+    imageUrl: String,   // later you can change to imageUrl
+    capturedAt: Date,
+  },
+],
+
     status: {
       type: String,
       enum: ["in-progress", "completed"],
