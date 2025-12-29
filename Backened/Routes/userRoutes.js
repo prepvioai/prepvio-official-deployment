@@ -314,6 +314,63 @@ router.post("/update-course-total", verifyToken, async (req, res) => {
   res.json({ success: true });
 });
 
+router.get("/dashboard", verifyToken, async (req, res) => {
+  const user = await User.findById(req.userId).lean();
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  const courses = user.courseProgress || [];
+
+  const totalCourses = courses.length;
+
+  const completedCourses = courses.filter(
+    c => c.watchedSeconds >= c.totalSeconds && c.totalSeconds > 0
+  ).length;
+
+  const inProgressCourses = totalCourses - completedCourses;
+
+  const totalWatchedSeconds = courses.reduce(
+    (sum, c) => sum + (c.watchedSeconds || 0),
+    0
+  );
+
+  // Resume target (latest accessed course + video)
+  let resume = null;
+  let latestAccess = null;
+
+  courses.forEach(course => {
+    course.videos?.forEach(video => {
+      if (!latestAccess || new Date(video.updatedAt) > latestAccess) {
+        latestAccess = new Date(video.updatedAt);
+        resume = {
+          courseId: course.courseId,
+          channelId: course.channelId,
+          videoId: video.videoId,
+        };
+      }
+    });
+  });
+
+  res.json({
+    success: true,
+    stats: {
+      totalCourses,
+      completedCourses,
+      inProgressCourses,
+      totalWatchedHours: Math.round(totalWatchedSeconds / 3600),
+    },
+    resume,
+    courses: courses.map(c => ({
+      courseId: c.courseId,
+      courseTitle: c.courseTitle,
+      channelName: c.channelName,
+      channelThumbnail: c.channelThumbnail,
+      watchedSeconds: c.watchedSeconds,
+      totalSeconds: c.totalSeconds,
+      lastAccessed: c.lastAccessed,
+      completed: c.watchedSeconds >= c.totalSeconds && c.totalSeconds > 0,
+    })),
+  });
+});
 
 
 

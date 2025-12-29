@@ -446,28 +446,45 @@ export default function VideoPlayer() {
   };
 
   const handleStateChange = (event) => {
-    const playerInstance = event.target;
+  const playerInstance = event.target;
+  const state = event.data;
 
-    if (event.data === 1) {
-      if (playerInstance.interval) {
-        clearInterval(playerInstance.interval);
-      }
+  // PLAYING
+  if (state === 1) {
+    const savedTime = videoProgress[selectedVideoId];
 
-      playerInstance.interval = setInterval(() => {
-        try {
-          const currentTime = Math.floor(playerInstance.getCurrentTime());
-          handleTimeUpdate(currentTime);
-        } catch (err) {
-          console.error("Error getting current time:", err);
-        }
-      }, 1000);
-    } else {
-      if (playerInstance.interval) {
-        clearInterval(playerInstance.interval);
-        playerInstance.interval = null;
-      }
+    // 🔥 RESUME LOGIC (ONLY ONCE)
+    if (
+      savedTime &&
+      savedTime > 5 &&
+      !seekAttemptedRef.current.has(selectedVideoId)
+    ) {
+      playerInstance.seekTo(savedTime, true);
+      seekAttemptedRef.current.add(selectedVideoId);
     }
-  };
+
+    // START PROGRESS TRACKING
+    if (playerInstance.interval) {
+      clearInterval(playerInstance.interval);
+    }
+
+    playerInstance.interval = setInterval(() => {
+      try {
+        const currentTime = Math.floor(playerInstance.getCurrentTime());
+        handleTimeUpdate(currentTime);
+      } catch {}
+    }, 1000);
+  }
+
+  // PAUSED / ENDED
+  else {
+    if (playerInstance.interval) {
+      clearInterval(playerInstance.interval);
+      playerInstance.interval = null;
+    }
+  }
+};
+
 
   const handleVideoSelect = (video) => {
     const newVideoId = video.snippet.resourceId.videoId;
@@ -752,25 +769,25 @@ export default function VideoPlayer() {
     fetchContent();
   }, [selectedPlaylist, targetVideoId]);
 
-  useEffect(() => {
-    if (!player || !selectedVideoId) return;
+  // useEffect(() => {
+  //   if (!player || !selectedVideoId) return;
 
-    const savedTime = videoProgress[selectedVideoId];
-    if (!savedTime || savedTime < 5) return;
+  //   const savedTime = videoProgress[selectedVideoId];
+  //   if (!savedTime || savedTime < 5) return;
 
-    if (seekAttemptedRef.current.has(selectedVideoId)) return;
+  //   if (seekAttemptedRef.current.has(selectedVideoId)) return;
 
-    const trySeek = () => {
-      try {
-        player.seekTo(savedTime, true);
-        seekAttemptedRef.current.add(selectedVideoId);
-      } catch {
-        setTimeout(trySeek, 300);
-      }
-    };
+  //   const trySeek = () => {
+  //     try {
+  //       player.seekTo(savedTime, true);
+  //       seekAttemptedRef.current.add(selectedVideoId);
+  //     } catch {
+  //       setTimeout(trySeek, 300);
+  //     }
+  //   };
 
-    trySeek();
-  }, [player, selectedVideoId, videoProgress]);
+  //   trySeek();
+  // }, [player, selectedVideoId, videoProgress]);
 
   // Cleanup intervals
   useEffect(() => {

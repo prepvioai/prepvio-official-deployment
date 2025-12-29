@@ -1,25 +1,26 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  ChartLine,
   BookOpen,
   CheckCircle,
-  FileText,
-  Sparkles,
+  Clock,
   TrendingUp,
+  Play,
+  X,
+  User,
+  ChartLine,
+  Sparkles,
   Award,
   Target,
-  Clock,
-  Heart,
-  Star,
   Zap,
   Globe,
   MonitorCheck,
   ShieldCheck,
-  AlertCircle,
-  X,
-  User
+  FileText,
+  Star,
+  Heart,
 } from "lucide-react";
 import { Bar } from "react-chartjs-2";
 import {
@@ -33,10 +34,11 @@ import {
 import { useAuthStore } from "../store/authstore";
 import { formatDate } from "../utils/date";
 
-// Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip);
 
-// --- MOTIVATIONAL QUOTES ---
+const USER_API = "http://localhost:5000/api";
+
+// Motivational quotes
 const motivationalQuotes = [
   "Keep pushing forward! 💪",
   "Every course is a new skill! 🚀",
@@ -45,22 +47,7 @@ const motivationalQuotes = [
   "Today is your day! 🔥"
 ];
 
-// --- STATIC CARDS FOR VISUALIZATION ---
-const staticCards = [
-  { label: "Total Courses", value: 25, icon: BookOpen, color: "from-blue-400 to-blue-600", trend: "+5 this month" },
-  { label: "Completed", value: 18, icon: CheckCircle, color: "from-green-400 to-green-600", trend: "+3 this week" },
-  { label: "In Progress", value: 7, icon: Clock, color: "from-yellow-400 to-yellow-600", trend: "Keep going!" },
-  { label: "Completion", value: "72%", icon: TrendingUp, color: "from-purple-400 to-purple-600", trend: "+8% growth" },
-];
-
-// --- ACHIEVEMENTS ---
-const achievements = [
-  { title: "Speed Learner", icon: Zap, desc: "Completed 5 courses in a week!" },
-  { title: "Consistent", icon: Target, desc: "15 day learning streak!" },
-  { title: "Top Performer", icon: Award, desc: "Scored 95%+ in 3 courses" }
-];
-
-// --- CHART DATA ---
+// Chart configuration
 const chartData = {
   labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
   datasets: [
@@ -91,7 +78,7 @@ const chartOptions = {
   },
 };
 
-// --- SERVICE CONFIGURATIONS ---
+// Service configurations
 const serviceConfigs = [
   { key: 'checkYourAbility', name: 'Check Your Ability', icon: MonitorCheck, color: 'text-indigo-600', bg: 'bg-indigo-100' },
   { key: 'jobPortal', name: 'Job Portal Access', icon: Globe, color: 'text-green-600', bg: 'bg-green-100' },
@@ -99,48 +86,20 @@ const serviceConfigs = [
   { key: 'resumeAnalyzer', name: 'Resume Analyzer', icon: FileText, color: 'text-red-600', bg: 'bg-red-100' },
 ];
 
-// --- SAMPLE COURSES DATA ---
-const sampleCourses = [
-  {
-    title: "Introduction to Artificial Intelligence",
-    instructor: "Chai aur Code",
-    date: "05-05-2025",
-    status: "Ongoing",
-    progress: 65,
-    color: "yellow",
-  },
-  {
-    title: "Advanced Python Programming",
-    instructor: "Shradha Maam",
-    date: "15-11-2024",
-    status: "Completed",
-    progress: 100,
-    color: "green",
-  },
-  {
-    title: "Introduction to Web Development",
-    instructor: "Harry",
-    date: "01-09-2024",
-    status: "Completed",
-    progress: 100,
-    color: "green",
-  },
-  {
-    title: "Graphic Design Basics",
-    instructor: "Anik Jain",
-    date: "18-07-2024",
-    status: "Completed",
-    progress: 100,
-    color: "green",
-  },
+// Achievements
+const achievements = [
+  { title: "Speed Learner", icon: Zap, desc: "Completed 5 courses in a week!" },
+  { title: "Consistent", icon: Target, desc: "15 day learning streak!" },
+  { title: "Top Performer", icon: Award, desc: "Scored 95%+ in 3 courses" }
 ];
 
-// --- DASHBOARD MODAL COMPONENT (FOR NAVBAR) ---
-export const DashboardModal = ({ onClose }) => {
+/* ======================================================
+   DASHBOARD MODAL (USED BY HEADER)
+====================================================== */
+export function DashboardModal({ onClose }) {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
-  // Close modal on ESC key
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === "Escape") onClose();
@@ -149,13 +108,14 @@ export const DashboardModal = ({ onClose }) => {
     return () => window.removeEventListener("keydown", handleEsc);
   }, [onClose]);
 
-  // Prevent body scroll when modal is open
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = "unset";
     };
   }, []);
+
+  if (!user) return null;
 
   const handleLogout = async () => {
     await logout();
@@ -166,8 +126,6 @@ export const DashboardModal = ({ onClose }) => {
     onClose();
     navigate("/dashboard");
   };
-
-  if (!user) return null;
 
   return (
     <AnimatePresence>
@@ -187,7 +145,6 @@ export const DashboardModal = ({ onClose }) => {
           className="max-w-md w-full mx-4 p-8 bg-white/70 backdrop-blur-xl 
           rounded-2xl shadow-2xl border border-white relative"
         >
-          {/* Close Button */}
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100/50 transition-colors"
@@ -196,7 +153,6 @@ export const DashboardModal = ({ onClose }) => {
             <X className="w-5 h-5 text-gray-600" />
           </button>
 
-          {/* Header */}
           <div className="text-center mb-8">
             <div className="mx-auto mb-4 h-20 w-20 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 
             flex items-center justify-center shadow-lg">
@@ -212,9 +168,7 @@ export const DashboardModal = ({ onClose }) => {
             </p>
           </div>
 
-          {/* Cards */}
           <div className="space-y-6">
-            {/* Profile Info */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -234,7 +188,6 @@ export const DashboardModal = ({ onClose }) => {
               </p>
             </motion.div>
 
-            {/* Account Activity */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -257,7 +210,6 @@ export const DashboardModal = ({ onClose }) => {
             </motion.div>
           </div>
 
-          {/* Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -274,7 +226,7 @@ export const DashboardModal = ({ onClose }) => {
               hover:from-blue-600 hover:to-indigo-700
               focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >
-              View Full DashBoard
+              View Full Dashboard
             </motion.button>
             
             <motion.button
@@ -294,11 +246,55 @@ export const DashboardModal = ({ onClose }) => {
       </motion.div>
     </AnimatePresence>
   );
-};
+}
 
-// --- MAIN DASHBOARD PAGE COMPONENT ---
+/* ======================================================
+   SERVICE CARD COMPONENT
+====================================================== */
+const ServiceCard = ({ icon: Icon, name, active, color, bg }) => (
+  <div 
+    className={`p-4 rounded-2xl shadow-md transition-all duration-300 ${
+      active 
+        ? `bg-white/80 border border-white/90 hover:shadow-xl cursor-pointer`
+        : `bg-gray-100/60 border border-gray-200 cursor-not-allowed opacity-70`
+    }`}
+  >
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${active ? bg : 'bg-gray-300'}`}>
+          <Icon className={`w-5 h-5 ${active ? color : 'text-gray-500'}`} />
+        </div>
+        <h3 className="font-semibold text-gray-800">{name}</h3>
+      </div>
+      
+      {active ? (
+        <span className="text-sm font-bold text-green-700 bg-green-200 px-3 py-1 rounded-full flex items-center gap-1">
+          <ShieldCheck className="w-4 h-4" /> Active
+        </span>
+      ) : (
+        <span className="text-sm font-medium text-gray-600 bg-gray-300 px-3 py-1 rounded-full">
+          Inactive
+        </span>
+      )}
+    </div>
+    <p className="text-xs text-gray-500 mt-2">
+      {active 
+        ? `Status: Enabled. Click to access the ${name} portal.` 
+        : "Status: Disabled. Contact administrator for access."
+      }
+    </p>
+  </div>
+);
+
+/* ======================================================
+   MAIN DASHBOARD PAGE
+====================================================== */
 export default function DashboardPage() {
+  const navigate = useNavigate();
   const { user } = useAuthStore();
+
+  const [dashboard, setDashboard] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [greeting, setGreeting] = useState("");
   const [quote, setQuote] = useState("");
   const [userStats, setUserStats] = useState({
@@ -307,7 +303,7 @@ export default function DashboardPage() {
     points: 2450
   });
 
-  // --- Set Greeting and Quote on Mount ---
+  // Set greeting and quote on mount
   useEffect(() => {
     const hour = new Date().getHours();
     if (hour < 12) setGreeting("Good Morning");
@@ -317,44 +313,39 @@ export default function DashboardPage() {
     setQuote(motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]);
   }, []);
 
-  // --- Service Card Component ---
-  const ServiceCard = ({ icon: Icon, name, active, color, bg }) => (
-    <div 
-      className={`p-4 rounded-2xl shadow-md transition-all duration-300 ${
-        active 
-          ? `bg-white/80 border border-white/90 hover:shadow-xl cursor-pointer`
-          : `bg-gray-100/60 border border-gray-200 cursor-not-allowed opacity-70`
-      }`}
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${active ? bg : 'bg-gray-300'}`}>
-            <Icon className={`w-5 h-5 ${active ? color : 'text-gray-500'}`} />
-          </div>
-          <h3 className="font-semibold text-gray-800">{name}</h3>
-        </div>
-        
-        {active ? (
-          <span className="text-sm font-bold text-green-700 bg-green-200 px-3 py-1 rounded-full flex items-center gap-1">
-            <ShieldCheck className="w-4 h-4" /> Active
-          </span>
-        ) : (
-          <span className="text-sm font-medium text-gray-600 bg-gray-300 px-3 py-1 rounded-full">
-            Inactive
-          </span>
-        )}
-      </div>
-      <p className="text-xs text-gray-500 mt-2">
-        {active 
-          ? `Status: Enabled. Click to access the ${name} portal.` 
-          : "Status: Disabled. Contact administrator for access."
-        }
-      </p>
-    </div>
-  );
+  // Fetch dashboard data
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const res = await axios.get(
+          `${USER_API}/users/dashboard`,
+          { withCredentials: true }
+        );
+        setDashboard(res.data);
+      } catch (err) {
+        console.error("Dashboard fetch failed", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // --- Loading Guard ---
-  if (!user) {
+    fetchDashboard();
+  }, []);
+
+  const handleContinue = () => {
+    if (!dashboard?.resume) return;
+
+    const { courseId, channelId, videoId } = dashboard.resume;
+
+    navigate(
+      `/course/${channelId}/${courseId}${
+        videoId ? `?video=${videoId}` : ""
+      }`
+    );
+  };
+
+  // Loading state
+  if (loading) {
     return (
       <div className="h-screen flex items-center justify-center bg-gradient-to-r from-blue-50 to-indigo-50">
         <div className="text-center">
@@ -365,14 +356,30 @@ export default function DashboardPage() {
     );
   }
 
-  const displayName = user.name?.split(' ')[0] || 'User';
-  const userAvatar = user.profilePic || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'User')}`;
-  
+  if (!dashboard) {
+    return (
+      <div className="h-screen flex items-center justify-center text-red-500">
+        Failed to load dashboard
+      </div>
+    );
+  }
+
+  const { stats, courses } = dashboard;
+  const displayName = user?.name?.split(' ')[0] || 'User';
+  const userAvatar = user?.profilePic || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user?.name || 'User')}`;
+
+  const statCards = [
+    { label: "Total Courses", value: stats.totalCourses, icon: BookOpen, color: "from-blue-400 to-blue-600", trend: `${stats.totalCourses} enrolled` },
+    { label: "Completed", value: stats.completedCourses, icon: CheckCircle, color: "from-green-400 to-green-600", trend: "Great progress!" },
+    { label: "In Progress", value: stats.inProgressCourses, icon: Clock, color: "from-yellow-400 to-yellow-600", trend: "Keep going!" },
+    { label: "Hours Learned", value: stats.totalWatchedHours, icon: TrendingUp, color: "from-purple-400 to-purple-600", trend: "Time invested" },
+  ];
+
   return (
     <div className="min-h-screen overflow-y-auto px-4 md:px-8 py-6 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <div className="max-w-7xl mx-auto space-y-6">
         
-        {/* Hero Section - Personalized Greeting */}
+        {/* Hero Section */}
         <div className="bg-gradient-to-br from-indigo-500/30 via-purple-500/30 to-pink-500/30 backdrop-blur-2xl border border-white/50 rounded-3xl shadow-2xl p-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-300/20 rounded-full blur-2xl animate-pulse delay-75"></div>
@@ -382,11 +389,11 @@ export default function DashboardPage() {
               <div className="relative">
                 <img
                   src={userAvatar}
-                  alt={user.name || "User"}
+                  alt={user?.name || "User"}
                   className="rounded-full w-24 h-24 object-cover ring-4 ring-white/60 shadow-2xl"
                   onError={(e) => { 
                     e.target.onerror = null; 
-                    e.target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'User')}`; 
+                    e.target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user?.name || 'User')}`; 
                   }}
                 />
                 <div className="absolute -bottom-2 -right-2 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full p-2">
@@ -416,35 +423,43 @@ export default function DashboardPage() {
               </div>
             </div>
             
-            <button className="bg-white text-indigo-600 font-bold px-6 py-3 rounded-2xl shadow-xl hover:scale-105 transition-transform duration-300 whitespace-nowrap">
-              Continue Learning →
-            </button>
+            {dashboard.resume && (
+              <button 
+                onClick={handleContinue}
+                className="bg-white text-indigo-600 font-bold px-6 py-3 rounded-2xl shadow-xl hover:scale-105 transition-transform duration-300 whitespace-nowrap flex items-center gap-2"
+              >
+                <Play size={16} />
+                Continue Learning
+              </button>
+            )}
           </div>
         </div>
         
         {/* Available Services Section */}
-        <div className="bg-white/40 backdrop-blur-xl border border-white/50 rounded-3xl shadow-lg p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <MonitorCheck className="w-6 h-6 text-indigo-500" />
-            <h2 className="text-xl font-bold text-gray-800">Available Services Access</h2>
+        {user && (
+          <div className="bg-white/40 backdrop-blur-xl border border-white/50 rounded-3xl shadow-lg p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <MonitorCheck className="w-6 h-6 text-indigo-500" />
+              <h2 className="text-xl font-bold text-gray-800">Available Services Access</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {serviceConfigs.map(service => (
+                <ServiceCard
+                  key={service.key}
+                  icon={service.icon}
+                  name={service.name}
+                  active={user[service.key] || false}
+                  color={service.color}
+                  bg={service.bg}
+                />
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {serviceConfigs.map(service => (
-              <ServiceCard
-                key={service.key}
-                icon={service.icon}
-                name={service.name}
-                active={user[service.key] || false}
-                color={service.color}
-                bg={service.bg}
-              />
-            ))}
-          </div>
-        </div>
+        )}
 
-        {/* Quick Stats Cards */}
+        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {staticCards.map((card) => {
+          {statCards.map((card) => {
             const Icon = card.icon;
             return (
               <div
@@ -488,7 +503,6 @@ export default function DashboardPage() {
 
         {/* Graph & Events Row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Progress Graph */}
           <div className="lg:col-span-2 bg-white/40 backdrop-blur-xl border border-white/50 rounded-3xl shadow-lg p-6">
             <div className="flex items-center gap-2 mb-4">
               <ChartLine className="w-6 h-6 text-indigo-600" />
@@ -498,11 +512,10 @@ export default function DashboardPage() {
               <Bar data={chartData} options={chartOptions} />
             </div>
             <p className="text-sm text-gray-600 mt-3 text-center">
-              You've learned <span className="font-bold text-indigo-600">71 hours</span> this month! Keep it up! 🔥
+              You've learned <span className="font-bold text-indigo-600">{stats.totalWatchedHours} hours</span> in total! Keep it up! 🔥
             </p>
           </div>
 
-          {/* Upcoming Events */}
           <div className="bg-white/40 backdrop-blur-xl border border-white/50 rounded-3xl shadow-lg p-6">
             <h2 className="text-xl font-bold text-gray-800 mb-4">Upcoming Events 📅</h2>
             <div className="space-y-3">
@@ -522,146 +535,77 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Enrolled Courses */}
+        {/* Your Courses */}
         <div className="bg-white/40 backdrop-blur-xl border border-white/50 rounded-3xl shadow-lg p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-xl font-bold text-gray-800">Your Courses 📚</h2>
-            <button className="text-indigo-600 font-semibold text-sm hover:underline">View All →</button>
           </div>
 
-          <div className="grid grid-cols-1 gap-3">
-            {sampleCourses.map((course, index) => (
-              <div
-                key={index}
-                className="bg-white/60 backdrop-blur-sm border border-white/50 rounded-2xl p-4 hover:bg-white/80 hover:shadow-lg transition-all duration-300 cursor-pointer"
-              >
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex-1">
-                    <h3 className="font-bold text-gray-800 text-base mb-1">{course.title}</h3>
-                    <p className="text-sm text-gray-600">👨‍🏫 {course.instructor}</p>
-                    <p className="text-xs text-gray-500">Started: {course.date}</p>
-                  </div>
-                  <span
-                    className={`${
-                      course.color === "green" ? "bg-green-500" : "bg-yellow-500"
-                    } text-white px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap`}
-                  >
-                    {course.status}
-                  </span>
-                </div>
-                
-                {/* Progress Bar */}
-                <div className="w-full bg-gray-200 rounded-full h-2">
+          {courses.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">
+              You haven't started any courses yet.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {courses.map((course) => {
+                const progress =
+                  course.totalSeconds > 0
+                    ? Math.round(
+                        (course.watchedSeconds / course.totalSeconds) * 100
+                      )
+                    : 0;
+
+                return (
                   <div
-                    className={`h-2 rounded-full ${
-                      course.color === "green" ? "bg-green-500" : "bg-yellow-500"
-                    }`}
-                    style={{ width: `${course.progress}%` }}
-                  ></div>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">{course.progress}% Complete</p>
-              </div>
-            ))}
-          </div>
+                    key={`${course.courseId}-${course.channelName}`}
+                    className="bg-white/60 backdrop-blur-sm border border-white/50 rounded-2xl p-4 hover:bg-white/80 hover:shadow-lg transition-all duration-300 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-4">
+                      {course.channelThumbnail && (
+                        <img
+                          src={course.channelThumbnail}
+                          alt={course.channelName}
+                          className="w-14 h-14 rounded-lg object-cover"
+                        />
+                      )}
 
-          <button className="w-full md:w-auto bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-bold py-3 px-8 rounded-2xl mt-5 shadow-lg hover:scale-105 transition-transform">
-            Browse All Courses 🚀
-          </button>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h3 className="font-bold text-gray-800">
+                              {course.courseTitle}
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                              {course.channelName}
+                            </p>
+                          </div>
+                          {course.completed && (
+                            <CheckCircle className="text-green-600" />
+                          )}
+                        </div>
+
+                        <div className="mt-2">
+                          <div className="h-2 bg-gray-200 rounded-full">
+                            <div
+                              className={`h-2 rounded-full ${
+                                course.completed ? 'bg-green-500' : 'bg-indigo-600'
+                              }`}
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {progress}% completed
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
-
-
-
-
-
-// import { motion } from "framer-motion";
-// import { useAuthStore } from "../store/authstore";
-// import { formatDate } from "../utils/date";
-// import { useNavigate } from "react-router-dom"; // 👈 import navigate
-
-// const DashboardPage = () => {
-//   const { user, logout } = useAuthStore();
-//   const navigate = useNavigate(); // 👈 hook for navigation
-
-//   const handleLogout = async () => {
-//     await logout(); // ensure logout finishes
-//     navigate("/"); // 👈 redirect where you want
-//   };
-
-//   return (
-//     <div className="min-h-screen flex justify-center items-center bg-gradient-to-r from-blue-50 to-yellow-50">
-//       <motion.div
-//         initial={{ opacity: 0, scale: 0.9 }}
-//         animate={{ opacity: 1, scale: 1 }}
-//         exit={{ opacity: 0, scale: 0.9 }}
-//         transition={{ duration: 0.5 }}
-//         className="max-w-md w-full mx-auto mt-10 p-8 bg-gray-100 bg-opacity-80 backdrop-filter backdrop-blur-lg rounded-xl shadow-2xl border border-gray-100"
-//       >
-//         <h2 className="text-3xl font-bold mb-6 text-center bg-gradient-to-r from-blue-500 to-indigo-600 text-transparent bg-clip-text">
-//           Dashboard
-//         </h2>
-
-//         <div className="space-y-6">
-//           <motion.div
-//             className="p-4 bg-gray-200 bg-opacity-50 rounded-lg border border-gray-100"
-//             initial={{ opacity: 0, y: 20 }}
-//             animate={{ opacity: 1, y: 0 }}
-//             transition={{ delay: 0.2 }}
-//           >
-//             <h3 className="text-xl font-semibold text-indigo-500 mb-3">
-//               Profile Information
-//             </h3>
-//             <p className="text-gray-800">Name: {user?.name}</p>
-//             <p className="text-gray-800">Email: {user?.email}</p>
-//           </motion.div>
-
-//           <motion.div
-//             className="p-4 bg-gray-200 bg-opacity-50 rounded-lg border border-gray-100"
-//             initial={{ opacity: 0, y: 20 }}
-//             animate={{ opacity: 1, y: 0 }}
-//             transition={{ delay: 0.4 }}
-//           >
-//             <h3 className="text-xl font-semibold text-indigo-500 mb-3">
-//               Account Activity
-//             </h3>
-//             <p className="text-gray-800">
-//               <span className="font-bold">Joined: </span>
-//               {new Date(user?.createdAt).toLocaleDateString("en-US", {
-//                 year: "numeric",
-//                 month: "long",
-//                 day: "numeric",
-//               })}
-//             </p>
-//             <p className="text-gray-800">
-//               <span className="font-bold">Last Login: </span>
-//               {formatDate(user?.lastlogin)}
-//             </p>
-//           </motion.div>
-//         </div>
-
-//         <motion.div
-//           initial={{ opacity: 0, y: 20 }}
-//           animate={{ opacity: 1, y: 0 }}
-//           transition={{ delay: 0.6 }}
-//           className="mt-4"
-//         >
-//           <motion.button
-//             whileHover={{ scale: 1.05 }}
-//             whileTap={{ scale: 0.95 }}
-//             onClick={handleLogout}
-//             className="w-full py-3 px-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white 
-//             font-bold rounded-lg shadow-lg hover:from-blue-600 hover:to-emerald-700
-//              focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-100"
-//           >
-//             Logout
-//           </motion.button>
-//         </motion.div>
-//       </motion.div>
-//     </div>
-//   );
-// };
-
-// export default DashboardPage;
