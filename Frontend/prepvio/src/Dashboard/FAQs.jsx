@@ -1,134 +1,90 @@
 import React, { useState } from "react";
-import { HelpCircle, ChevronDown, Search, X, Phone, Mail, MessageCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  HelpCircle, 
+  ChevronDown, 
+  Search, 
+  X, 
+  Phone, 
+  Mail, 
+  MessageCircle, 
+  Plus, 
+  Minus, 
+  LifeBuoy
+} from "lucide-react";
+
+// --- DATA ---
+const faqCategories = [
+  {
+    category: "Getting Started",
+    questions: [
+      {
+        id: 1,
+        question: "How do I create an account on Prepvio?",
+        answer: "To create an account, click on the 'Sign Up' button on the homepage. Fill in your details including name, email, and password. Verify your email address through the link sent to your inbox, and you're all set to start learning, bhidu!"
+      },
+      {
+        id: 2,
+        question: "How do I enroll in a course?",
+        answer: "Browse through our course catalog, select the course you're interested in, and click on 'Enroll Now'. You can access the course immediately from your Learning dashboard."
+      },
+      {
+        id: 3,
+        question: "Is there a mobile app available?",
+        answer: "Yes! Prepvio is available on both iOS and Android. Download our app from the App Store or Google Play Store to learn on the go."
+      }
+    ]
+  },
+  {
+    category: "Courses & Learning",
+    questions: [
+      {
+        id: 4,
+        question: "How long do I have access to a course?",
+        answer: "Once you enroll in a course, you have lifetime access to all course materials. You can learn at your own pace and revisit the content anytime."
+      },
+      {
+        id: 5,
+        question: "Can I download course videos?",
+        answer: "Yes, premium members can download course videos for offline viewing through our mobile app. This feature is available for all enrolled courses."
+      }
+    ]
+  },
+  {
+    category: "Payment & Subscription",
+    questions: [
+      {
+        id: 8,
+        question: "What payment methods do you accept?",
+        answer: "We accept all major credit/debit cards, UPI, net banking, and digital wallets. All payments are processed securely through our payment gateway."
+      },
+      {
+        id: 9,
+        question: "Can I get a refund?",
+        answer: "Yes, we offer a 7-day money-back guarantee. If you're not satisfied with a course, request a refund within 7 days of purchase from your Account settings."
+      }
+    ]
+  }
+];
+
+// --- ANIMATION VARIANTS ---
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
+};
 
 function FAQs() {
   const [searchTerm, setSearchTerm] = useState("");
   const [openFAQ, setOpenFAQ] = useState(null);
   const [showContactPopup, setShowContactPopup] = useState(false);
 
-  const faqCategories = [
-    {
-      category: "Getting Started",
-      questions: [
-        {
-          id: 1,
-          question: "How do I create an account on Prepvio?",
-          answer: "To create an account, click on the 'Sign Up' button on the homepage. Fill in your details including name, email, and password. Verify your email address through the link sent to your inbox, and you're all set to start learning, bhidu!"
-        },
-        {
-          id: 2,
-          question: "How do I enroll in a course?",
-          answer: "Browse through our course catalog, select the course you're interested in, and click on 'Enroll Now'. You can access the course immediately from your Learning dashboard."
-        },
-        {
-          id: 3,
-          question: "Is there a mobile app available?",
-          answer: "Yes! Prepvio is available on both iOS and Android. Download our app from the App Store or Google Play Store to learn on the go."
-        }
-      ]
-    },
-    {
-      category: "Courses & Learning",
-      questions: [
-        {
-          id: 4,
-          question: "How long do I have access to a course?",
-          answer: "Once you enroll in a course, you have lifetime access to all course materials. You can learn at your own pace and revisit the content anytime."
-        },
-        {
-          id: 5,
-          question: "Can I download course videos?",
-          answer: "Yes, premium members can download course videos for offline viewing through our mobile app. This feature is available for all enrolled courses."
-        },
-        {
-          id: 6,
-          question: "Do I get a certificate after completing a course?",
-          answer: "Yes! Upon successful completion of a course (100% progress), you'll receive a certificate of completion that you can share on LinkedIn and your resume."
-        },
-        {
-          id: 7,
-          question: "Can I switch between courses?",
-          answer: "Absolutely! You can enroll in multiple courses and switch between them anytime. Your progress is saved automatically in each course."
-        }
-      ]
-    },
-    {
-      category: "Payment & Subscription",
-      questions: [
-        {
-          id: 8,
-          question: "What payment methods do you accept?",
-          answer: "We accept all major credit/debit cards, UPI, net banking, and digital wallets. All payments are processed securely through our payment gateway."
-        },
-        {
-          id: 9,
-          question: "Can I get a refund?",
-          answer: "Yes, we offer a 7-day money-back guarantee. If you're not satisfied with a course, request a refund within 7 days of purchase from your Account settings."
-        },
-        {
-          id: 10,
-          question: "What's included in the premium subscription?",
-          answer: "Premium subscription includes: unlimited access to all courses, downloadable content, priority support, exclusive webinars, and interview preparation resources."
-        },
-        {
-          id: 11,
-          question: "Can I cancel my subscription anytime?",
-          answer: "Yes, you can cancel your subscription anytime from the Account settings. You'll continue to have access until the end of your billing period."
-        }
-      ]
-    },
-    {
-      category: "Technical Support",
-      questions: [
-        {
-          id: 12,
-          question: "I'm having trouble accessing my course. What should I do?",
-          answer: "First, try refreshing the page and clearing your browser cache. If the issue persists, contact our support team through the Help Desk chat, and we'll assist you immediately."
-        },
-        {
-          id: 13,
-          question: "Why is my video not playing?",
-          answer: "Check your internet connection and try a different browser. Ensure your browser is up to date. If the problem continues, our support team is here to help!"
-        },
-        {
-          id: 14,
-          question: "How do I reset my password?",
-          answer: "Click on 'Forgot Password' on the login page. Enter your registered email address, and we'll send you a password reset link. Follow the instructions to create a new password."
-        }
-      ]
-    },
-    {
-      category: "Account & Profile",
-      questions: [
-        {
-          id: 15,
-          question: "How do I update my profile information?",
-          answer: "Go to Account settings from the sidebar. You can update your name, email, profile picture, and other personal information from there."
-        },
-        {
-          id: 16,
-          question: "Can I change my email address?",
-          answer: "Yes, you can update your email address in Account settings. You'll need to verify the new email address before the change takes effect."
-        },
-        {
-          id: 17,
-          question: "How do I delete my account?",
-          answer: "We're sad to see you go! You can request account deletion from Account settings > Privacy. Note that this action is permanent and cannot be undone."
-        }
-      ]
-    }
-  ];
-
   const toggleFAQ = (id) => {
     setOpenFAQ(openFAQ === id ? null : id);
-  };
-
-  const handleContactClick = () => {
-    setShowContactPopup(true);
-  };
-
-  const handleClosePopup = () => {
-    setShowContactPopup(false);
   };
 
   const filteredFAQs = faqCategories.map(category => ({
@@ -143,204 +99,465 @@ function FAQs() {
   const totalFAQs = faqCategories.reduce((sum, cat) => sum + cat.questions.length, 0);
 
   return (
-    <div className="flex h-screen overflow-x-hidden p-6">
-      <div className="flex-1 relative">
-        <div className="bg-white/30 backdrop-blur-2xl border border-white/50 rounded-3xl shadow-lg flex flex-col h-full transition-all duration-300">
-          
-          {/* Header */}
-          <div className="p-6 border-b border-white/50">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-semibold text-gray-800 flex items-center gap-2">
-                <HelpCircle className="w-6 h-6 text-indigo-600" />
-                FAQs
-              </h2>
-              <div className="bg-indigo-100/50 backdrop-blur-sm px-4 py-2 rounded-xl">
-                <p className="text-xs text-gray-600">Total Questions</p>
-                <p className="text-lg font-bold text-indigo-600">{totalFAQs}</p>
-              </div>
-            </div>
-
-            {/* Search Bar */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+    <div className="min-h-screen bg-[#FDFBF9] font-sans selection:bg-[#D4F478] selection:text-black p-4 md:p-8">
+      
+      {/* Centered Container - Width restricted for readability */}
+      <div className="max-w-3xl mx-auto space-y-8 md:space-y-12 pb-10">
+        
+        {/* Header Section */}
+        <div className="text-center max-w-2xl mx-auto space-y-4 md:space-y-6 pt-4 md:pt-10">
+           <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold border border-indigo-100 shadow-sm">
+              <HelpCircle className="w-3 h-3 md:w-4 md:h-4" /> Help Center
+           </div>
+           
+           <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight leading-tight">
+             How can we help?
+           </h1>
+           
+           {/* Search Bar */}
+           <div className="relative max-w-lg mx-auto w-full">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search for answers, bhidu..."
+                placeholder="Search for answers..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-white/50 backdrop-blur-sm border border-white/50 text-gray-800 rounded-2xl pl-10 pr-4 py-3 placeholder-gray-500 focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
+                className="w-full bg-white border border-gray-200 rounded-[1.5rem] pl-12 pr-4 py-3 md:py-4 shadow-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all text-sm md:text-base font-medium"
               />
+           </div>
+        </div>
+
+        {/* FAQs List */}
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="space-y-8 md:space-y-10"
+        >
+          {filteredFAQs.length === 0 ? (
+            <div className="text-center py-12 bg-white/50 rounded-3xl border border-dashed border-gray-200">
+               <p className="text-gray-500 font-medium">No results found for "{searchTerm}"</p>
+               <button 
+                 onClick={() => setSearchTerm('')}
+                 className="text-indigo-600 font-bold text-sm mt-2 hover:underline"
+               >
+                 Clear Search
+               </button>
             </div>
-          </div>
-
-          {/* FAQs List */}
-          <div className="flex-1 p-6 space-y-6 overflow-y-auto">
-            {filteredFAQs.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                <HelpCircle className="w-16 h-16 mb-4 opacity-30" />
-                <p className="text-lg font-medium">No results found</p>
-                <p className="text-sm">Try searching with different keywords</p>
-              </div>
-            ) : (
-              filteredFAQs.map((category, catIndex) => (
-                <div key={catIndex} className="space-y-3">
-                  {/* Category Header */}
-                  <h3 className="text-lg font-semibold text-gray-800 px-2">
-                    {category.category}
-                  </h3>
-
-                  {/* Questions in Category */}
+          ) : (
+            filteredFAQs.map((category, catIndex) => (
+              <motion.div key={catIndex} variants={itemVariants} className="space-y-4">
+                <h3 className="text-lg md:text-xl font-bold text-gray-900 px-2">{category.category}</h3>
+                
+                <div className="space-y-3">
                   {category.questions.map((faq) => (
-                    <div
-                      key={faq.id}
-                      className="bg-white/40 backdrop-blur-sm rounded-2xl shadow-md transition-all duration-300 hover:shadow-lg overflow-hidden"
+                    <div 
+                      key={faq.id} 
+                      className={`
+                        bg-white border transition-all duration-300 rounded-2xl overflow-hidden
+                        ${openFAQ === faq.id ? 'border-gray-300 shadow-md ring-1 ring-black/5' : 'border-gray-100 hover:border-gray-200'}
+                      `}
                     >
                       <button
                         onClick={() => toggleFAQ(faq.id)}
-                        className="w-full flex items-center justify-between p-4 text-left transition-all duration-300 hover:bg-white/20"
+                        className="w-full flex items-start md:items-center justify-between p-4 md:p-5 text-left gap-4"
                       >
-                        <span className="text-base font-medium text-gray-800 pr-4">
+                        <span className="text-sm md:text-base font-bold text-gray-900 pt-0.5 md:pt-0">
                           {faq.question}
                         </span>
-                        <ChevronDown
-                          className={`w-5 h-5 text-indigo-600 flex-shrink-0 transition-transform duration-300 ${
-                            openFAQ === faq.id ? "rotate-180" : ""
-                          }`}
-                        />
+                        <div className={`p-1 rounded-full flex-shrink-0 transition-colors ${openFAQ === faq.id ? 'bg-[#1A1A1A] text-white' : 'bg-gray-100 text-gray-500'}`}>
+                           {openFAQ === faq.id ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                        </div>
                       </button>
                       
-                      {/* Answer - Animated */}
-                      <div
-                        className={`transition-all duration-300 ease-in-out ${
-                          openFAQ === faq.id
-                            ? "max-h-96 opacity-100"
-                            : "max-h-0 opacity-0"
-                        } overflow-hidden`}
-                      >
-                        <div className="p-4 pt-0 text-sm text-gray-700 leading-relaxed border-t border-white/30">
-                          {faq.answer}
-                        </div>
-                      </div>
+                      <AnimatePresence>
+                        {openFAQ === faq.id && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                          >
+                            <div className="px-4 md:px-5 pb-5 pt-0 text-gray-600 leading-relaxed text-sm">
+                              {faq.answer}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   ))}
                 </div>
-              ))
-            )}
-          </div>
+              </motion.div>
+            ))
+          )}
+        </motion.div>
 
-          {/* Footer - Still Need Help */}
-          <div className="p-6 border-t border-white/50 bg-white/20 backdrop-blur-xl rounded-b-3xl">
-            <div className="text-center">
-              <p className="text-sm text-gray-700 mb-3">
-                Still have questions? We're here to help!
+        {/* Support Footer Card */}
+        <div className="bg-[#1A1A1A] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-center text-white relative overflow-hidden shadow-2xl">
+           {/* Background Blobs */}
+           <div className="absolute top-0 right-0 w-32 md:w-64 h-32 md:h-64 bg-[#D4F478]/10 rounded-full blur-[60px]" />
+           
+           <div className="relative z-10 space-y-4 md:space-y-6">
+              <h2 className="text-xl md:text-3xl font-black">Still have questions?</h2>
+              <p className="text-gray-400 text-sm md:text-base max-w-md mx-auto">
+                Can't find the answer you're looking for? Please chat to our friendly team.
               </p>
-              <button 
-                type="button"
-                onClick={handleContactClick}
-                className="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-3 rounded-2xl font-medium transition-all duration-300 shadow-md hover:shadow-lg"
+              <button
+                onClick={() => setShowContactPopup(true)}
+                className="bg-[#D4F478] text-black px-6 py-3 md:px-8 md:py-3.5 rounded-xl text-sm md:text-base font-bold hover:bg-white transition-colors shadow-lg hover:shadow-[#D4F478]/20"
               >
-                Contact Support
+                Get in Touch
               </button>
-            </div>
-          </div>
+           </div>
         </div>
 
-        {/* Contact Support Popup */}
+      </div>
+
+      {/* --- CONTACT POPUP --- */}
+      <AnimatePresence>
         {showContactPopup && (
-          <div 
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-            onClick={handleClosePopup}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowContactPopup(false)}
           >
-            <div 
-              className="bg-white/90 backdrop-blur-2xl border border-white/50 rounded-3xl shadow-2xl max-w-lg w-full p-8 relative"
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white w-full max-w-md rounded-[2rem] p-6 md:p-8 shadow-2xl relative overflow-hidden max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Close Button */}
-              <button
-                type="button"
-                onClick={handleClosePopup}
-                className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 transition p-2 rounded-full hover:bg-white/30"
+              <button 
+                onClick={() => setShowContactPopup(false)}
+                className="absolute top-4 right-4 md:top-6 md:right-6 p-2 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-500 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
 
-              {/* Header */}
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <MessageCircle className="w-8 h-8 text-indigo-600" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                  Arre Bhidu! Need Help? 💪
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  Tension mat le! Hum hai na tere saath. Reach out karo, we'll sort it out!
-                </p>
+              <div className="text-center mb-6 md:mb-8 mt-2">
+                 <div className="w-12 h-12 md:w-16 md:h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                    <LifeBuoy className="w-6 h-6 md:w-8 md:h-8" />
+                 </div>
+                 <h2 className="text-xl md:text-2xl font-black text-gray-900">We're here to help</h2>
+                 <p className="text-gray-500 text-xs md:text-sm mt-2 font-medium">Our team is available 24/7 to assist you.</p>
               </div>
 
-              {/* Contact Info */}
-              <div className="space-y-4 mb-6">
-                {/* Toll Free Number */}
-                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-2xl border border-indigo-100">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Phone className="w-5 h-5 text-white" />
+              <div className="space-y-3">
+                 <a href="mailto:support@prepvio.com" className="flex items-center gap-4 p-4 rounded-2xl border border-gray-100 hover:border-gray-300 hover:shadow-md transition-all group bg-white">
+                    <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors shrink-0">
+                       <Mail className="w-5 h-5" />
                     </div>
-                    <div>
-                      <p className="text-xs text-gray-600 font-medium">Toll Free Number</p>
-                      <a 
-                        href="tel:1800-123-4567" 
-                        className="text-lg font-bold text-indigo-600 hover:text-indigo-800 transition"
-                      >
-                        1800-123-4567
-                      </a>
-                      <p className="text-xs text-gray-500">Available 24/7, bhidu!</p>
+                    <div className="min-w-0">
+                       <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wide">Email Support</p>
+                       <p className="text-gray-900 font-bold text-sm md:text-base truncate">support@prepvio.com</p>
                     </div>
-                  </div>
-                </div>
+                 </a>
 
-                {/* Email */}
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-2xl border border-green-100">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Mail className="w-5 h-5 text-white" />
+                 <a href="tel:1800-123-4567" className="flex items-center gap-4 p-4 rounded-2xl border border-gray-100 hover:border-gray-300 hover:shadow-md transition-all group bg-white">
+                    <div className="w-10 h-10 bg-green-50 text-green-600 rounded-full flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors shrink-0">
+                       <Phone className="w-5 h-5" />
                     </div>
-                    <div>
-                      <p className="text-xs text-gray-600 font-medium">Email Us</p>
-                      <a 
-                        href="mailto:support@prepvio.com" 
-                        className="text-lg font-bold text-green-600 hover:text-green-800 transition break-all"
-                      >
-                        support@prepvio.com
-                      </a>
-                      <p className="text-xs text-gray-500">We reply super fast!</p>
+                    <div className="min-w-0">
+                       <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wide">Phone Support</p>
+                       <p className="text-gray-900 font-bold text-sm md:text-base">1800-123-4567</p>
                     </div>
-                  </div>
-                </div>
+                 </a>
               </div>
 
-              {/* Motivation Message */}
-              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-2xl border border-yellow-200 text-center">
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  <span className="font-bold text-orange-600">Yaad rakh bhidu,</span> har problem ka solution hai! 
-                  Jo bhi doubt hai, jo bhi question hai - hum hai na tere liye. 
-                  <span className="font-semibold"> Keep learning, keep growing! 🚀</span>
-                </p>
+              <div className="mt-6 md:mt-8 pt-6 border-t border-gray-100 text-center">
+                 <p className="text-xs md:text-sm text-gray-500 italic">"Jo bhi doubt hai, hum hai na! 🚀"</p>
               </div>
 
-              {/* Close Button */}
-              <button
-                type="button"
-                onClick={handleClosePopup}
-                className="w-full mt-6 bg-indigo-500 hover:bg-indigo-600 text-white py-3 rounded-2xl font-medium transition-all duration-300 shadow-md hover:shadow-lg"
-              >
-                Got It, Bhidu! 👍
-              </button>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
+
     </div>
   );
 }
 
 export default FAQs;
+
+
+
+
+
+//Backup code hai yeah
+// import React, { useState } from "react";
+// import { motion, AnimatePresence } from "framer-motion";
+// import { 
+//   HelpCircle, 
+//   ChevronDown, 
+//   Search, 
+//   X, 
+//   Phone, 
+//   Mail, 
+//   MessageCircle,
+//   Plus,
+//   Minus,
+//   LifeBuoy
+// } from "lucide-react";
+
+// // --- DATA ---
+// const faqCategories = [
+//   {
+//     category: "Getting Started",
+//     questions: [
+//       {
+//         id: 1,
+//         question: "How do I create an account on Prepvio?",
+//         answer: "To create an account, click on the 'Sign Up' button on the homepage. Fill in your details including name, email, and password. Verify your email address through the link sent to your inbox, and you're all set to start learning, bhidu!"
+//       },
+//       {
+//         id: 2,
+//         question: "How do I enroll in a course?",
+//         answer: "Browse through our course catalog, select the course you're interested in, and click on 'Enroll Now'. You can access the course immediately from your Learning dashboard."
+//       },
+//       {
+//         id: 3,
+//         question: "Is there a mobile app available?",
+//         answer: "Yes! Prepvio is available on both iOS and Android. Download our app from the App Store or Google Play Store to learn on the go."
+//       }
+//     ]
+//   },
+//   {
+//     category: "Courses & Learning",
+//     questions: [
+//       {
+//         id: 4,
+//         question: "How long do I have access to a course?",
+//         answer: "Once you enroll in a course, you have lifetime access to all course materials. You can learn at your own pace and revisit the content anytime."
+//       },
+//       {
+//         id: 5,
+//         question: "Can I download course videos?",
+//         answer: "Yes, premium members can download course videos for offline viewing through our mobile app. This feature is available for all enrolled courses."
+//       }
+//     ]
+//   },
+//   {
+//     category: "Payment & Subscription",
+//     questions: [
+//       {
+//         id: 8,
+//         question: "What payment methods do you accept?",
+//         answer: "We accept all major credit/debit cards, UPI, net banking, and digital wallets. All payments are processed securely through our payment gateway."
+//       },
+//       {
+//         id: 9,
+//         question: "Can I get a refund?",
+//         answer: "Yes, we offer a 7-day money-back guarantee. If you're not satisfied with a course, request a refund within 7 days of purchase from your Account settings."
+//       }
+//     ]
+//   }
+// ];
+
+// // --- ANIMATION VARIANTS ---
+// const containerVariants = {
+//   hidden: { opacity: 0 },
+//   visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+// };
+
+// const itemVariants = {
+//   hidden: { opacity: 0, y: 10 },
+//   visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
+// };
+
+// function FAQs() {
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [openFAQ, setOpenFAQ] = useState(null);
+//   const [showContactPopup, setShowContactPopup] = useState(false);
+
+//   const toggleFAQ = (id) => {
+//     setOpenFAQ(openFAQ === id ? null : id);
+//   };
+
+//   const filteredFAQs = faqCategories.map(category => ({
+//     ...category,
+//     questions: category.questions.filter(
+//       faq =>
+//         faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//         faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
+//     )
+//   })).filter(category => category.questions.length > 0);
+
+//   const totalFAQs = faqCategories.reduce((sum, cat) => sum + cat.questions.length, 0);
+
+//   return (
+//     <div className="min-h-screen bg-[#FDFBF9] font-sans selection:bg-[#D4F478] selection:text-black p-4 md:p-8">
+      
+//       <div className="max-w-[1000px] mx-auto space-y-10">
+        
+//         {/* Header Section */}
+//         <div className="text-center max-w-2xl mx-auto space-y-6">
+//            <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-2 rounded-full text-sm font-bold border border-indigo-100">
+//               <HelpCircle className="w-4 h-4" /> Help Center
+//            </div>
+//            <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
+//              How can we help?
+//            </h1>
+           
+//            {/* Search Bar */}
+//            <div className="relative max-w-lg mx-auto">
+//               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+//               <input
+//                 type="text"
+//                 placeholder="Search for answers..."
+//                 value={searchTerm}
+//                 onChange={(e) => setSearchTerm(e.target.value)}
+//                 className="w-full bg-white border border-gray-200 rounded-[1.5rem] pl-12 pr-4 py-4 shadow-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+//               />
+//            </div>
+//         </div>
+
+//         {/* FAQs List */}
+//         <motion.div 
+//           variants={containerVariants}
+//           initial="hidden"
+//           animate="visible"
+//           className="space-y-8"
+//         >
+//           {filteredFAQs.length === 0 ? (
+//             <div className="text-center py-12">
+//                <p className="text-gray-500 font-medium">No results found for "{searchTerm}"</p>
+//             </div>
+//           ) : (
+//             filteredFAQs.map((category, catIndex) => (
+//               <motion.div key={catIndex} variants={itemVariants} className="space-y-4">
+//                 <h3 className="text-xl font-bold text-gray-900 px-2">{category.category}</h3>
+                
+//                 <div className="space-y-3">
+//                   {category.questions.map((faq) => (
+//                     <div 
+//                       key={faq.id} 
+//                       className={`
+//                         bg-white border transition-all duration-300 rounded-2xl overflow-hidden
+//                         ${openFAQ === faq.id ? 'border-gray-300 shadow-md' : 'border-gray-100 hover:border-gray-200'}
+//                       `}
+//                     >
+//                       <button
+//                         onClick={() => toggleFAQ(faq.id)}
+//                         className="w-full flex items-center justify-between p-5 text-left"
+//                       >
+//                         <span className="text-base font-bold text-gray-900 pr-8">
+//                           {faq.question}
+//                         </span>
+//                         <div className={`p-1 rounded-full transition-colors ${openFAQ === faq.id ? 'bg-[#1A1A1A] text-white' : 'bg-gray-100 text-gray-500'}`}>
+//                            {openFAQ === faq.id ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+//                         </div>
+//                       </button>
+                      
+//                       <AnimatePresence>
+//                         {openFAQ === faq.id && (
+//                           <motion.div
+//                             initial={{ height: 0, opacity: 0 }}
+//                             animate={{ height: "auto", opacity: 1 }}
+//                             exit={{ height: 0, opacity: 0 }}
+//                             transition={{ duration: 0.3, ease: "easeInOut" }}
+//                           >
+//                             <div className="px-5 pb-5 pt-0 text-gray-600 leading-relaxed text-sm">
+//                               {faq.answer}
+//                             </div>
+//                           </motion.div>
+//                         )}
+//                       </AnimatePresence>
+//                     </div>
+//                   ))}
+//                 </div>
+//               </motion.div>
+//             ))
+//           )}
+//         </motion.div>
+
+//         {/* Support Footer */}
+//         <div className="bg-[#1A1A1A] rounded-[2.5rem] p-8 md:p-12 text-center text-white relative overflow-hidden">
+//            <div className="absolute top-0 right-0 w-64 h-64 bg-[#D4F478]/10 rounded-full blur-[80px]" />
+           
+//            <div className="relative z-10 space-y-6">
+//               <h2 className="text-2xl md:text-3xl font-black">Still have questions?</h2>
+//               <p className="text-gray-400 max-w-md mx-auto">
+//                 Can't find the answer you're looking for? Please chat to our friendly team.
+//               </p>
+//               <button
+//                 onClick={() => setShowContactPopup(true)}
+//                 className="bg-[#D4F478] text-black px-8 py-3.5 rounded-xl font-bold hover:bg-white transition-colors"
+//               >
+//                 Get in Touch
+//               </button>
+//            </div>
+//         </div>
+
+//       </div>
+
+//       {/* --- CONTACT POPUP --- */}
+//       <AnimatePresence>
+//         {showContactPopup && (
+//           <motion.div 
+//             initial={{ opacity: 0 }}
+//             animate={{ opacity: 1 }}
+//             exit={{ opacity: 0 }}
+//             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+//             onClick={() => setShowContactPopup(false)}
+//           >
+//             <motion.div 
+//               initial={{ scale: 0.9, y: 20 }}
+//               animate={{ scale: 1, y: 0 }}
+//               exit={{ scale: 0.9, y: 20 }}
+//               className="bg-white w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden"
+//               onClick={(e) => e.stopPropagation()}
+//             >
+//               <button 
+//                 onClick={() => setShowContactPopup(false)}
+//                 className="absolute top-6 right-6 p-2 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-500 transition-colors"
+//               >
+//                 <X className="w-5 h-5" />
+//               </button>
+
+//               <div className="text-center mb-8">
+//                  <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+//                     <LifeBuoy className="w-8 h-8" />
+//                  </div>
+//                  <h2 className="text-2xl font-black text-gray-900">We're here to help</h2>
+//                  <p className="text-gray-500 text-sm mt-2">Our team is available 24/7 to assist you.</p>
+//               </div>
+
+//               <div className="space-y-4">
+//                  <a href="mailto:support@prepvio.com" className="flex items-center gap-4 p-4 rounded-2xl border border-gray-100 hover:border-gray-300 hover:shadow-md transition-all group">
+//                     <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+//                        <Mail className="w-5 h-5" />
+//                     </div>
+//                     <div>
+//                        <p className="text-xs font-bold text-gray-400 uppercase">Email Support</p>
+//                        <p className="text-gray-900 font-bold">support@prepvio.com</p>
+//                     </div>
+//                  </a>
+
+//                  <a href="tel:1800-123-4567" className="flex items-center gap-4 p-4 rounded-2xl border border-gray-100 hover:border-gray-300 hover:shadow-md transition-all group">
+//                     <div className="w-10 h-10 bg-green-50 text-green-600 rounded-full flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors">
+//                        <Phone className="w-5 h-5" />
+//                     </div>
+//                     <div>
+//                        <p className="text-xs font-bold text-gray-400 uppercase">Phone Support</p>
+//                        <p className="text-gray-900 font-bold">1800-123-4567</p>
+//                     </div>
+//                  </a>
+//               </div>
+
+//               <div className="mt-8 pt-6 border-t border-gray-100 text-center">
+//                  <p className="text-sm text-gray-500 italic">"Jo bhi doubt hai, hum hai na! 🚀"</p>
+//               </div>
+
+//             </motion.div>
+//           </motion.div>
+//         )}
+//       </AnimatePresence>
+
+//     </div>
+//   );
+// }
+
+// export default FAQs;

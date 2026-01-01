@@ -14,28 +14,29 @@ router.get("/me", verifyToken, async (req, res) => {
 });
 
 /* =========================================================
-   START LEARNING (SAFE, NON-BROKEN CREATION)
+   START LEARNING
 ========================================================= */
-router.post("/start-learning", verifyToken, async (req, res) => {
-  // console.log("START LEARNING HIT", req.userId, req.body);
 
+
+router.post("/start-learning", verifyToken, async (req, res) => {
   const {
     courseId,
-    courseTitle,
-    courseThumbnail,
+    courseTitle,          // ✅ REQUIRED
     channelId,
     channelName,
     channelThumbnail,
   } = req.body;
 
+  // 🔴 NO DEFAULTS, NO "Course"
   if (!courseId || !courseTitle || !channelId || !channelName) {
     return res.status(400).json({ message: "Missing data" });
   }
 
   const user = await User.findById(req.userId);
+  if (!user) return res.status(401).json({ message: "User not found" });
 
-  if (!user) {
-    return res.status(401).json({ message: "User not found" });
+  if (!user.courseProgress) {
+    user.courseProgress = [];
   }
 
   const exists = user.courseProgress.find(
@@ -45,38 +46,31 @@ router.post("/start-learning", verifyToken, async (req, res) => {
   if (!exists) {
     user.courseProgress.push({
       courseId,
-      courseTitle,
-      courseThumbnail,
+      courseTitle: courseTitle.trim(), // ✅ EXACT NAME FROM FRONTEND
       channelId,
       channelName,
       channelThumbnail,
       totalSeconds: 0,
       watchedSeconds: 0,
       videos: [],
+      startedAt: new Date(),
+      lastAccessed: new Date(),
     });
 
     await user.save();
   }
 
-  return res.json({ success: true });
+  res.json({ success: true });
 });
 
 
 
 /* =========================================================
-   VIDEO PROGRESS (GUARANTEED WRITE)
-========================================================= */
-/* =========================================================
-   VIDEO PROGRESS (FINAL — CLEAN & CORRECT)
+   VIDEO PROGRESS (SAVE)
 ========================================================= */
 router.post("/video-progress", verifyToken, async (req, res) => {
-  const {
-    videoId,
-    courseId,
-    channelId,
-    watchedSeconds,
-    durationSeconds,
-  } = req.body;
+  const { videoId, courseId, channelId, watchedSeconds, durationSeconds } =
+    req.body;
 
   if (
     !videoId ||
@@ -85,29 +79,32 @@ router.post("/video-progress", verifyToken, async (req, res) => {
     typeof watchedSeconds !== "number" ||
     typeof durationSeconds !== "number"
   ) {
-    return res.status(400).json({ message: "Missing or invalid data" });
+    return res.status(400).json({ message: "Invalid data" });
   }
 
   const user = await User.findById(req.userId);
+  if (!user) return res.status(404).json({ message: "User not found" });
 
-  /* 1️⃣ FIND COURSE */
+  // ✅ GUARD
+  if (!user.courseProgress) {
+    user.courseProgress = [];
+  }
+
   const course = user.courseProgress.find(
     (c) => c.courseId === courseId && c.channelId === channelId
   );
 
   if (!course) {
-    return res
-      .status(404)
-      .json({ message: "Course not started yet" });
+    return res.status(404).json({ message: "Course not started yet" });
   }
 
-  /* 2️⃣ FIND OR CREATE VIDEO */
   let video = course.videos.find((v) => v.videoId === videoId);
 
-  const safeWatched = Math.min(
-    Math.max(watchedSeconds, 0),
-    durationSeconds
-  );
+  const safeWatched =
+  durationSeconds > 0
+    ? Math.min(Math.max(watchedSeconds, 0), durationSeconds)
+    : Math.max(watchedSeconds, 0);
+
 
   if (!video) {
     course.videos.push({
@@ -118,33 +115,31 @@ router.post("/video-progress", verifyToken, async (req, res) => {
       updatedAt: new Date(),
     });
   } else {
-    video.watchedSeconds = Math.max(
-      video.watchedSeconds,
-      safeWatched
-    );
+    video.watchedSeconds = Math.max(video.watchedSeconds, safeWatched);
     video.durationSeconds = durationSeconds;
     video.completed =
       video.watchedSeconds >= video.durationSeconds * 0.9;
     video.updatedAt = new Date();
   }
 
-  /* 3️⃣ CORRECT AGGREGATION (NO DOUBLE COUNTING) */
   course.watchedSeconds = course.videos.reduce(
-    (sum, v) =>
-      sum + Math.min(v.watchedSeconds, v.durationSeconds),
-    0
-  );
+  (sum, v) =>
+    sum +
+    (v.durationSeconds > 0
+      ? Math.min(v.watchedSeconds, v.durationSeconds)
+      : v.watchedSeconds),
+  0
+);
+
 
   course.lastAccessed = new Date();
 
   await user.save();
-
   res.json({ success: true });
 });
 
-
 /* =========================================================
-   FETCH VIDEO PROGRESS (FOR RESUME AFTER REFRESH)
+   FETCH VIDEO PROGRESS
 ========================================================= */
 router.get(
   "/video-progress/:courseId/:channelId",
@@ -155,17 +150,15 @@ router.get(
     const user = await User.findById(req.userId).lean();
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const course = user.courseProgress.find(
+    const courses = user.courseProgress || [];
+
+    const course = courses.find(
       (c) => c.courseId === courseId && c.channelId === channelId
     );
 
-    if (!course) {
-      return res.json({ success: true, data: [] });
-    }
-
     res.json({
       success: true,
-      data: course.videos || [],
+      data: course?.videos || [],
     });
   }
 );
@@ -177,14 +170,14 @@ router.get("/my-learning", verifyToken, async (req, res) => {
   const user = await User.findById(req.userId).lean();
   if (!user) return res.status(404).json({ message: "User not found" });
 
-  const data = user.courseProgress.map((course) => {
+  const courses = user.courseProgress || [];
+
+  const data = courses.map((course) => {
     let lastVideoId = null;
 
-    if (course.videos && course.videos.length > 0) {
-      const lastVideo = course.videos.reduce((latest, v) =>
-        !latest || new Date(v.updatedAt) > new Date(latest.updatedAt)
-          ? v
-          : latest
+    if (course.videos?.length) {
+      const lastVideo = course.videos.reduce((a, b) =>
+        new Date(b.updatedAt) > new Date(a.updatedAt) ? b : a
       );
       lastVideoId = lastVideo.videoId;
     }
@@ -198,8 +191,6 @@ router.get("/my-learning", verifyToken, async (req, res) => {
       watchedSeconds: course.watchedSeconds,
       totalSeconds: course.totalSeconds,
       lastAccessed: course.lastAccessed,
-
-      // 🔥 THIS IS THE KEY
       lastVideoId,
     };
   });
@@ -207,12 +198,8 @@ router.get("/my-learning", verifyToken, async (req, res) => {
   res.json({ success: true, data });
 });
 
-
-
-
-
 /* =========================================================
-   RESET COURSE (CLEAN DELETE)
+   RESET COURSE
 ========================================================= */
 router.delete(
   "/course-progress/:courseId/:channelId",
@@ -221,8 +208,9 @@ router.delete(
     const { courseId, channelId } = req.params;
 
     const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-    user.courseProgress = user.courseProgress.filter(
+    user.courseProgress = (user.courseProgress || []).filter(
       (c) => !(c.courseId === courseId && c.channelId === channelId)
     );
 
@@ -231,6 +219,9 @@ router.delete(
   }
 );
 
+/* =========================================================
+   WATCH LATER
+========================================================= */
 router.post("/watch-later", verifyToken, async (req, res) => {
   const { videoId, title, thumbnail, channelId, channelName, courseId } =
     req.body;
@@ -240,11 +231,9 @@ router.post("/watch-later", verifyToken, async (req, res) => {
   }
 
   const user = await User.findById(req.userId);
+  if (!user) return res.status(404).json({ message: "User not found" });
 
-  const exists = user.savedVideos.find(
-    (v) => v.videoId === videoId
-  );
-
+  const exists = user.savedVideos.find((v) => v.videoId === videoId);
   if (exists) {
     return res.status(400).json({ message: "Already saved" });
   }
@@ -259,53 +248,39 @@ router.post("/watch-later", verifyToken, async (req, res) => {
   });
 
   await user.save();
-
   res.json({ success: true });
 });
 
 router.get("/watch-later", verifyToken, async (req, res) => {
   const user = await User.findById(req.userId).lean();
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
-  }
+  if (!user) return res.status(404).json({ message: "User not found" });
 
-  res.json({
-    success: true,
-    data: user.savedVideos || [],
-  });
+  res.json({ success: true, data: user.savedVideos || [] });
 });
 
 /* =========================================================
-   UPDATE COURSE TOTAL DURATION (PLAYLIST TOTAL)
+   UPDATE COURSE TOTAL
 ========================================================= */
 router.post("/update-course-total", verifyToken, async (req, res) => {
   const { courseId, channelId, totalSeconds } = req.body;
 
-  if (
-    !courseId ||
-    !channelId ||
-    typeof totalSeconds !== "number" ||
-    totalSeconds <= 0
-  ) {
+  if (!courseId || !channelId || typeof totalSeconds !== "number") {
     return res.status(400).json({ message: "Invalid data" });
   }
 
   const user = await User.findById(req.userId);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  if (!user.courseProgress) {
+    user.courseProgress = [];
+  }
 
   const course = user.courseProgress.find(
     (c) => c.courseId === courseId && c.channelId === channelId
   );
 
-  if (!course) {
-    return res.status(404).json({ message: "Course not found" });
-  }
+  if (!course) return res.status(404).json({ message: "Course not found" });
 
-  /*
-    IMPORTANT RULE:
-    - totalSeconds represents FULL PLAYLIST duration
-    - It should only ever increase or be set once
-    - Never decrease (prevents corruption)
-  */
   if (course.totalSeconds !== totalSeconds) {
     course.totalSeconds = totalSeconds;
     await user.save();
@@ -314,18 +289,31 @@ router.post("/update-course-total", verifyToken, async (req, res) => {
   res.json({ success: true });
 });
 
+/* =========================================================
+   DASHBOARD
+========================================================= */
 router.get("/dashboard", verifyToken, async (req, res) => {
   const user = await User.findById(req.userId).lean();
   if (!user) return res.status(404).json({ message: "User not found" });
 
-  const courses = user.courseProgress || [];
+  const courses = (user.courseProgress || []).map((c) => {
+    const completed =
+      c.totalSeconds > 0 && c.watchedSeconds >= c.totalSeconds * 0.9;
+
+    return {
+      courseId: c.courseId,
+      courseTitle: c.courseTitle,
+      channelId: c.channelId,
+      channelName: c.channelName,
+      channelThumbnail: c.channelThumbnail,
+      totalSeconds: c.totalSeconds,
+      watchedSeconds: c.watchedSeconds,
+      completed,
+    };
+  });
 
   const totalCourses = courses.length;
-
-  const completedCourses = courses.filter(
-    c => c.watchedSeconds >= c.totalSeconds && c.totalSeconds > 0
-  ).length;
-
+  const completedCourses = courses.filter(c => c.completed).length;
   const inProgressCourses = totalCourses - completedCourses;
 
   const totalWatchedSeconds = courses.reduce(
@@ -333,44 +321,30 @@ router.get("/dashboard", verifyToken, async (req, res) => {
     0
   );
 
-  // Resume target (latest accessed course + video)
-  let resume = null;
-  let latestAccess = null;
-
-  courses.forEach(course => {
-    course.videos?.forEach(video => {
-      if (!latestAccess || new Date(video.updatedAt) > latestAccess) {
-        latestAccess = new Date(video.updatedAt);
-        resume = {
-          courseId: course.courseId,
-          channelId: course.channelId,
-          videoId: video.videoId,
-        };
-      }
-    });
-  });
+  const resumeCourse = courses
+    .filter(c => !c.completed && c.watchedSeconds > 0)
+    .sort((a, b) => b.watchedSeconds - a.watchedSeconds)[0];
 
   res.json({
-    success: true,
     stats: {
       totalCourses,
       completedCourses,
       inProgressCourses,
-      totalWatchedHours: Math.round(totalWatchedSeconds / 3600),
+      totalWatchedHours: Math.floor(totalWatchedSeconds / 3600),
     },
-    resume,
-    courses: courses.map(c => ({
-      courseId: c.courseId,
-      courseTitle: c.courseTitle,
-      channelName: c.channelName,
-      channelThumbnail: c.channelThumbnail,
-      watchedSeconds: c.watchedSeconds,
-      totalSeconds: c.totalSeconds,
-      lastAccessed: c.lastAccessed,
-      completed: c.watchedSeconds >= c.totalSeconds && c.totalSeconds > 0,
-    })),
+    courses,
+    resume: resumeCourse
+      ? {
+          courseId: resumeCourse.courseId,
+          channelId: resumeCourse.channelId,
+          videoId: null,
+        }
+      : null,
   });
 });
+
+
+
 
 /* =========================================================
    ADMIN: GET ALL USERS (FOR USER MANAGEMENT)

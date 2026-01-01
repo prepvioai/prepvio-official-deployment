@@ -7,20 +7,22 @@ import {
   CheckCircle,
   Clock,
   TrendingUp,
-  Play,
-  X,
-  User,
-  ChartLine,
-  Sparkles,
-  Award,
-  Target,
   Zap,
-  Globe,
+  Target,
+  Award,
   MonitorCheck,
-  ShieldCheck,
+  Globe,
+  Sparkles,
   FileText,
-  Star,
-  Heart,
+  User,
+  X,
+  Bell,
+  Search,
+  ChevronLeft,
+  MoreHorizontal,
+  ArrowRight,
+  ShieldCheck,
+  Play
 } from "lucide-react";
 import { Bar } from "react-chartjs-2";
 import {
@@ -34,11 +36,39 @@ import {
 import { useAuthStore } from "../store/authstore";
 import { formatDate } from "../utils/date";
 
+// Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip);
 
 const USER_API = "http://localhost:5000/api";
 
-// Motivational quotes
+// --- ASSETS & CONFIGURATION ---
+const ASSETS = {
+  avatarPlaceholder: "https://api.dicebear.com/7.x/initials/svg?seed=",
+  maleChar: "/SIRA.png",
+};
+
+// --- ANIMATION VARIANTS (Lightweight) ---
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1, delayChildren: 0.05, ease: "easeOut" },
+  },
+};
+
+const itemUpVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 100, damping: 20 } },
+};
+
+const hoverCardEffect = {
+  y: -5,
+  scale: 1.01,
+  boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.1)",
+  transition: { type: "spring", stiffness: 300, damping: 20 }
+};
+
+// --- DATA ---
 const motivationalQuotes = [
   "Keep pushing forward! 💪",
   "Every course is a new skill! 🚀",
@@ -47,15 +77,27 @@ const motivationalQuotes = [
   "Today is your day! 🔥"
 ];
 
-// Chart configuration
+const achievements = [
+  { title: "Speed Learner", icon: Zap, desc: "Completed 5 courses in a week!", type: "Technical" },
+  { title: "Consistent", icon: Target, desc: "15 day learning streak!", type: "Behavioral" },
+  { title: "Top Performer", icon: Award, desc: "Scored 95%+ in 3 courses", type: "Academic" }
+];
+
+const serviceConfigs = [
+  { key: 'checkYourAbility', name: 'Check Your Ability', icon: MonitorCheck, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+  { key: 'jobPortal', name: 'Job Portal Access', icon: Globe, color: 'text-green-600', bg: 'bg-green-50' },
+  { key: 'aiSystem', name: 'AI System Tools', icon: Sparkles, color: 'text-yellow-600', bg: 'bg-yellow-50' },
+  { key: 'resumeAnalyzer', name: 'Resume Analyzer', icon: FileText, color: 'text-red-600', bg: 'bg-red-50' },
+];
+
 const chartData = {
   labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
   datasets: [
     {
       label: "Learning Hours",
       data: [12, 19, 15, 25],
-      backgroundColor: "rgba(139, 92, 246, 0.7)",
-      borderRadius: 8,
+      backgroundColor: "#D4F478",
+      borderRadius: 12,
       borderSkipped: false,
     },
   ],
@@ -65,57 +107,173 @@ const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   scales: {
-    x: { grid: { display: false }, ticks: { color: "#6b7280" } },
-    y: { grid: { color: "rgba(200,200,200,0.2)" }, ticks: { color: "#6b7280" } },
+    x: { grid: { display: false }, ticks: { color: "#9ca3af", font: { weight: 'bold' } } },
+    y: { grid: { color: "#f3f4f6" }, ticks: { color: "#9ca3af" } },
   },
   plugins: {
     legend: { display: false },
     tooltip: { 
-      backgroundColor: "rgba(0,0,0,0.8)",
+      backgroundColor: "#1A1A1A",
       padding: 12,
-      cornerRadius: 8
+      cornerRadius: 8,
+      titleFont: { weight: 'bold' },
+      bodyFont: { weight: 'bold' }
     },
   },
 };
 
-// Service configurations
-const serviceConfigs = [
-  { key: 'checkYourAbility', name: 'Check Your Ability', icon: MonitorCheck, color: 'text-indigo-600', bg: 'bg-indigo-100' },
-  { key: 'jobPortal', name: 'Job Portal Access', icon: Globe, color: 'text-green-600', bg: 'bg-green-100' },
-  { key: 'aiSystem', name: 'AI System Tools', icon: Sparkles, color: 'text-yellow-600', bg: 'bg-yellow-100' },
-  { key: 'resumeAnalyzer', name: 'Resume Analyzer', icon: FileText, color: 'text-red-600', bg: 'bg-red-100' },
-];
+// --- COMPONENTS ---
 
-// Achievements
-const achievements = [
-  { title: "Speed Learner", icon: Zap, desc: "Completed 5 courses in a week!" },
-  { title: "Consistent", icon: Target, desc: "15 day learning streak!" },
-  { title: "Top Performer", icon: Award, desc: "Scored 95%+ in 3 courses" }
-];
+// 1. StatCard
+const StatCard = ({ label, value, trend, icon: Icon, iconStyle, trendStyle, trendIcon: TrendIcon }) => (
+  <motion.div 
+    variants={itemUpVariants}
+    whileHover={hoverCardEffect}
+    className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col justify-between h-44 relative overflow-hidden group"
+  >
+    <div className={`absolute -top-6 -right-6 w-32 h-32 rounded-full opacity-5 pointer-events-none ${iconStyle.includes('text-blue') ? 'bg-blue-500' : iconStyle.includes('text-purple') ? 'bg-purple-500' : 'bg-green-500'}`} />
+    
+    <div className="flex justify-between items-start z-10">
+      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm ${iconStyle}`}>
+        <Icon className="w-7 h-7" />
+      </div>
+      <div className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 ${trendStyle}`}>
+        <TrendIcon className={`w-3 h-3`} /> 
+        {trend}
+      </div>
+    </div>
+    
+    <div className="z-10 mt-auto pt-4">
+      <div className="text-4xl font-black text-gray-900 mb-1 tracking-tight leading-none">{value}</div>
+      <div className="text-sm font-bold text-gray-400">{label}</div>
+    </div>
+  </motion.div>
+);
 
-/* ======================================================
-   DASHBOARD MODAL (USED BY HEADER)
-====================================================== */
-export function DashboardModal({ onClose }) {
+// 2. Recommended Session Card (Responsive)
+const RecommendedSessionCard = ({ onContinue, hasResume }) => (
+  <motion.div 
+    variants={itemUpVariants}
+    className="bg-[#1A1A1A] rounded-[2.5rem] p-6 md:p-12 relative overflow-hidden shadow-2xl shadow-gray-900/20 text-white flex flex-col justify-center min-h-[300px] md:min-h-[340px] group cursor-pointer"
+  >
+    <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full blur-[80px] opacity-40 group-hover:opacity-60 transition-opacity" />
+    <div className="absolute bottom-0 left-0 w-full h-full opacity-10" style={{backgroundImage: "radial-gradient(#fff 1px, transparent 1px)", backgroundSize: "20px 20px"}} />
+    
+    <div className="relative z-10 max-w-lg">
+      <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold mb-6 border border-white/10 text-[#D4F478]">
+        <Zap className="w-3 h-3 fill-current" /> 
+        RECOMMENDED FOR YOU
+      </div>
+      <h2 className="text-3xl md:text-5xl font-black mb-4 leading-tight">
+        {hasResume ? "Continue Your Journey" : "Product Strategy"}<br/>
+        {hasResume ? "" : "Deep Dive"}
+      </h2>
+      <p className="text-gray-400 mb-8 max-w-md text-sm md:text-lg leading-relaxed">
+        {hasResume 
+          ? "Pick up right where you left off and keep learning!" 
+          : "Master the \"Circle Framework\" and improve your strategic thinking score."}
+      </p>
+      
+      {hasResume && (
+        <button 
+          onClick={onContinue}
+          className="bg-[#D4F478] text-black px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold flex items-center gap-3 hover:bg-white hover:scale-105 transition-all shadow-lg shadow-[#D4F478]/20 w-fit text-sm md:text-base"
+        >
+          <Play className="w-5 h-5 fill-black" />
+          Continue Learning
+        </button>
+      )}
+    </div>
+
+    <motion.img 
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 0.5 }}
+      transition={{ delay: 0.2 }}
+      src={ASSETS.maleChar} 
+      className="absolute -bottom-10 -right-10 w-56 h-64 md:w-72 md:h-80 object-cover rounded-full grayscale group-hover:grayscale-0 transition-all duration-700 hidden md:block" 
+      alt="Mentor" 
+    />
+  </motion.div>
+);
+
+// 3. Service Card
+const ServiceCard = ({ icon: Icon, name, color, bg }) => (
+  <motion.div 
+    whileHover={hoverCardEffect}
+    className="p-5 rounded-[1.5rem] border bg-white border-gray-100 transition-all duration-300 flex items-center gap-4 cursor-pointer shadow-sm hover:shadow-md"
+  >
+    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${bg}`}>
+      <Icon className={`w-6 h-6 ${color}`} />
+    </div>
+    <div className="flex-1 min-w-0">
+      <h3 className="font-bold text-gray-900 text-sm truncate">{name}</h3>
+      <p className="text-xs text-green-600 font-bold mt-0.5 flex items-center gap-1">
+        <CheckCircle className="w-3 h-3" /> Available
+      </p>
+    </div>
+    <div className="w-8 h-8 rounded-full bg-[#D4F478] flex items-center justify-center shrink-0">
+         <ArrowRight className="w-4 h-4 text-black" />
+    </div>
+  </motion.div>
+);
+
+// 4. Course Row
+const CourseRow = ({ course }) => {
+  const progress = course.totalSeconds > 0 
+    ? Math.round((course.watchedSeconds / course.totalSeconds) * 100) 
+    : 0;
+  
+  const status = course.completed ? "Completed" : "Ongoing";
+  const color = course.completed ? "green" : "yellow";
+
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-gray-50 rounded-2xl transition-colors cursor-pointer group border border-transparent hover:border-gray-100 gap-4 sm:gap-0">
+      <div className="flex items-center gap-4">
+        {course.channelThumbnail ? (
+          <img 
+            src={course.channelThumbnail} 
+            alt={course.channelName}
+            className="w-12 h-12 rounded-2xl object-cover"
+          />
+        ) : (
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors font-bold text-lg ${color === 'green' ? 'bg-[#D4F478] text-black' : 'bg-yellow-100 text-yellow-700'}`}>
+            {course.courseTitle.charAt(0)}
+          </div>
+        )}
+        <div>
+          <h4 className="font-bold text-gray-900 text-sm group-hover:text-black transition-colors">{course.courseTitle}</h4>
+          <div className="flex items-center gap-2 text-xs text-gray-400 mt-1 font-medium">
+            <User className="w-3 h-3" /> {course.channelName}
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 sm:gap-1 w-full sm:w-auto">
+         <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+           {status}
+         </span>
+         <div className="w-full sm:w-20 bg-gray-100 rounded-full h-1.5 mt-0 sm:mt-1">
+            <div className={`h-1.5 rounded-full ${color === 'green' ? 'bg-green-500' : 'bg-yellow-500'}`} style={{ width: `${progress}%` }}></div>
+         </div>
+      </div>
+    </div>
+  );
+};
+
+// --- DASHBOARD MODAL ---
+export const DashboardModal = ({ onClose }) => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleEsc = (e) => {
-      if (e.key === "Escape") onClose();
-    };
+    const handleEsc = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", handleEsc);
     return () => window.removeEventListener("keydown", handleEsc);
   }, [onClose]);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "unset";
-    };
+    return () => { document.body.style.overflow = "unset"; };
   }, []);
-
-  if (!user) return null;
 
   const handleLogout = async () => {
     await logout();
@@ -127,189 +285,75 @@ export function DashboardModal({ onClose }) {
     navigate("/dashboard");
   };
 
+  if (!user) return null;
+
   return (
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-sm p-4"
         onClick={onClose}
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          transition={{ duration: 0.3 }}
           onClick={(e) => e.stopPropagation()}
-          className="max-w-md w-full mx-4 p-8 bg-white/70 backdrop-blur-xl 
-          rounded-2xl shadow-2xl border border-white relative"
+          className="max-w-md w-full p-6 md:p-8 bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 relative"
         >
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100/50 transition-colors"
-            aria-label="Close dashboard"
-          >
-            <X className="w-5 h-5 text-gray-600" />
+          <button onClick={onClose} className="absolute top-6 right-6 p-2 rounded-full hover:bg-gray-100 transition-colors">
+            <X className="w-5 h-5 text-gray-500" />
           </button>
 
           <div className="text-center mb-8">
-            <div className="mx-auto mb-4 h-20 w-20 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 
-            flex items-center justify-center shadow-lg">
-              <User className="text-white h-9 w-9" />
+            <div className="mx-auto mb-4 h-20 w-20 rounded-[1.5rem] bg-[#1A1A1A] flex items-center justify-center shadow-lg shadow-gray-200">
+              <User className="text-[#D4F478] h-8 w-8" />
             </div>
-
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-indigo-600 
-            text-transparent bg-clip-text">
-              Dashboard
-            </h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Welcome back, {user.name}
-            </p>
+            <h2 className="text-2xl font-black text-gray-900">Dashboard</h2>
+            <p className="text-sm text-gray-500 mt-1 font-medium">Welcome back, {user.name}</p>
           </div>
 
-          <div className="space-y-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="p-5 rounded-xl bg-white/60 border border-white shadow-sm"
-            >
-              <div className="flex items-center gap-2 mb-3 text-indigo-600">
-                <ShieldCheck size={20} />
-                <h3 className="text-lg font-semibold">Profile Information</h3>
-              </div>
-
-              <p className="text-gray-800">
-                <span className="font-semibold">Name:</span> {user.name}
-              </p>
-              <p className="text-gray-800">
-                <span className="font-semibold">Email:</span> {user.email}
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="p-5 rounded-xl bg-white/60 border border-white shadow-sm"
-            >
-              <div className="flex items-center gap-2 mb-3 text-indigo-600">
-                <Clock size={20} />
-                <h3 className="text-lg font-semibold">Account Activity</h3>
-              </div>
-
-              <p className="text-gray-800">
-                <span className="font-semibold">Joined:</span>{" "}
-                {formatDate(user.createdAt)}
-              </p>
-              <p className="text-gray-800">
-                <span className="font-semibold">Last Login:</span>{" "}
-                {formatDate(user.lastlogin)}
-              </p>
-            </motion.div>
+          <div className="space-y-4">
+             <div className="p-5 rounded-2xl bg-[#FDFBF9] border border-gray-100">
+               <div className="flex items-center gap-2 mb-2 text-gray-900 font-bold text-sm uppercase tracking-wider">
+                 <ShieldCheck size={16} /> Profile Info
+               </div>
+               <p className="text-sm text-gray-600 font-medium break-all">Name: <span className="text-gray-900">{user.name}</span></p>
+               <p className="text-sm text-gray-600 font-medium break-all">Email: <span className="text-gray-900">{user.email}</span></p>
+             </div>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="mt-8 space-y-3"
-          >
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              aria-label="Manage account"
-              onClick={handleManageAccount}
-              className="w-full py-3 px-4 bg-gradient-to-r from-blue-500 to-indigo-600 
-              text-white font-bold rounded-xl shadow-lg
-              hover:from-blue-600 hover:to-indigo-700
-              focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-            >
+          <div className="mt-8 space-y-3">
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={handleManageAccount} className="w-full py-3.5 px-4 bg-[#1A1A1A] text-white font-bold rounded-xl shadow-lg shadow-gray-200 hover:bg-black transition-colors">
               View Full Dashboard
             </motion.button>
-            
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              aria-label="Logout from account"
-              onClick={handleLogout}
-              className="w-full py-3 px-4 bg-white/60 border border-gray-300
-              text-gray-700 font-bold rounded-xl shadow-lg
-              hover:bg-white/80
-              focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
-            >
-              Logout
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={handleLogout} className="w-full py-3.5 px-4 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 hover:text-red-500 hover:border-red-100 transition-colors">
+              Log Out
             </motion.button>
-          </motion.div>
+          </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
   );
-}
+};
 
-/* ======================================================
-   SERVICE CARD COMPONENT
-====================================================== */
-const ServiceCard = ({ icon: Icon, name, active, color, bg }) => (
-  <div 
-    className={`p-4 rounded-2xl shadow-md transition-all duration-300 ${
-      active 
-        ? `bg-white/80 border border-white/90 hover:shadow-xl cursor-pointer`
-        : `bg-gray-100/60 border border-gray-200 cursor-not-allowed opacity-70`
-    }`}
-  >
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${active ? bg : 'bg-gray-300'}`}>
-          <Icon className={`w-5 h-5 ${active ? color : 'text-gray-500'}`} />
-        </div>
-        <h3 className="font-semibold text-gray-800">{name}</h3>
-      </div>
-      
-      {active ? (
-        <span className="text-sm font-bold text-green-700 bg-green-200 px-3 py-1 rounded-full flex items-center gap-1">
-          <ShieldCheck className="w-4 h-4" /> Active
-        </span>
-      ) : (
-        <span className="text-sm font-medium text-gray-600 bg-gray-300 px-3 py-1 rounded-full">
-          Inactive
-        </span>
-      )}
-    </div>
-    <p className="text-xs text-gray-500 mt-2">
-      {active 
-        ? `Status: Enabled. Click to access the ${name} portal.` 
-        : "Status: Disabled. Contact administrator for access."
-      }
-    </p>
-  </div>
-);
-
-/* ======================================================
-   MAIN DASHBOARD PAGE
-====================================================== */
+// --- MAIN PAGE ---
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-
-  const [dashboard, setDashboard] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [greeting, setGreeting] = useState("");
   const [quote, setQuote] = useState("");
-  const [userStats, setUserStats] = useState({
-    streak: 15,
-    level: 12,
-    points: 2450
-  });
+  const [showModal, setShowModal] = useState(false);
+  const [dashboard, setDashboard] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Set greeting and quote on mount
   useEffect(() => {
     const hour = new Date().getHours();
     if (hour < 12) setGreeting("Good Morning");
     else if (hour < 18) setGreeting("Good Afternoon");
     else setGreeting("Good Evening");
-
     setQuote(motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]);
   }, []);
 
@@ -344,14 +388,10 @@ export default function DashboardPage() {
     );
   };
 
-  // Loading state
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gradient-to-r from-blue-50 to-indigo-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-lg font-semibold text-indigo-600">Loading Dashboard...</p>
-        </div>
+      <div className="h-screen flex items-center justify-center bg-[#FDFBF9]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-[#1A1A1A]"></div>
       </div>
     );
   }
@@ -364,248 +404,204 @@ export default function DashboardPage() {
     );
   }
 
-  const { stats, courses } = dashboard;
-  const displayName = user?.name?.split(' ')[0] || 'User';
-  const userAvatar = user?.profilePic || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user?.name || 'User')}`;
+  const stats = dashboard?.stats || {
+  totalCourses: 0,
+  completedCourses: 0,
+  inProgressCourses: 0,
+  totalWatchedHours: 0,
+};
 
-  const statCards = [
-    { label: "Total Courses", value: stats.totalCourses, icon: BookOpen, color: "from-blue-400 to-blue-600", trend: `${stats.totalCourses} enrolled` },
-    { label: "Completed", value: stats.completedCourses, icon: CheckCircle, color: "from-green-400 to-green-600", trend: "Great progress!" },
-    { label: "In Progress", value: stats.inProgressCourses, icon: Clock, color: "from-yellow-400 to-yellow-600", trend: "Keep going!" },
-    { label: "Hours Learned", value: stats.totalWatchedHours, icon: TrendingUp, color: "from-purple-400 to-purple-600", trend: "Time invested" },
+const courses = dashboard?.courses || [];
+
+  const displayName = user?.name?.split(' ')[0] || 'User';
+  const userAvatar = user?.profilePic || `${ASSETS.avatarPlaceholder}${encodeURIComponent(user?.name || 'User')}`;
+  const activeServices = serviceConfigs.filter(service => user[service.key]);
+
+  // Updated Cards with real data
+  const staticCards = [
+    { 
+      label: "Total Courses", 
+      value: stats.totalCourses.toString(), 
+      icon: BookOpen, 
+      iconStyle: "bg-blue-50 text-blue-600", 
+      trend: `${stats.totalCourses} enrolled`, 
+      trendStyle: "bg-green-50 text-green-600",
+      trendIcon: TrendingUp
+    },
+    { 
+      label: "Completed", 
+      value: stats.completedCourses.toString(), 
+      icon: CheckCircle, 
+      iconStyle: "bg-[#D4F478] text-black", 
+      trend: "Great progress!", 
+      trendStyle: "bg-green-50 text-green-600",
+      trendIcon: TrendingUp
+    },
+    { 
+      label: "In Progress", 
+      value: stats.inProgressCourses.toString(), 
+      icon: Clock, 
+      iconStyle: "bg-purple-50 text-purple-600", 
+      trend: "Keep going!", 
+      trendStyle: "bg-green-50 text-green-600",
+      trendIcon: TrendingUp
+    },
+    { 
+      label: "Hours Learned", 
+      value: `${stats.totalWatchedHours}h`, 
+      icon: Target, 
+      iconStyle: "bg-orange-50 text-orange-600", 
+      trend: "Time invested", 
+      trendStyle: "bg-green-50 text-green-600",
+      trendIcon: TrendingUp 
+    },
   ];
 
   return (
-    <div className="min-h-screen overflow-y-auto px-4 md:px-8 py-6 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-[#FDFBF9] font-sans selection:bg-[#D4F478] selection:text-black pb-10">
+      
+      {/* Navbar - Sticky */}
+      <nav className="sticky top-0 z-50 bg-[#FDFBF9]/80 backdrop-blur-md border-b border-gray-100 px-4 md:px-6 py-4">
+        <div className="max-w-[1600px] mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-3">
+             <div className="w-10 h-10 bg-[#1A1A1A] rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-black/10">P</div>
+             <span className="font-bold text-xl tracking-tight text-gray-900 hidden sm:block">Prepvio.AI</span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="relative hidden md:block">
+               <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+               <input type="text" placeholder="Search courses..." className="bg-white border border-gray-200 pl-10 pr-4 py-2.5 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-black/5 w-64 shadow-sm" />
+            </div>
+            <button className="w-11 h-11 bg-white rounded-xl border border-gray-200 flex items-center justify-center text-gray-500 hover:text-black hover:shadow-md transition-all relative">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-3 right-3 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+            </button>
+            <div onClick={() => setShowModal(true)} className="flex items-center gap-3 bg-white pl-2 pr-4 py-1.5 rounded-full border border-gray-200 shadow-sm cursor-pointer hover:shadow-md transition-all">
+              <img src={userAvatar} alt="Profile" className="w-8 h-8 rounded-full object-cover bg-gray-100" />
+              <span className="text-sm font-bold text-gray-700 hidden sm:block">{displayName}</span>
+              <ChevronLeft className="-rotate-90 w-4 h-4 text-gray-400" />
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {showModal && <DashboardModal onClose={() => setShowModal(false)} />}
+
+      <main className="max-w-[1600px] mx-auto p-4 md:p-8 space-y-8">
         
-        {/* Hero Section */}
-        <div className="bg-gradient-to-br from-indigo-500/30 via-purple-500/30 to-pink-500/30 backdrop-blur-2xl border border-white/50 rounded-3xl shadow-2xl p-8 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-300/20 rounded-full blur-2xl animate-pulse delay-75"></div>
+        {/* Header */}
+        <motion.div 
+          initial="hidden" animate="visible" variants={containerVariants}
+          className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6"
+        >
+          <div>
+            <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight leading-tight">
+              {greeting}, <span className="text-gray-400">{displayName}.</span>
+            </h1>
+            <p className="text-gray-500 font-medium mt-2 text-base md:text-lg">{quote}</p>
+          </div>
+        </motion.div>
+
+        {/* Stats Grid */}
+        <motion.div initial="hidden" animate="visible" variants={containerVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {staticCards.map((card, idx) => (
+             <StatCard key={idx} {...card} />
+          ))}
+        </motion.div>
+
+        {/* Main Bento Grid */}
+        <motion.div initial="hidden" animate="visible" variants={containerVariants} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-6">
-              <div className="relative">
-                <img
-                  src={userAvatar}
-                  alt={user?.name || "User"}
-                  className="rounded-full w-24 h-24 object-cover ring-4 ring-white/60 shadow-2xl"
-                  onError={(e) => { 
-                    e.target.onerror = null; 
-                    e.target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user?.name || 'User')}`; 
-                  }}
-                />
-                <div className="absolute -bottom-2 -right-2 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full p-2">
-                  <Sparkles className="w-5 h-5 text-white" />
-                </div>
-              </div>
-              
-              <div>
-                <h1 className="text-3xl font-extrabold text-white mb-1">
-                  {greeting}, {displayName}! 👋
-                </h1>
-                <p className="text-white/90 text-lg font-medium mb-3">{quote}</p>
-                <div className="flex flex-wrap gap-4 text-sm">
-                  <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
-                    <Star className="w-4 h-4 text-yellow-300" />
-                    <span className="text-white font-semibold">Level {userStats.level}</span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
-                    <Zap className="w-4 h-4 text-orange-300" />
-                    <span className="text-white font-semibold">{userStats.streak} Day Streak</span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
-                    <Heart className="w-4 h-4 text-red-300" />
-                    <span className="text-white font-semibold">{userStats.points} Points</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {dashboard.resume && (
-              <button 
-                onClick={handleContinue}
-                className="bg-white text-indigo-600 font-bold px-6 py-3 rounded-2xl shadow-xl hover:scale-105 transition-transform duration-300 whitespace-nowrap flex items-center gap-2"
-              >
-                <Play size={16} />
-                Continue Learning
-              </button>
-            )}
-          </div>
-        </div>
-        
-        {/* Available Services Section */}
-        {user && (
-          <div className="bg-white/40 backdrop-blur-xl border border-white/50 rounded-3xl shadow-lg p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <MonitorCheck className="w-6 h-6 text-indigo-500" />
-              <h2 className="text-xl font-bold text-gray-800">Available Services Access</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {serviceConfigs.map(service => (
-                <ServiceCard
-                  key={service.key}
-                  icon={service.icon}
-                  name={service.name}
-                  active={user[service.key] || false}
-                  color={service.color}
-                  bg={service.bg}
-                />
-              ))}
-            </div>
-          </div>
-        )}
+          {/* Left Column (Main Content) */}
+          <div className="lg:col-span-8 space-y-8">
+             
+             {/* Recommended Session Card */}
+             <RecommendedSessionCard 
+               onContinue={handleContinue}
+               hasResume={!!dashboard.resume}
+             />
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {statCards.map((card) => {
-            const Icon = card.icon;
-            return (
-              <div
-                key={card.label}
-                className="bg-white/40 backdrop-blur-xl border border-white/50 rounded-2xl shadow-lg p-5 hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer group"
-              >
-                <div className={`w-12 h-12 bg-gradient-to-br ${card.color} rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
-                  <Icon className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-3xl font-extrabold text-gray-800 mb-1">{card.value}</div>
-                <div className="text-sm font-medium text-gray-600 mb-1">{card.label}</div>
-                <div className="text-xs text-gray-500">{card.trend}</div>
-              </div>
-            );
-          })}
-        </div>
+             {/* Chart Section */}
+             <motion.div variants={itemUpVariants} className="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
+               <div className="flex items-center justify-between mb-6">
+                 <div>
+                   <h3 className="font-bold text-xl text-gray-900">Learning Activity</h3>
+                   <p className="text-sm text-gray-500 font-medium">You've learned {stats.totalWatchedHours} hours in total!</p>
+                 </div>
+                 <div className="p-2 bg-gray-50 rounded-xl"><TrendingUp className="w-5 h-5 text-gray-500" /></div>
+               </div>
+               <div className="h-64 w-full relative">
+                 <Bar data={chartData} options={chartOptions} />
+               </div>
+             </motion.div>
 
-        {/* Achievements Section */}
-        <div className="bg-white/40 backdrop-blur-xl border border-white/50 rounded-3xl shadow-lg p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Award className="w-6 h-6 text-yellow-500" />
-            <h2 className="text-xl font-bold text-gray-800">Recent Achievements 🏆</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {achievements.map((achievement, index) => {
-              const Icon = achievement.icon;
-              return (
-                <div key={index} className="bg-gradient-to-br from-yellow-50/50 to-orange-50/50 border border-yellow-200/50 rounded-2xl p-4 hover:scale-105 transition-transform">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-white" />
-                    </div>
-                    <h3 className="font-bold text-gray-800">{achievement.title}</h3>
-                  </div>
-                  <p className="text-sm text-gray-600">{achievement.desc}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Graph & Events Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-white/40 backdrop-blur-xl border border-white/50 rounded-3xl shadow-lg p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <ChartLine className="w-6 h-6 text-indigo-600" />
-              <h2 className="text-xl font-bold text-gray-800">Your Learning Journey 📈</h2>
-            </div>
-            <div className="h-64">
-              <Bar data={chartData} options={chartOptions} />
-            </div>
-            <p className="text-sm text-gray-600 mt-3 text-center">
-              You've learned <span className="font-bold text-indigo-600">{stats.totalWatchedHours} hours</span> in total! Keep it up! 🔥
-            </p>
+             {/* Services Grid (Quick Actions) */}
+             {activeServices.length > 0 && (
+               <motion.div variants={itemUpVariants}>
+                 <h3 className="font-bold text-xl text-gray-900 mb-4 ml-2">Your Premium Access</h3>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   {activeServices.map(service => (
+                     <ServiceCard 
+                       key={service.key}
+                       {...service}
+                     />
+                   ))}
+                 </div>
+               </motion.div>
+             )}
           </div>
 
-          <div className="bg-white/40 backdrop-blur-xl border border-white/50 rounded-3xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Upcoming Events 📅</h2>
-            <div className="space-y-3">
-              <div className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 border border-blue-200/50 rounded-xl p-3 hover:scale-105 transition-transform cursor-pointer">
-                <p className="font-semibold text-indigo-700">AI Workshop</p>
-                <p className="text-sm text-gray-600">Oct 15 – 10:00 AM</p>
-              </div>
-              <div className="bg-gradient-to-r from-purple-50/50 to-pink-50/50 border border-purple-200/50 rounded-xl p-3 hover:scale-105 transition-transform cursor-pointer">
-                <p className="font-semibold text-purple-700">Hackathon Meetup</p>
-                <p className="text-sm text-gray-600">Oct 18 – 6:00 PM</p>
-              </div>
-              <div className="bg-gradient-to-r from-green-50/50 to-emerald-50/50 border border-green-200/50 rounded-xl p-3 hover:scale-105 transition-transform cursor-pointer">
-                <p className="font-semibold text-green-700">ReactJS Seminar</p>
-                <p className="text-sm text-gray-600">Oct 22 – 2:00 PM</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Your Courses */}
-        <div className="bg-white/40 backdrop-blur-xl border border-white/50 rounded-3xl shadow-lg p-6">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xl font-bold text-gray-800">Your Courses 📚</h2>
-          </div>
-
-          {courses.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">
-              You haven't started any courses yet.
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {courses.map((course) => {
-                const progress =
-                  course.totalSeconds > 0
-                    ? Math.round(
-                        (course.watchedSeconds / course.totalSeconds) * 100
-                      )
-                    : 0;
-
-                return (
-                  <div
-                    key={`${course.courseId}-${course.channelName}`}
-                    className="bg-white/60 backdrop-blur-sm border border-white/50 rounded-2xl p-4 hover:bg-white/80 hover:shadow-lg transition-all duration-300 cursor-pointer"
-                  >
-                    <div className="flex items-center gap-4">
-                      {course.channelThumbnail && (
-                        <img
-                          src={course.channelThumbnail}
-                          alt={course.channelName}
-                          className="w-14 h-14 rounded-lg object-cover"
-                        />
-                      )}
-
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h3 className="font-bold text-gray-800">
-                              {course.courseTitle}
-                            </h3>
-                            <p className="text-sm text-gray-600">
-                              {course.channelName}
-                            </p>
+          {/* Right Column (Sidebar Content) */}
+          <div className="lg:col-span-4 space-y-8">
+             
+             {/* Achievements */}
+             <motion.div variants={itemUpVariants} className="bg-[#1A1A1A] p-8 rounded-[2.5rem] shadow-xl shadow-gray-200 text-white relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full blur-[60px] opacity-40" />
+                <div className="relative z-10">
+                   <div className="flex items-center gap-2 mb-6 text-[#D4F478]">
+                      <Award className="w-5 h-5" />
+                      <h3 className="font-bold text-lg">Achievements</h3>
+                   </div>
+                   <div className="space-y-4">
+                      {achievements.map((item, idx) => {
+                        const Icon = item.icon;
+                        return (
+                          <div key={idx} className="flex items-start gap-3 p-3 bg-white/10 rounded-xl border border-white/5 backdrop-blur-sm">
+                             <div className="mt-1 w-8 h-8 bg-[#D4F478] rounded-lg flex items-center justify-center text-black shrink-0">
+                               <Icon size={16} />
+                             </div>
+                             <div>
+                               <h4 className="font-bold text-sm">{item.title}</h4>
+                               <p className="text-xs text-gray-400 mt-0.5">{item.desc}</p>
+                             </div>
                           </div>
-                          {course.completed && (
-                            <CheckCircle className="text-green-600" />
-                          )}
-                        </div>
+                        )
+                      })}
+                   </div>
+                   <button className="w-full mt-6 py-3 bg-[#D4F478] text-black font-bold rounded-xl text-sm hover:bg-white transition-colors">
+                     View All Trophies
+                   </button>
+                </div>
+             </motion.div>
 
-                        <div className="mt-2">
-                          <div className="h-2 bg-gray-200 rounded-full">
-                            <div
-                              className={`h-2 rounded-full ${
-                                course.completed ? 'bg-green-500' : 'bg-indigo-600'
-                              }`}
-                              style={{ width: `${progress}%` }}
-                            />
-                          </div>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {progress}% completed
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
+             {/* Course List */}
+             <motion.div variants={itemUpVariants} className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-4">
+                   <h3 className="font-bold text-lg text-gray-900">Your Courses</h3>
+                   <MoreHorizontal className="text-gray-400 w-5 h-5 cursor-pointer" />
+                </div>
+                <div className="space-y-2">
+                   {courses.map((course, idx) => (
+  <CourseRow key={`${course.courseId}-${idx}`} course={course} />
+))}
+
+                </div>
+             </motion.div>
+
+          </div>
+        </motion.div>
+      </main>
     </div>
   );
 }

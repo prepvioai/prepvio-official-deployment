@@ -1,13 +1,59 @@
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { BookOpen, Play, Clock, CheckCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  BookOpen, 
+  Play, 
+  Clock, 
+  CheckCircle, 
+  Trash2, 
+  RotateCcw, 
+  Code, 
+  Database, 
+  PenTool, 
+  Cpu, 
+  Layers,
+  User,
+  Zap
+} from "lucide-react";
 
 const USER_API = "http://localhost:5000/api";
 
-export default function Learning() {
-  const navigate = useNavigate();
+// --- ANIMATION VARIANTS ---
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
 
+const itemUpVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 100, damping: 20 } },
+};
+
+// --- HELPER: GET ICON & COLOR BASED ON TOPIC ---
+const getCourseStyle = (thumbnail) => {
+  switch (thumbnail) {
+    case "web-dev":
+      return { icon: Code, bg: "bg-orange-100", text: "text-orange-600" };
+    case "python":
+      return { icon: Database, bg: "bg-blue-100", text: "text-blue-600" };
+    case "design":
+      return { icon: PenTool, bg: "bg-purple-100", text: "text-purple-600" };
+    case "javascript":
+      return { icon: Layers, bg: "bg-yellow-100", text: "text-yellow-700" };
+    case "ml":
+      return { icon: Cpu, bg: "bg-green-100", text: "text-green-600" };
+    default:
+      return { icon: BookOpen, bg: "bg-gray-100", text: "text-gray-600" };
+  }
+};
+
+function Learning() {
+  const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,9 +80,20 @@ export default function Learning() {
               : 0;
 
           return {
-            ...course,
-            percentage,
+            id: `${course.courseId}-${course.channelId}`,
+            title: course.courseTitle,
+            description: course.channelName,
+            progress: percentage,
+            lastAccessed: new Date(course.lastAccessed).toLocaleDateString(),
             completed: percentage >= 90,
+            thumbnail: course.channelThumbnail || "default",
+            duration: formatTime(course.totalSeconds),
+            instructor: course.channelName,
+            watchedSeconds: course.watchedSeconds,
+            totalSeconds: course.totalSeconds,
+            courseId: course.courseId,
+            channelId: course.channelId,
+            lastVideoId: course.lastVideoId
           };
         });
 
@@ -60,169 +117,206 @@ export default function Learning() {
     return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
   };
 
+  const inProgressCount = courses.filter(c => !c.completed).length;
+  const completedCount = courses.filter(c => c.completed).length;
+
   /* =========================================================
      ACTIONS
   ========================================================= */
   const handleResumeCourse = (course) => {
-  const url = course.lastVideoId
-    ? `/course/${course.channelId}/${course.courseId}?video=${course.lastVideoId}`
-    : `/course/${course.channelId}/${course.courseId}`;
+    const url = course.lastVideoId
+      ? `/course/${course.channelId}/${course.courseId}?video=${course.lastVideoId}`
+      : `/course/${course.channelId}/${course.courseId}`;
+    navigate(url);
+  };
 
-  navigate(url);
-};
+  const handleRemoveCourse = (id) => {
+    setCourses(courses.filter(course => course.id !== id));
+  };
 
-
-  /* =========================================================
-     STATS
-  ========================================================= */
-  const inProgressCount = courses.filter(
-    (c) => !c.completed
-  ).length;
-
-  const completedCount = courses.filter(
-    (c) => c.completed
-  ).length;
+  const handleRestartCourse = (course) => {
+    const url = `/course/${course.channelId}/${course.courseId}`;
+    navigate(url);
+  };
 
   /* =========================================================
      LOADING STATE
   ========================================================= */
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen text-gray-500">
-        Loading your learning…
+      <div className="min-h-screen bg-[#FDFBF9] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-gray-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-500 font-medium">Loading your learning...</p>
+        </div>
       </div>
     );
   }
 
-  /* =========================================================
-     UI
-  ========================================================= */
   return (
-    <div className="flex h-screen p-6 overflow-hidden">
-      <div className="flex-1 bg-white/30 backdrop-blur-2xl border border-white/50 rounded-3xl shadow-lg flex flex-col">
-
-        {/* HEADER */}
-        <div className="p-6 border-b border-white/50 flex items-center justify-between">
-          <h2 className="text-2xl font-semibold flex items-center gap-2">
-            <BookOpen className="w-6 h-6 text-indigo-600" />
-            My Learning
-          </h2>
+    <div className="min-h-screen bg-[#FDFBF9] font-sans selection:bg-[#D4F478] selection:text-black p-4 md:p-8">
+      
+      <div className="max-w-[1600px] mx-auto space-y-8">
+        
+        {/* Header Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col md:flex-row md:items-end justify-between gap-6"
+        >
+          <div>
+             <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight">
+               My Learning
+             </h1>
+             <p className="text-gray-500 font-medium mt-2 text-lg">
+               Pick up where you left off, bhidu!
+             </p>
+          </div>
 
           <div className="flex gap-4">
-            <div className="bg-indigo-100/50 px-4 py-2 rounded-xl">
-              <p className="text-xs text-gray-600">In Progress</p>
-              <p className="text-lg font-bold text-indigo-600">
-                {inProgressCount}
-              </p>
+            <div className="bg-white border border-gray-100 px-5 py-3 rounded-2xl shadow-sm flex items-center gap-3">
+               <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+                 <Zap className="w-5 h-5" />
+               </div>
+               <div>
+                 <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">In Progress</p>
+                 <p className="text-xl font-black text-gray-900 leading-none">{inProgressCount}</p>
+               </div>
             </div>
-
-            <div className="bg-green-100/50 px-4 py-2 rounded-xl">
-              <p className="text-xs text-gray-600">Completed</p>
-              <p className="text-lg font-bold text-green-600">
-                {completedCount}
-              </p>
+            <div className="bg-white border border-gray-100 px-5 py-3 rounded-2xl shadow-sm flex items-center gap-3">
+               <div className="w-10 h-10 bg-[#D4F478] text-black rounded-xl flex items-center justify-center">
+                 <CheckCircle className="w-5 h-5" />
+               </div>
+               <div>
+                 <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Completed</p>
+                 <p className="text-xl font-black text-gray-900 leading-none">{completedCount}</p>
+               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* CONTENT */}
-        <div className="flex-1 p-6 overflow-y-auto space-y-4">
-          {courses.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-gray-500">
-              <BookOpen className="w-16 h-16 opacity-30 mb-4" />
-              <p className="text-lg font-medium">
-                No learning activity yet
-              </p>
-              <p className="text-sm">
-                Start learning a course to see progress here
-              </p>
-            </div>
-          ) : (
-            courses.map((course) => (
-              <div
-                key={`${course.courseId}-${course.channelId}`}
-                className={`p-5 rounded-2xl shadow-md ${course.completed
-                    ? "bg-green-100/50"
-                    : "bg-indigo-100/40"
-                  }`}
-              >
-                <div className="flex items-start justify-between gap-6">
+        {/* Courses Grid */}
+        {courses.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-96 text-gray-500 bg-white rounded-[2.5rem] border border-gray-100">
+            <BookOpen className="w-16 h-16 mb-4 text-gray-300" />
+            <p className="text-lg font-bold text-gray-900">No courses yet</p>
+            <p className="text-sm">Time to start learning something new!</p>
+          </div>
+        ) : (
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+          >
+            <AnimatePresence mode="popLayout">
+              {courses.map((course) => {
+                const style = getCourseStyle(course.thumbnail);
+                const Icon = style.icon;
 
-                  {/* LEFT */}
-                  {/* LEFT */}
-                  <div className="flex-1 flex gap-4">
-
-                    {course.channelThumbnail && (
-                      <img
-                        src={course.channelThumbnail}
-                        alt={course.channelName}
-                        className="w-16 h-16 rounded-xl object-cover"
-                      />
-                    )}
-
-
-                    {/* TEXT CONTENT */}
-                    <div className="flex-1">
-                      <div className="mb-1">
-                        <h3 className="text-lg font-semibold">
-                          {course.courseTitle}
-                        </h3>
-                        <p className="text-sm text-gray-600">
-                          {course.channelName}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-4 text-xs text-gray-600 mb-3">
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
-                          {formatTime(course.watchedSeconds)} watched
+                return (
+                  <motion.div
+                    key={course.id}
+                    layout
+                    variants={itemUpVariants}
+                    exit={{ scale: 0.9, opacity: 0 }}
+                    className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col h-full"
+                  >
+                    {/* Card Header */}
+                    <div className="flex justify-between items-start mb-6">
+                      {/* Course Thumbnail or Icon */}
+                      {typeof course.thumbnail === 'string' && course.thumbnail.startsWith('http') ? (
+                        <img 
+                          src={course.thumbnail} 
+                          alt={course.title}
+                          className="w-14 h-14 rounded-2xl object-cover"
+                        />
+                      ) : (
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${style.bg} ${style.text}`}>
+                          <Icon className="w-7 h-7" />
                         </div>
-                        <div>
-                          Last accessed:{" "}
-                          {new Date(course.lastAccessed).toLocaleDateString()}
-                        </div>
-                      </div>
-
-                      {/* PROGRESS BAR */}
-                      <div>
-                        <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-indigo-600 transition-all"
-                            style={{ width: `${course.percentage}%` }}
-                          />
-                        </div>
-                        <p className="text-xs text-gray-600 mt-1">
-                          {course.percentage}% completed
-                        </p>
+                      )}
+                      
+                      <div className="flex gap-2">
+                         <button 
+                           onClick={() => handleRemoveCourse(course.id)}
+                           className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                         >
+                           <Trash2 className="w-4 h-4" />
+                         </button>
                       </div>
                     </div>
-                  </div>
 
+                    {/* Content */}
+                    <div className="flex-1 mb-6">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${course.completed ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                          {course.completed ? "COMPLETED" : "IN PROGRESS"}
+                        </span>
+                        <span className="text-xs font-bold text-gray-400 flex items-center gap-1">
+                          <Clock className="w-3 h-3" /> {course.duration}
+                        </span>
+                      </div>
+                      
+                      <h3 className="text-xl font-bold text-gray-900  leading-tight group-hover:text-indigo-600 transition-colors">
+                        {course.title}
+                      </h3>
+                      {/* <p className="text-sm text-gray-500 line-clamp-2">
+                        {course.description}
+                      </p> */}
+                    </div>
 
-                  {/* ACTION */}
-                  <div>
-                    {!course.completed ? (
+                    {/* Progress & Footer */}
+                    <div className="mt-auto space-y-4">
+                      {/* Instructor Info */}
+                      <div className="flex items-center gap-2 text-xs font-bold text-gray-500">
+                         <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-gray-600">
+                           <User className="w-3 h-3" />
+                         </div>
+                         {course.instructor}
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div>
+                        <div className="flex justify-between text-xs font-bold mb-1.5">
+                          <span className="text-gray-400">{course.progress}% Complete</span>
+                        </div>
+                        <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${course.progress}%` }}
+                            transition={{ duration: 1, ease: "easeOut" }}
+                            className={`h-full rounded-full ${course.completed ? 'bg-[#D4F478]' : 'bg-[#1A1A1A]'}`}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Action Button */}
                       <button
-                        onClick={() => handleResumeCourse(course)}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-medium"
+                        onClick={() => course.completed ? handleRestartCourse(course) : handleResumeCourse(course)}
+                        className={`w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95 ${
+                          course.completed 
+                            ? "bg-white border-2 border-gray-100 text-gray-700 hover:bg-gray-50"
+                            : "bg-[#1A1A1A] text-white hover:bg-black shadow-lg shadow-gray-200"
+                        }`}
                       >
-                        <Play className="w-4 h-4" />
-                        Continue
+                        {course.completed ? (
+                          <> <RotateCcw className="w-4 h-4" /> Restart Course </>
+                        ) : (
+                          <> <Play className="w-4 h-4 fill-current" /> Continue Learning </>
+                        )}
                       </button>
-                    ) : (
-                      <span className="flex items-center gap-1 text-green-700 font-semibold text-sm">
-                        <CheckCircle className="w-4 h-4" />
-                        Completed
-                      </span>
-                    )}
-                  </div>
+                    </div>
 
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </motion.div>
+        )}
       </div>
     </div>
   );
 }
+
+export default Learning;

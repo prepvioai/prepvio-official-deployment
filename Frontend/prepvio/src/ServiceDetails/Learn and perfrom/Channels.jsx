@@ -1,269 +1,302 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import { Columns, List } from "lucide-react";
+import { Columns, List, ExternalLink, PlayCircle, ArrowLeft, Sparkles, Youtube, Award, Zap } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
-const USER_API = "http://localhost:5000/api";
+// --- ANIMATION VARIANTS ---
+const floatVariants = {
+  animate: {
+    y: [0, -15, 0],
+    rotate: [0, 10, 0],
+    transition: { duration: 5, repeat: Infinity, ease: "easeInOut" },
+  },
+};
 
+const floatReverseVariants = {
+  animate: {
+    y: [0, 15, 0],
+    rotate: [0, -10, 0],
+    transition: { duration: 6, repeat: Infinity, ease: "easeInOut", delay: 0.5 },
+  },
+};
+
+// --- MAIN COMPONENT ---
 function Channels() {
   const [channels, setChannels] = useState([]);
-  const [courseData, setCourseData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isLandscapeMode, setIsLandscapeMode] = useState(false);
-
   const { courseId } = useParams();
   const navigate = useNavigate();
 
-  /* =========================================================
-     UTILS
-  ========================================================= */
-  const slugify = (text) =>
-    text
-      .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^\w-]+/g, "");
-
+  // ✅ Color Theme Configuration
   const colorMap = [
     {
-      ring: "ring-indigo-500",
-      btn: "bg-indigo-600 hover:bg-indigo-700",
+      ring: "ring-indigo-100",
+      btn: "bg-[#1A1A1A] hover:bg-indigo-600 text-white",
       text: "text-indigo-600",
-      border: "border-indigo-200",
-      bgLight: "bg-indigo-50 hover:bg-indigo-100",
+      bgLight: "bg-indigo-50",
+      border: "border-indigo-100"
     },
     {
-      ring: "ring-pink-500",
-      btn: "bg-pink-600 hover:bg-pink-700",
+      ring: "ring-pink-100",
+      btn: "bg-[#1A1A1A] hover:bg-pink-600 text-white",
       text: "text-pink-600",
-      border: "border-pink-200",
-      bgLight: "bg-pink-50 hover:bg-pink-100",
+      bgLight: "bg-pink-50",
+      border: "border-pink-100"
     },
     {
-      ring: "ring-green-500",
-      btn: "bg-green-600 hover:bg-green-700",
-      text: "text-green-600",
-      border: "border-green-200",
-      bgLight: "bg-green-50 hover:bg-green-100",
+      ring: "ring-emerald-100",
+      btn: "bg-[#1A1A1A] hover:bg-emerald-600 text-white",
+      text: "text-emerald-600",
+      bgLight: "bg-emerald-50",
+      border: "border-emerald-100"
     },
     {
-      ring: "ring-purple-500",
-      btn: "bg-purple-600 hover:bg-purple-700",
+      ring: "ring-purple-100",
+      btn: "bg-[#1A1A1A] hover:bg-purple-600 text-white",
       text: "text-purple-600",
-      border: "border-purple-200",
-      bgLight: "bg-purple-50 hover:bg-purple-100",
+      bgLight: "bg-purple-50",
+      border: "border-purple-100"
     },
   ];
 
-  /* =========================================================
-     FETCH COURSE DATA & CHANNELS
-  ========================================================= */
   useEffect(() => {
     window.scrollTo(0, 0);
-
-    const fetchData = async () => {
+    const fetchChannels = async () => {
       try {
-        // Fetch course information
-        const courseRes = await axios.get(
-          `http://localhost:8000/api/courses/${courseId}`
-        );
-        setCourseData(courseRes.data);
-
-        // Fetch channels for this course
-        const channelsRes = await axios.get(
-          `http://localhost:8000/api/channels/course/${courseId}`
-        );
-
-        if (Array.isArray(channelsRes.data)) {
-          setChannels(channelsRes.data);
+        const res = await axios.get(`http://localhost:8000/api/channels/course/${courseId}`);
+        if (Array.isArray(res.data)) {
+          setChannels(res.data);
         } else {
           setChannels([]);
         }
       } catch (err) {
-        console.error("Failed to load data:", err);
-        setError("Failed to load course data. Please try again later.");
+        console.error("Failed to load channels:", err);
+        setError("Failed to load channels. Please try again later.");
       } finally {
         setLoading(false);
       }
     };
-
-    fetchData();
+    fetchChannels();
   }, [courseId]);
 
-  /* =========================================================
-     ACTIONS
-  ========================================================= */
-  const handleBack = () => navigate(-1);
-  const handleLayoutChange = (mode) => setIsLandscapeMode(mode);
-
- const handleStartLearning = async (channel) => {
-  if (!courseData?.name) return;
-
-  await axios.post(
-    "http://localhost:5000/api/users/start-learning",
-    {
-      courseId: courseId,
-      courseTitle: courseData.name,          // ✅ THIS IS THE COURSE NAME
-      courseThumbnail: courseData.imageUrl,  // ✅ OPTIONAL BUT CORRECT
-      channelId: channel._id,
-      channelName: channel.name,
-      channelThumbnail: channel.imageUrl,
-    },
-    { withCredentials: true }
-  );
-
-  navigate(`/course/${channel._id}/${courseId}`);
-};
-
-
-  /* =========================================================
-     UI
-  ========================================================= */
   return (
-    <div>
-      <section
-        className="relative w-full h-screen bg-cover bg-center rounded-3xl"
-        style={{ backgroundImage: "url('/Hero.png')" }}
-      >
-        <section className="container mx-auto py-16">
-          {/* HEADER */}
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-              {courseData?.title || "Featured Course Channels"}
-            </h2>
-            <p className="mt-2 text-lg text-gray-600">
-              {courseData?.description || "Discover curated channels for this course."}
-            </p>
+    <div className="min-h-screen bg-[#FDFBF9] font-sans selection:bg-[#D4F478] selection:text-black relative overflow-x-hidden">
+      
+      {/* GLOBAL BACKGROUND BLOBS */}
+      <div className="fixed inset-0 pointer-events-none -z-50">
+        <div className="absolute top-[-10%] right-[-5%] w-[60vw] h-[60vw] bg-gradient-to-b from-blue-50 to-transparent rounded-full blur-[120px] opacity-60" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-gradient-to-t from-pink-50 to-transparent rounded-full blur-[120px] opacity-60" />
+      </div>
 
-            {/* Layout + Back */}
-            <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-6">
-              <div className="flex space-x-4">
-                <button
-                  onClick={() => handleLayoutChange(false)}
-                  className={`p-3 rounded-full ${
-                    !isLandscapeMode
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-200"
-                  }`}
-                  aria-label="Grid view"
-                >
-                  <Columns className="w-5 h-5" />
-                </button>
-
-                <button
-                  onClick={() => handleLayoutChange(true)}
-                  className={`p-3 rounded-full ${
-                    isLandscapeMode
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-200"
-                  }`}
-                  aria-label="List view"
-                >
-                  <List className="w-5 h-5" />
-                </button>
-              </div>
-
-              <button
-                onClick={handleBack}
-                className="px-6 py-2 border-2 border-gray-400 rounded-full text-sm hover:bg-gray-100 transition"
-              >
-                ← Back to Courses
-              </button>
+      <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-6 md:py-8 pb-20">
+        
+        {/* BACK BUTTON */}
+        <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-gray-500 hover:text-black font-bold transition-colors mb-6 group ml-1"
+        >
+            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
+                <ArrowLeft className="w-5 h-5" />
             </div>
-          </div>
+            <span>Back to Courses</span>
+        </button>
 
-          {/* STATES */}
-          {loading && (
-            <div className="text-center text-gray-600 text-lg">
-              Loading channels...
+        {/* ✅ HERO SECTION */}
+        <div className="max-w-5xl mx-auto relative mb-12">
+            
+            {/* Floating Stickers (Hidden on Mobile for cleaner look) */}
+            <motion.div variants={floatVariants} animate="animate" className="absolute -top-6 -left-6 md:-top-4 md:-left-12 z-20 hidden lg:block">
+                <div className="bg-[#D4F478] p-4 rounded-2xl shadow-xl transform -rotate-12 border-2 border-black">
+                    <PlayCircle className="w-6 h-6 text-black" />
+                </div>
+            </motion.div>
+
+            <motion.div variants={floatReverseVariants} animate="animate" className="absolute top-1/2 -right-4 md:-right-12 z-20 hidden lg:block">
+                <div className="bg-white p-4 rounded-2xl shadow-xl transform rotate-12 border-2 border-black">
+                    <Youtube className="w-6 h-6 text-red-600" />
+                </div>
+            </motion.div>
+
+            <motion.div variants={floatVariants} animate="animate" className="absolute -bottom-8 left-10 md:left-20 z-20 hidden lg:block">
+                <div className="bg-purple-200 p-3 rounded-full shadow-xl transform rotate-6 border-2 border-white">
+                    <Award className="w-5 h-5 text-purple-700" />
+                </div>
+            </motion.div>
+
+            {/* Scribble SVG */}
+            <div className="absolute top-10 right-10 z-20 opacity-60 pointer-events-none hidden md:block">
+                <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+                    <path d="M10,50 Q30,10 50,50 T90,50" stroke="#FFFFFF" strokeWidth="4" strokeLinecap="round" />
+                    <circle cx="80" cy="20" r="4" fill="#D4F478" />
+                    <circle cx="20" cy="80" r="4" fill="#D4F478" />
+                </svg>
             </div>
-          )}
-          
-          {error && (
-            <div className="text-center text-red-600 bg-red-50 p-4 rounded-lg max-w-md mx-auto">
-              {error}
-            </div>
-          )}
-          
-          {!loading && !error && channels.length === 0 && (
-            <div className="text-center text-gray-500 bg-gray-50 p-8 rounded-lg max-w-md mx-auto">
-              <p className="text-lg">No channels assigned to this course yet.</p>
-              <button
-                onClick={handleBack}
-                className="mt-4 px-6 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition"
-              >
-                Browse Other Courses
-              </button>
-            </div>
-          )}
 
-          {/* CHANNEL CARDS */}
-          {!loading && !error && channels.length > 0 && (
-            <div
-              className={`grid gap-8 max-w-5xl mx-auto ${
-                isLandscapeMode ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2"
-              }`}
-            >
-              {channels.map((channel, index) => {
-                const theme = colorMap[index % colorMap.length];
+            {/* HERO CARD */}
+            <div className="bg-[#1A1A1A] rounded-[2rem] md:rounded-[3.5rem] p-6 md:p-14 text-center relative overflow-hidden shadow-2xl shadow-gray-900/20">
+                {/* Background Image Overlay */}
+                <div className="absolute inset-0 opacity-40 mix-blend-overlay pointer-events-none">
+                    <img 
+                        src="https://res.cloudinary.com/dknafbwlt/image/upload/v1756976555/samples/ecommerce/leather-bag-gray.jpg" 
+                        alt="Background" 
+                        className="w-full h-full object-cover grayscale"
+                    />
+                </div>
 
-                return (
-                  <div
-                    key={channel._id}
-                    className="flex flex-col md:flex-row items-center p-6 bg-white rounded-2xl shadow-xl hover:shadow-2xl transition"
-                  >
-                    {/* LOGO */}
-                    {(channel.imageUrl || channel.avatar) && (
-                      <div
-                        className={`w-24 h-24 rounded-full overflow-hidden ring-4 ${theme.ring} flex-shrink-0`}
-                      >
-                        <img
-                          src={channel.imageUrl || channel.avatar}
-                          alt={channel.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-
-                    {/* INFO */}
-                    <div className="mt-4 md:mt-0 md:ml-6 text-center md:text-left flex-1">
-                      <h3 className="text-2xl font-bold text-gray-900">
-                        {channel.name}
-                      </h3>
-                      <p className="mt-2 text-gray-700 text-sm">
-                        {channel.description || "No description available"}
-                      </p>
-
-                      {/* ACTIONS */}
-                      <div className="mt-4 flex flex-col sm:flex-row gap-3">
-                        <button
-                          onClick={() => handleStartLearning(channel)}
-                          className={`px-6 py-2 rounded-full text-white font-semibold ${theme.btn} transition`}
-                        >
-                          Start Learning
-                        </button>
-
-                        {channel.link && (
-                          <a
-                            href={channel.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={`px-6 py-2 rounded-full font-semibold ${theme.text} ${theme.bgLight} border ${theme.border} transition text-center`}
-                          >
-                            Official Channel
-                          </a>
-                        )}
-                      </div>
+                <div className="relative z-10 space-y-6">
+                    <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/10 mb-2">
+                        <Sparkles className="w-4 h-4 text-[#D4F478]" />
+                        <span className="text-xs font-bold text-gray-200 tracking-wide uppercase">Curated Content</span>
                     </div>
-                  </div>
-                );
-              })}
+
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.1] md:leading-[0.9] tracking-tight">
+                        Featured Channels <br />
+                        <span className="text-gray-500 block mt-2 text-lg sm:text-2xl md:text-3xl font-medium">Learn from the best creators.</span>
+                    </h1>
+
+                    {/* Layout Toggles */}
+                    <div className="flex justify-center mt-8">
+                        <div className="inline-flex bg-white/10 backdrop-blur-md p-1.5 rounded-full border border-white/10">
+                            <button
+                                onClick={() => setIsLandscapeMode(false)}
+                                className={`p-3 rounded-full transition-all duration-300 ${
+                                    !isLandscapeMode
+                                        ? "bg-white text-black shadow-lg scale-105"
+                                        : "text-gray-400 hover:text-white hover:bg-white/10"
+                                }`}
+                            >
+                                <Columns className="w-5 h-5" />
+                            </button>
+                            <button
+                                onClick={() => setIsLandscapeMode(true)}
+                                className={`p-3 rounded-full transition-all duration-300 ${
+                                    isLandscapeMode
+                                        ? "bg-white text-black shadow-lg scale-105"
+                                        : "text-gray-400 hover:text-white hover:bg-white/10"
+                                }`}
+                            >
+                                <List className="w-5 h-5" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-          )}
-        </section>
-      </section>
+        </div>
+
+        {/* LOADING & ERROR */}
+        {loading && (
+            <div className="flex justify-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+            </div>
+        )}
+        
+        {error && (
+            <div className="text-center py-20 bg-red-50 rounded-[2.5rem] border border-red-100 max-w-3xl mx-auto">
+                <p className="text-red-600 font-bold">{error}</p>
+            </div>
+        )}
+
+        {!loading && !error && channels.length === 0 && (
+            <div className="text-center py-20 bg-white rounded-[2.5rem] border border-gray-100 max-w-3xl mx-auto px-4">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Zap className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">No channels found</h3>
+                <p className="text-gray-500 mt-2">This course doesn't have any channels assigned yet.</p>
+            </div>
+        )}
+
+        {/* ✅ CHANNELS GRID - Responsive Wrapper */}
+        <div className={`grid gap-6 max-w-5xl mx-auto ${
+            isLandscapeMode ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"
+        }`}>
+            <AnimatePresence>
+                {channels.map((channel, index) => (
+                    <ChannelCard 
+                        key={channel._id} 
+                        channel={channel} 
+                        theme={colorMap[index % colorMap.length]} 
+                        isLandscapeMode={isLandscapeMode}
+                        courseId={courseId}
+                    />
+                ))}
+            </AnimatePresence>
+        </div>
+      </div>
     </div>
   );
 }
+
+// --- SCALABLE SUB-COMPONENT ---
+const ChannelCard = ({ channel, theme, isLandscapeMode, courseId }) => {
+    // Helper function moved inside or passed as prop (kept simple here)
+    const slugify = (text) => text.toLowerCase().replace(/\s+/g, "-").replace(/[^\w-]+/g, "");
+
+    return (
+        <motion.div
+            layout
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ y: -8, scale: 1.01 }}
+            transition={{ duration: 0.3 }}
+            className={`group relative bg-white rounded-[2.5rem] p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-2xl hover:shadow-gray-200/50 border border-gray-100 flex flex-col ${isLandscapeMode ? 'md:flex-row md:items-center md:text-left' : 'items-center text-center'}`}
+        >
+            {/* Channel Logo */}
+            {channel.imageUrl && (
+                <div className={`flex-shrink-0 relative mb-6 ${isLandscapeMode ? 'md:mb-0 md:mr-8' : ''}`}>
+                    {/* Glow Effect */}
+                    <div className={`absolute -inset-4 rounded-full opacity-0 group-hover:opacity-30 transition-opacity duration-500 blur-2xl bg-gradient-to-tr from-current to-transparent ${theme.text}`} />
+                    
+                    <div className={`w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden shadow-xl ring-4 ring-white group-hover:scale-105 transition-transform duration-500 relative z-10 bg-gray-50`}>
+                        <img
+                            src={channel.imageUrl}
+                            alt={channel.name}
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                    
+                    {/* Verified Badge */}
+                    <div className="absolute bottom-0 right-0 z-20 bg-blue-500 text-white p-1 rounded-full border-2 border-white shadow-sm">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                    </div>
+                </div>
+            )}
+
+            {/* Content Container */}
+            <div className="flex-1 min-w-0 z-10 w-full">
+                <h3 className="text-xl md:text-2xl font-black text-gray-900 mb-3 group-hover:text-black transition-colors leading-tight">
+                    {channel.name}
+                </h3>
+                <p className="text-gray-500 text-sm font-medium leading-relaxed mb-6 line-clamp-2 md:line-clamp-3">
+                    {channel.description}
+                </p>
+
+                {/* Buttons Wrapper */}
+                <div className={`flex flex-col sm:flex-row gap-3 w-full ${isLandscapeMode ? 'justify-center md:justify-start' : 'justify-center'}`}>
+                    <button
+                        onClick={() => window.open(`/${slugify(channel.name)}/${channel._id}/${courseId}`, "_blank")}
+                        className={`inline-flex items-center justify-center px-6 py-3.5 rounded-xl font-bold text-sm transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 group/btn ${theme.btn} w-full sm:w-auto`}
+                    >
+                        <PlayCircle className="w-4 h-4 mr-2 group-hover/btn:scale-110 transition-transform" />
+                        Start Learning
+                    </button>
+                    
+                    <a
+                        href={channel.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`inline-flex items-center justify-center px-6 py-3.5 rounded-xl font-bold text-sm border transition-all hover:-translate-y-0.5 ${theme.bgLight} ${theme.text} ${theme.border} hover:border-transparent w-full sm:w-auto`}
+                    >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Official Channel
+                    </a>
+                </div>
+            </div>
+        </motion.div>
+    );
+};
 
 export default Channels;

@@ -518,10 +518,6 @@ console.log("AVAILABLE sessions:", [...nervousCaptures.keys()]);
   }
 });
 
-
-
-
-
 app.post("/api/nervous-frame", (req, res) => {
   const { sessionId, imageBase64, score } = req.body;
 

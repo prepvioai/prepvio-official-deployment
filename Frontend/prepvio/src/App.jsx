@@ -1,26 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
+
 import Home from "./HomePages/Home.jsx";
 import Layout from "./components/Layout.jsx";
 import Footer from "./HomePages/Footer.jsx";
+
 import SignUpPage from "./pages/SignUpPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import EmailVerificationPage from "./pages/EmailVerificationPage.jsx";
-import DashboardPage from "./Dashboard/DashBoardPage.jsx";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
 
-import LearnAndPerform from "./ServiceDetails/Learn and perfrom/LearnAndPerfrom.jsx";
-import Channels from "./ServiceDetails/Learn and perfrom/Channels.jsx";
-import ScrollToTop from "./ScrollToTop.jsx";
-import VideoPlayer from "./ServiceDetails/Learn and perfrom/VideoPlayer.jsx";
-
-// Check Your Ability pages
-import SelectRolesAndCompany from "./ServiceDetails/Check_Your_Ability/pages/selecting_roles_and_typeofcompany/SelectRolesAndCompany.jsx";
-import Rounds from "./ServiceDetails/Check_Your_Ability/pages/selecting_roles_and_typeofcompany/Rounds.jsx";
-import InterviewScreen from "./ServiceDetails/Check_Your_Ability/pages/Interview_page/InterviewScreen.jsx";
-import AfterInterview from "./ServiceDetails/Check_Your_Ability/pages/Interview_page/AfterInterview.jsx";
-
+import DashboardPage from "./Dashboard/DashBoardPage.jsx";
 import FAQs from "./Dashboard/FAQs.jsx";
 import Interview from "./Dashboard/Interview.jsx";
 import Learning from "./Dashboard/Learning.jsx";
@@ -31,33 +22,56 @@ import SavedCourses from "./Dashboard/SavedCourse.jsx";
 import Account from "./Dashboard/setting.jsx";
 import InterviewPreview from "./Dashboard/InterviewPreview.jsx";
 
+import LearnAndPerform from "./ServiceDetails/Learn and perfrom/LearnAndPerfrom.jsx";
+import Channels from "./ServiceDetails/Learn and perfrom/Channels.jsx";
+import VideoPlayer from "./ServiceDetails/Learn and perfrom/VideoPlayer.jsx";
+
+import SelectRolesAndCompany from "./ServiceDetails/Check_Your_Ability/pages/selecting_roles_and_typeofcompany/SelectRolesAndCompany.jsx";
+import Rounds from "./ServiceDetails/Check_Your_Ability/pages/selecting_roles_and_typeofcompany/Rounds.jsx";
+import InterviewScreen from "./ServiceDetails/Check_Your_Ability/pages/Interview_page/InterviewScreen.jsx";
+import AfterInterview from "./ServiceDetails/Check_Your_Ability/pages/Interview_page/AfterInterview.jsx";
+
+import ScrollToTop from "./ScrollToTop.jsx";
 import LoadingSpinner from "./components/LoadingSpinner.jsx";
 
 import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./store/authstore.js";
-import { useEffect } from "react";
 
-// protect routes that require authentication
+/* ======================================================
+   PROTECTED ROUTE (AUTH + VERIFIED)
+====================================================== */
 const ProtectedRoute = ({ children }) => {
 	const { isAuthenticated, user } = useAuthStore();
 
 	if (!isAuthenticated) {
-		return <Navigate to='/login' replace />;
+		return <Navigate to="/login" replace />;
+	}
+
+	// ⛔ user not loaded yet
+	if (!user) {
+		return <LoadingSpinner />;
 	}
 
 	if (!user.isVerified) {
-		return <Navigate to='/verify-email' replace />;
+		return <Navigate to="/verify-email" replace />;
 	}
 
 	return children;
 };
 
-// redirect authenticated users to the home page
+/* ======================================================
+   REDIRECT AUTHENTICATED USERS
+====================================================== */
 const RedirectAuthenticatedUser = ({ children }) => {
 	const { isAuthenticated, user } = useAuthStore();
 
+	// ⛔ waiting for user object
+	if (isAuthenticated && !user) {
+		return <LoadingSpinner />;
+	}
+
 	if (isAuthenticated && user.isVerified) {
-		return <Navigate to='/' replace />;
+		return <Navigate to="/" replace />;
 	}
 
 	return children;
@@ -66,7 +80,7 @@ const RedirectAuthenticatedUser = ({ children }) => {
 function App() {
 	const { isCheckingAuth, checkAuth } = useAuthStore();
 
-	// 🔥 Check Your Ability shared state
+	// Check Your Ability shared state
 	const [companyType, setCompanyType] = useState(null);
 	const [role, setRole] = useState(null);
 
@@ -82,14 +96,14 @@ function App() {
 
 			<Routes>
 				{/* Home */}
-				<Route path='/' element={<Home />} />
+				<Route path="/" element={<Home />} />
 
-				{/* ✅ FIXED: Interview Preview - Move OUTSIDE protected routes */}
-				<Route path='/interview-preview' element={<InterviewPreview />} />
+				{/* Interview Preview (Public) */}
+				<Route path="/interview-preview" element={<InterviewPreview />} />
 
 				{/* Dashboard (Protected) */}
 				<Route
-					path='/dashboard'
+					path="/dashboard"
 					element={
 						<ProtectedRoute>
 							<Layout />
@@ -109,7 +123,7 @@ function App() {
 
 				{/* Auth */}
 				<Route
-					path='/signup'
+					path="/signup"
 					element={
 						<RedirectAuthenticatedUser>
 							<SignUpPage />
@@ -117,25 +131,24 @@ function App() {
 					}
 				/>
 				<Route
-					path='/login'
+					path="/login"
 					element={
 						<RedirectAuthenticatedUser>
 							<LoginPage />
 						</RedirectAuthenticatedUser>
 					}
 				/>
-				<Route path='/verify-email' element={<EmailVerificationPage />} />
-				<Route path='/forgot-password' element={<ForgotPasswordPage />} />
-				<Route path='/reset-password/:token' element={<ResetPasswordPage />} />
+
+				<Route path="/verify-email" element={<EmailVerificationPage />} />
+				<Route path="/forgot-password" element={<ForgotPasswordPage />} />
+				<Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
 				{/* Services */}
 				<Route path="/services/learn--perform" element={<LearnAndPerform />} />
 				<Route path="/services/:serviceSlug/:courseId" element={<Channels />} />
 				<Route path="/:channelName/:channelId/:courseId" element={<VideoPlayer />} />
 
-				{/* ========================= */}
-				{/* 🔥 CHECK YOUR ABILITY FLOW */}
-				{/* ========================= */}
+				{/* Check Your Ability Flow */}
 				<Route path="/services/check-your-ability">
 					<Route
 						index
@@ -160,7 +173,7 @@ function App() {
 				</Route>
 
 				{/* Catch-all */}
-				<Route path='*' element={<Navigate to='/' replace />} />
+				<Route path="*" element={<Navigate to="/" replace />} />
 			</Routes>
 
 			<Footer />
