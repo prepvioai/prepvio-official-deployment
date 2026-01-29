@@ -751,6 +751,32 @@ const InterviewScreen = ({
     setSelectedCodingQuestions(questions);
   }, []);
 
+  useEffect(() => {
+    const consumeCredit = async () => {
+      try {
+        await axios.post(
+          "http://localhost:5000/api/payment/consume-interview",
+          {},
+          { withCredentials: true }
+        );
+        console.log("✅ Interview credit consumed");
+      } catch (err) {
+        console.error("❌ Credit consumption failed:", err);
+        
+        if (err.response?.status === 403) {
+          const data = err.response.data;
+          
+          if (data.requiresPayment || data.needsUpgrade) {
+            alert(`⚠️ ${data.message}`);
+            navigate("/dashboard/payroll", { replace: true });
+          }
+        }
+      }
+    };
+
+    consumeCredit();
+  }, []);
+
   const captureFrame = () => {
     const video = userVideoRef.current;
 

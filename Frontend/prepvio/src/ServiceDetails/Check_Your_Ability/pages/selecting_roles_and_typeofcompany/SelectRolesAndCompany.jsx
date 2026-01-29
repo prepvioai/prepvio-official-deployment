@@ -3,6 +3,7 @@ import { Check, ChevronDown, Sparkles, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../../../store/authstore.js";
 
 /* ---------------- Selection Button (Updated with matching theme) ---------------- */
 
@@ -138,6 +139,14 @@ const SelectRolesAndCompany = ({
   const [companies, setCompanies] = useState([]);
   const [roles, setRoles] = useState([]);
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+
+  useEffect(() => {
+    if (user?.subscription?.interviewsRemaining <= 0) {
+      alert("⚠️ You have no interview credits remaining. Please upgrade your plan.");
+      navigate("/dashboard/payroll", { replace: true });
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     const fetchCompanies = async () => {

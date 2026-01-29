@@ -152,14 +152,22 @@ router.post("/verify", verifyToken, async (req, res) => {
 
     const updatedUser = await User.findById(userId);
 
-    res.json({
-      success: true,
-      subscription: updatedUser.subscription,
-      interviews: {
-        remaining: updatedUser.subscription.interviewsRemaining,
-        total: updatedUser.subscription.interviewsTotal,
-      },
-    });
+    // In paymentRoute.js, inside the /verify route, replace the final res.json() with:
+
+res.json({
+  success: true,
+  subscription: updatedUser.subscription,
+  interviews: {
+    remaining: updatedUser.subscription.interviewsRemaining,
+    total: updatedUser.subscription.interviewsTotal,
+  },
+  plan: {
+    name: plan.name,
+    planId: payment.planId,
+    amount: plan.amount,
+    duration: plan.duration,
+  }
+});
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Payment verification failed" });
@@ -202,6 +210,66 @@ router.get("/interview-status", verifyToken, async (req, res) => {
     subscription: user.subscription,
     recentInterviews: user.interviewAttempts.slice(-5),
   });
+});
+
+/* ===========================
+   CHECK AND CONSUME INTERVIEW CREDIT
+=========================== */
+router.post("/consume-interview", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if subscription is active
+    if (!user.subscription.active) {
+      return res.status(403).json({ 
+        message: "No active subscription",
+        requiresPayment: true 
+      });
+    }
+
+    // Check if subscription expired
+    if (new Date() > new Date(user.subscription.endDate)) {
+      await User.findByIdAndUpdate(userId, {
+        "subscription.active": false
+      });
+      
+      return res.status(403).json({ 
+        message: "Subscription expired",
+        requiresPayment: true 
+      });
+    }
+
+    // Check if user has remaining interviews
+    if (user.subscription.interviewsRemaining <= 0) {
+      return res.status(403).json({ 
+        message: "No interview credits remaining",
+        needsUpgrade: true 
+      });
+    }
+
+    // ✅ CONSUME ONE INTERVIEW CREDIT
+    await User.findByIdAndUpdate(userId, {
+      $inc: {
+        "subscription.interviewsUsed": 1,
+        "subscription.interviewsRemaining": -1,
+      },
+    });
+
+    res.json({ 
+      success: true,
+      remaining: user.subscription.interviewsRemaining - 1 
+    });
+
+  } catch (err) {
+    console.error("Consume interview error:", err);
+    res.status(500).json({ message: "Failed to consume interview credit" });
+  }
 });
 
 export default router;

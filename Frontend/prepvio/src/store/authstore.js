@@ -115,6 +115,17 @@ export const useAuthStore = create((set) => ({
   }
 },
 
+refreshUser: async () => {
+    try {
+      const response = await axios.get(`${API_URL}/auth/check-auth`, {
+        withCredentials: true,
+      });
+      set({ user: response.data.user });
+    } catch (error) {
+      console.error("Failed to refresh user:", error);
+    }
+  },
+
 
     forgotPassword: async (email) => {
         set({ isLoading: true, error: null });

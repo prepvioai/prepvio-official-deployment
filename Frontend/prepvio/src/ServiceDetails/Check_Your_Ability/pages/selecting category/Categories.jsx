@@ -11,7 +11,11 @@ const Categories = () => {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuthStore();
-const isFreePlan = user?.subscription?.planId === "free";
+  const isFreePlan = user?.subscription?.planId === "free";
+  
+  // ✅ Check if user has credits (adjust the property path based on your actual data structure)
+  const hasCredits = user?.subscription?.interviewsRemaining > 0;
+
 
 
   const categories = [
@@ -42,21 +46,21 @@ const isFreePlan = user?.subscription?.planId === "free";
   const handleContinue = () => {
   if (!selectedCategory) return;
 
-  // ✅ Aptitude is always allowed
   if (selectedCategory === "aptitude") {
     navigate("/services/check-your-ability/aptitude");
     return;
   }
 
-  // 🔒 Interview → show modal for free users
   if (selectedCategory === "interview") {
-    if (isFreePlan) {
-      setShowUpgradeModal(true); // Show modal instead of redirect
-    } else {
-      navigate("/services/check-your-ability/interview");
+    if (!hasCredits) {
+      setShowUpgradeModal(true);
+      return;
     }
+
+    navigate("/services/check-your-ability/interview");
   }
 };
+
 
 
   const containerVariants = {
@@ -266,90 +270,105 @@ const isFreePlan = user?.subscription?.planId === "free";
           />
           <div className="w-2 h-2 rounded-full bg-gray-300" />
         </motion.div>
+        
         {/* Upgrade Modal */}
-{showUpgradeModal && (
-  <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <motion.div
-      initial={{ scale: 0.9, opacity: 0, y: 20 }}
-      animate={{ scale: 1, opacity: 1, y: 0 }}
-      transition={{ type: "spring", stiffness: 300, damping: 25 }}
-      className="bg-white/95 backdrop-blur-xl border-2 border-white/60 rounded-[2rem] p-10 max-w-lg w-full shadow-2xl shadow-gray-900/20 relative overflow-hidden"
-    >
-      {/* Background decoration */}
-      <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-pink-100 to-orange-100 rounded-full blur-3xl opacity-30 -translate-y-1/2 translate-x-1/2" />
-      
-      <div className="relative z-10 text-center space-y-6">
-        {/* Icon */}
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
-          className="w-20 h-20 bg-gradient-to-br from-pink-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-pink-200"
-        >
-          <MessageSquare className="w-10 h-10 text-white" strokeWidth={2.5} />
-        </motion.div>
-        
-        {/* Title */}
-        <div className="space-y-2">
-          <h3 className="text-3xl font-black text-gray-900 tracking-tight">
-            Premium Feature
-          </h3>
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: 80 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-            className="h-1 bg-[#D4F478] mx-auto rounded-full"
-          />
-        </div>
-        
-        {/* Description */}
-        <p className="text-gray-600 text-base leading-relaxed max-w-sm mx-auto font-medium">
-          Interview practice with AI-powered mock interviews is available for premium users only. 
-          <span className="block mt-2 text-gray-900 font-semibold">
-            Upgrade now to unlock this feature!
-          </span>
-        </p>
-        
-        {/* Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 pt-4">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setShowUpgradeModal(false)}
-            className="flex-1 px-8 py-4 rounded-full border-2 border-gray-300 font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm"
-          >
-            Go Back
-          </motion.button>
-          
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => navigate("/dashboard/payroll")}
-            className="flex-1 px-8 py-4 rounded-full bg-[#1A1A1A] text-white font-bold hover:bg-[#2A2A2A] transition-all shadow-xl shadow-gray-300/50 relative overflow-hidden group"
-          >
-            <span className="relative z-10">Upgrade Now</span>
+        {showUpgradeModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
             <motion.div
-              className="absolute inset-0 bg-[#D4F478]"
-              initial={{ x: "-100%" }}
-              whileHover={{ x: 0 }}
-              transition={{ duration: 0.3 }}
-            />
-            <span className="absolute inset-0 flex items-center justify-center font-bold text-black opacity-0 group-hover:opacity-100 transition-opacity z-20">
-              Upgrade Now
-            </span>
-          </motion.button>
-        </div>
-        
-        {/* Small feature hints */}
-        <div className="pt-4 border-t border-gray-200">
-          <p className="text-xs text-gray-400 font-medium">
-            ✨ Unlock unlimited mock interviews & detailed feedback
-          </p>
-        </div>
-      </div>
-    </motion.div>
-  </div>
-)}
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="bg-white/95 backdrop-blur-xl border-2 border-white/60 rounded-[2rem] p-10 max-w-lg w-full shadow-2xl shadow-gray-900/20 relative overflow-hidden"
+            >
+              {/* Background decoration */}
+              <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-pink-100 to-orange-100 rounded-full blur-3xl opacity-30 -translate-y-1/2 translate-x-1/2" />
+              
+              <div className="relative z-10 text-center space-y-6">
+                {/* Icon */}
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
+                  className="w-20 h-20 bg-gradient-to-br from-pink-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-pink-200"
+                >
+                  <MessageSquare className="w-10 h-10 text-white" strokeWidth={2.5} />
+                </motion.div>
+                
+                {/* Title */}
+                <div className="space-y-2">
+                  <h3 className="text-3xl font-black text-gray-900 tracking-tight">
+                    {isFreePlan ? "Premium Feature" : "No Credits Remaining"}
+                  </h3>
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: 80 }}
+                    transition={{ delay: 0.3, duration: 0.6 }}
+                    className="h-1 bg-[#D4F478] mx-auto rounded-full"
+                  />
+                </div>
+                
+                {/* Description - Dynamic based on reason */}
+                <p className="text-gray-600 text-base leading-relaxed max-w-sm mx-auto font-medium">
+                  {isFreePlan ? (
+  <>
+    You've used your free interview credit!
+    <span className="block mt-2 text-gray-900 font-semibold">
+      Upgrade now to get more interviews!
+    </span>
+                    </>
+                  ) : (
+                    <>
+                      You've used all your available credits for this billing period.
+                      <span className="block mt-2 text-gray-900 font-semibold">
+                        Upgrade your plan or purchase more credits to continue!
+                      </span>
+                    </>
+                  )}
+                </p>
+                
+                {/* Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setShowUpgradeModal(false)}
+                    className="flex-1 px-8 py-4 rounded-full border-2 border-gray-300 font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm"
+                  >
+                    Go Back
+                  </motion.button>
+                  
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate("/dashboard/payroll")}
+                    className="flex-1 px-8 py-4 rounded-full bg-[#1A1A1A] text-white font-bold hover:bg-[#2A2A2A] transition-all shadow-xl shadow-gray-300/50 relative overflow-hidden group"
+                  >
+                    <span className="relative z-10">{isFreePlan ? "Upgrade Now" : "Get Credits"}</span>
+                    <motion.div
+                      className="absolute inset-0 bg-[#D4F478]"
+                      initial={{ x: "-100%" }}
+                      whileHover={{ x: 0 }}
+                      transition={{ duration: 0.3 }}
+                    />
+                    <span className="absolute inset-0 flex items-center justify-center font-bold text-black opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                      {isFreePlan ? "Upgrade Now" : "Get Credits"}
+                    </span>
+                  </motion.button>
+                </div>
+                
+                {/* Small feature hints */}
+                <div className="pt-4 border-t border-gray-200">
+                  <p className="text-xs text-gray-400 font-medium">
+                    {isFreePlan 
+                      ? "✨ Unlock unlimited mock interviews & detailed feedback"
+                      : "💳 Get more credits to continue practicing"
+                    }
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
       </motion.div>
     </div>
   );

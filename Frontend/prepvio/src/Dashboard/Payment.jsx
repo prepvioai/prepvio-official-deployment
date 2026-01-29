@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import axios from "axios";
 import { 
   CreditCard, 
   Check, 
@@ -12,22 +13,35 @@ import {
   Globe,
   CheckCircle2,
   ArrowRight,
-  Lock
+  Lock,
+  Sparkles,
+  Award,
+  Download,
+  Calendar,
+  MessageCircle,
+  TrendingUp,
+  AlertCircle
 } from "lucide-react";
+import { useAuthStore } from "../store/authstore";
+
+// Configure axios
+axios.defaults.withCredentials = true;
 
 // --- PLANS DATA ---
 const plans = [
   {
-    id: 'basic',
+    id: 'monthly',
     name: 'Basic',
-    price: '₹499',
+    price: '₹79',
+    priceValue: 79,
     duration: '/month',
+    interviews: 2,
     icon: Zap,
     isRecommended: false, 
     color: 'bg-blue-50 text-blue-600',
     description: "Essential tools for casual learners.",
     features: [
-      'Access to 10 courses',
+      '2 AI Interviews',
       'Standard support',
       'Course certificates',
       'Mobile app access'
@@ -36,14 +50,16 @@ const plans = [
   {
     id: 'premium',
     name: 'Pro Access',
-    price: '₹999',
+    price: '₹120',
+    priceValue: 120,
     duration: '/month',
+    interviews: 4,
     icon: Crown,
     isRecommended: true, 
     color: 'bg-[#D4F478] text-black', 
     description: "Best for serious students & job seekers.",
     features: [
-      'Unlimited course access',
+      '4 AI Interviews',
       'Priority 24/7 support',
       'Offline downloads',
       'Exclusive webinars',
@@ -51,20 +67,41 @@ const plans = [
     ]
   },
   {
-    id: 'enterprise',
-    name: 'Campus',
-    price: '₹1,999',
-    duration: '/month',
+    id: 'yearly',
+    name: 'Yearly Plan',
+    price: '₹999',
+    priceValue: 999,
+    duration: '/year',
+    interviews: 50,
     icon: Rocket,
     isRecommended: false,
     color: 'bg-orange-50 text-orange-600',
-    description: "For groups and intensive mentorship.",
+    description: "Best value for dedicated learners.",
     features: [
-      'Everything in Pro',
+      '50 AI Interviews',
       '1-on-1 Mentorship',
       'Live doubt sessions',
-      'Job placement guarantee',
+      'Job placement assistance',
       'Custom learning path'
+    ]
+  },
+  {
+    id: 'lifetime',
+    name: 'Lifetime',
+    price: '₹2,999',
+    priceValue: 2999,
+    duration: '/lifetime',
+    interviews: 999,
+    icon: Crown,
+    isRecommended: false,
+    color: 'bg-purple-50 text-purple-600',
+    description: "Unlimited access forever.",
+    features: [
+      'Unlimited AI Interviews',
+      'Lifetime access',
+      'All premium features',
+      'Priority support',
+      'Future updates included'
     ]
   }
 ];
@@ -84,30 +121,295 @@ const cardVariants = {
   }
 };
 
-function PaymentIntegrationPage() {
+const successVariants = {
+  hidden: { scale: 0.8, opacity: 0 },
+  visible: { 
+    scale: 1, 
+    opacity: 1,
+    transition: { 
+      type: "spring", 
+      stiffness: 200, 
+      damping: 20,
+      staggerChildren: 0.1
+    } 
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 }
+};
+
+function Payment() {
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [paymentMethod, setPaymentMethod] = useState(null);
-  const [formData, setFormData] = useState({
-    firstName: '', lastName: '', cardNumber: '', cvv: '', expiryMonth: '', expiryYear: '',
-  });
-  const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentData, setPaymentData] = useState(null);
+  const [currentPlan, setCurrentPlan] = useState(null);
+  const { refreshUser } = useAuthStore();
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+ // ✅ Fetch current subscription
+useEffect(() => {
+  const fetchSubscription = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:5000/api/payment/interview-status",
+        { withCredentials: true }
+      );
+      
+      // ✅ Show subscription even if it's free plan with 1 credit
+      if (res.data.subscription && res.data.subscription.interviewsTotal > 0) {
+        setCurrentPlan(res.data.subscription);
+      }
+    } catch (err) {
+      console.error("Failed to fetch subscription", err);
+    }
   };
 
-  const handlePayment = () => {
-    setShowPaymentSuccess(true);
+  fetchSubscription();
+}, [paymentSuccess]);
+
+  // Razorpay Payment Handler
+  const handlePaymentWithPlan = async (planId) => {
+    setIsProcessing(true);
+    
+    try {
+      const { data } = await axios.post(
+        "http://localhost:5000/api/payment/create-order",
+        { planId }
+      );
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: data.amount,
+        currency: data.currency,
+        order_id: data.orderId,
+        name: "Prepvio AI",
+        description: `${data.planName} - ${data.interviews} Interviews`,
+        handler: async function (response) {
+          try {
+            const verifyRes = await axios.post(
+              "http://localhost:5000/api/payment/verify",
+              response
+            );
+
+            if (verifyRes.data.success) {
+              await refreshUser();
+              
+              setPaymentData({
+                planName: verifyRes.data.subscription.planName,
+                interviews: verifyRes.data.interviews.remaining,
+                transactionId: response.razorpay_payment_id,
+                date: new Date().toLocaleDateString('en-IN', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric'
+                })
+              });
+              setPaymentSuccess(true);
+            }
+          } catch (err) {
+            console.error("Verification error:", err);
+            alert("Payment verification failed. Please contact support.");
+          } finally {
+            setIsProcessing(false);
+            setSelectedPlan(null);
+          }
+        },
+        prefill: {
+          name: "Test User",
+          email: "test@example.com",
+        },
+        theme: {
+          color: "#1A1A1A",
+        },
+        modal: {
+          ondismiss: function() {
+            setIsProcessing(false);
+            setSelectedPlan(null);
+          }
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+      
+    } catch (err) {
+      console.error("Payment error:", err);
+      alert("Payment initiation failed. Please try again.");
+      setIsProcessing(false);
+      setSelectedPlan(null);
+    }
   };
 
-  const handleClosePopup = () => {
-    setSelectedPlan(null);
-    setPaymentMethod(null);
-    setShowPaymentSuccess(false);
-    setFormData({ firstName: '', lastName: '', cardNumber: '', cvv: '', expiryMonth: '', expiryYear: '' });
+  const handlePlanSelect = (planId) => {
+    setSelectedPlan(planId);
+    handlePaymentWithPlan(planId);
   };
 
+  const handleBackToPlans = () => {
+    setPaymentSuccess(false);
+    setPaymentData(null);
+  };
+
+  // If payment is successful, show success page
+  if (paymentSuccess && paymentData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#D4F478] via-[#B8E356] to-[#9BCF35] font-sans flex items-center justify-center p-4 relative overflow-hidden">
+        
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <motion.div 
+            animate={{ 
+              scale: [1, 1.2, 1],
+              rotate: [0, 90, 0],
+              opacity: [0.1, 0.2, 0.1]
+            }}
+            transition={{ duration: 20, repeat: Infinity }}
+            className="absolute top-10 left-10 w-64 h-64 bg-white/20 rounded-full blur-3xl"
+          />
+          <motion.div 
+            animate={{ 
+              scale: [1.2, 1, 1.2],
+              rotate: [90, 0, 90],
+              opacity: [0.1, 0.2, 0.1]
+            }}
+            transition={{ duration: 15, repeat: Infinity }}
+            className="absolute bottom-10 right-10 w-80 h-80 bg-black/10 rounded-full blur-3xl"
+          />
+        </div>
+
+        <motion.div 
+          variants={successVariants}
+          initial="hidden"
+          animate="visible"
+          className="relative bg-white rounded-[3rem] shadow-2xl max-w-2xl w-full p-8 md:p-12 space-y-8"
+        >
+          {/* Success Icon with Animation */}
+          <motion.div 
+            variants={itemVariants}
+            className="flex justify-center"
+          >
+            <motion.div 
+              animate={{ 
+                scale: [1, 1.1, 1],
+                rotate: [0, 5, -5, 0]
+              }}
+              transition={{ 
+                duration: 2, 
+                repeat: Infinity,
+                repeatType: "reverse" 
+              }}
+              className="relative"
+            >
+              <div className="w-28 h-28 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center shadow-2xl">
+                <Check className="w-14 h-14 text-white" strokeWidth={3} />
+              </div>
+              <Sparkles className="absolute -top-2 -right-2 w-8 h-8 text-yellow-400 animate-pulse" />
+              <Sparkles className="absolute -bottom-2 -left-2 w-6 h-6 text-yellow-400 animate-pulse delay-75" />
+            </motion.div>
+          </motion.div>
+
+          {/* Success Message */}
+          <motion.div variants={itemVariants} className="text-center space-y-3">
+            <h1 className="text-4xl md:text-5xl font-black text-gray-900">
+              Payment Successful! 🎉
+            </h1>
+            <p className="text-lg text-gray-600 font-medium">
+              Welcome to <span className="text-black font-bold">{paymentData.planName}</span>
+            </p>
+          </motion.div>
+
+          {/* Payment Details Card */}
+          <motion.div 
+            variants={itemVariants}
+            className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl p-6 space-y-4 border border-gray-200"
+          >
+            <div className="flex items-center justify-between pb-4 border-b border-gray-300">
+              <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Payment Details</span>
+              <Award className="w-5 h-5 text-[#D4F478]" />
+            </div>
+            
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 font-medium">Plan</span>
+                <span className="text-gray-900 font-bold">{paymentData.planName}</span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 font-medium">Interviews Added</span>
+                <span className="text-green-600 font-bold text-lg">🎤 {paymentData.interviews}</span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 font-medium">Transaction ID</span>
+                <span className="text-gray-900 font-mono text-xs bg-gray-200 px-3 py-1 rounded-lg">
+                  {paymentData.transactionId.slice(0, 16)}...
+                </span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 font-medium">Date</span>
+                <span className="text-gray-900 font-semibold flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  {paymentData.date}
+                </span>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Quick Actions */}
+          <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-blue-50 hover:bg-blue-100 transition-colors group">
+              <Download className="w-6 h-6 text-blue-600 group-hover:scale-110 transition-transform" />
+              <span className="text-sm font-bold text-blue-900">Download Receipt</span>
+            </button>
+            
+            <button className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-green-50 hover:bg-green-100 transition-colors group">
+              <MessageCircle className="w-6 h-6 text-green-600 group-hover:scale-110 transition-transform" />
+              <span className="text-sm font-bold text-green-900">Contact Support</span>
+            </button>
+            
+            <button 
+              onClick={() => window.location.href = "/dashboard"}
+              className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-purple-50 hover:bg-purple-100 transition-colors group"
+            >
+              <Rocket className="w-6 h-6 text-purple-600 group-hover:scale-110 transition-transform" />
+              <span className="text-sm font-bold text-purple-900">Go to Dashboard</span>
+            </button>
+          </motion.div>
+
+          {/* CTA Buttons */}
+          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 pt-4">
+            <button
+              onClick={() => window.location.href = "/services/check-your-ability/interview"}
+              className="flex-1 bg-[#1A1A1A] text-white font-black py-4 px-6 rounded-2xl hover:bg-black transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center justify-center gap-2 group"
+            >
+              Start Your First Interview
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </button>
+            
+            <button
+              onClick={handleBackToPlans}
+              className="sm:w-auto px-6 py-4 rounded-2xl border-2 border-gray-200 hover:border-gray-300 font-bold text-gray-700 hover:bg-gray-50 transition-all"
+            >
+              View All Plans
+            </button>
+          </motion.div>
+
+          {/* Footer Note */}
+          <motion.p 
+            variants={itemVariants}
+            className="text-center text-sm text-gray-500 pt-4"
+          >
+            A confirmation email has been sent to your registered email address.
+          </motion.p>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Original pricing page
   return (
     <div className="min-h-screen bg-[#FDFBF9] font-sans selection:bg-[#D4F478] selection:text-black relative overflow-hidden">
       
@@ -134,20 +436,208 @@ function PaymentIntegrationPage() {
              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Future Today.</span>
            </h1>
            <p className="text-gray-500 text-lg md:text-xl font-medium max-w-xl mx-auto">
-             Unlock unlimited access to premium content, mentorship, and career-boosting tools.
+             Unlock unlimited access to AI-powered interview prep and career-boosting tools.
            </p>
         </motion.div>
 
+        {/* ✅ REDESIGNED CURRENT PLAN - Much Clearer UI */}
+        {currentPlan?.active && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-4xl mx-auto"
+          >
+            {/* Main Status Card */}
+            <div className={`relative overflow-hidden rounded-3xl p-8 shadow-xl border-2 ${
+              currentPlan.interviewsRemaining > 0 
+                ? 'bg-gradient-to-br from-white via-green-50/30 to-emerald-50/50 border-green-200' 
+                : 'bg-gradient-to-br from-white via-red-50/30 to-orange-50/50 border-red-200'
+            }`}>
+              
+              {/* Decorative blob */}
+              <div className={`absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl opacity-20 ${
+                currentPlan.interviewsRemaining > 0 ? 'bg-green-400' : 'bg-red-400'
+              }`} />
+              
+              <div className="relative z-10">
+                {/* Header Row */}
+                <div className="flex items-start justify-between mb-6">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className={`w-2 h-2 rounded-full ${
+                        currentPlan.interviewsRemaining > 0 ? 'bg-green-500 animate-pulse' : 'bg-red-500'
+                      }`} />
+                      <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">
+                        Active Plan
+                      </span>
+                    </div>
+                    <h3 className="text-3xl font-black text-gray-900 mb-1">
+                      {currentPlan.planName}
+                    </h3>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Calendar className="w-4 h-4" />
+                      <span>Expires: {new Date(currentPlan.endDate).toLocaleDateString('en-IN', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric'
+                      })}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Credits Display - BIG & CLEAR */}
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-gray-200/50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
+                        Interview Credits
+                      </p>
+                      <div className="flex items-baseline gap-2">
+                        <span className={`text-6xl font-black tabular-nums ${
+                          currentPlan.interviewsRemaining > 0 ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                          {currentPlan.interviewsRemaining}
+                        </span>
+                        <span className="text-2xl font-bold text-gray-400">
+                          left
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-500 mt-1 font-medium">
+                        Started with {currentPlan.interviewsTotal} credits
+                      </p>
+                    </div>
+
+                    {/* Visual Indicator */}
+                    <div className="flex flex-col items-center">
+                      {currentPlan.interviewsRemaining > 0 ? (
+                        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg">
+                          <CheckCircle2 className="w-10 h-10 text-white" strokeWidth={2.5} />
+                        </div>
+                      ) : (
+                        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-red-400 to-orange-500 flex items-center justify-center shadow-lg">
+                          <AlertCircle className="w-10 h-10 text-white" strokeWidth={2.5} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="mt-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                        Usage
+                      </span>
+                      <span className="text-xs font-bold text-gray-700">
+                        {currentPlan.interviewsTotal - currentPlan.interviewsRemaining} used
+                      </span>
+                    </div>
+                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ 
+                          width: `${((currentPlan.interviewsTotal - currentPlan.interviewsRemaining) / currentPlan.interviewsTotal) * 100}%` 
+                        }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        className={`h-full rounded-full ${
+                          currentPlan.interviewsRemaining > 0 
+                            ? 'bg-gradient-to-r from-green-400 to-emerald-500' 
+                            : 'bg-gradient-to-r from-red-400 to-orange-500'
+                        }`}
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Status Messages - Clear & Action-Oriented */}
+                {currentPlan.interviewsRemaining === 0 && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-red-50 border-2 border-red-200 rounded-2xl p-5 flex items-start gap-4"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
+                      <Lock className="w-5 h-5 text-red-600" strokeWidth={2.5} />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-lg font-black text-red-900 mb-1">
+                        No Credits Remaining
+                      </h4>
+                      <p className="text-sm text-red-700 font-medium mb-3">
+                        You've used all your interview credits. Upgrade your plan to continue practicing!
+                      </p>
+                      <button 
+                        onClick={() => document.getElementById('pricing-cards')?.scrollIntoView({ behavior: 'smooth' })}
+                        className="bg-red-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-red-700 transition-colors flex items-center gap-2 group"
+                      >
+                        <TrendingUp className="w-4 h-4 group-hover:translate-y-[-2px] transition-transform" />
+                        Upgrade Now
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+                
+                {currentPlan.interviewsRemaining > 0 && currentPlan.interviewsRemaining <= 2 && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-orange-50 border-2 border-orange-200 rounded-2xl p-5 flex items-start gap-4"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center flex-shrink-0">
+                      <Sparkles className="w-5 h-5 text-orange-600" strokeWidth={2.5} />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-lg font-black text-orange-900 mb-1">
+                        Running Low on Credits
+                      </h4>
+                      <p className="text-sm text-orange-700 font-medium mb-3">
+                        Only {currentPlan.interviewsRemaining} {currentPlan.interviewsRemaining === 1 ? 'credit' : 'credits'} left. Consider upgrading to keep practicing without interruption.
+                      </p>
+                      <button 
+                        onClick={() => document.getElementById('pricing-cards')?.scrollIntoView({ behavior: 'smooth' })}
+                        className="bg-orange-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-orange-700 transition-colors flex items-center gap-2 group"
+                      >
+                        <TrendingUp className="w-4 h-4 group-hover:translate-y-[-2px] transition-transform" />
+                        View Plans
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {currentPlan.interviewsRemaining > 2 && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-green-50 border-2 border-green-200 rounded-2xl p-5 flex items-start gap-4"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle2 className="w-5 h-5 text-green-600" strokeWidth={2.5} />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-lg font-black text-green-900 mb-1">
+                        You're All Set!
+                      </h4>
+                      <p className="text-sm text-green-700 font-medium">
+                        You have {currentPlan.interviewsRemaining} interview credits available. Start practicing now!
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* --- PRICING CARDS --- */}
         <motion.div 
+          id="pricing-cards"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start"
+          className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start"
         >
           {plans.map((plan) => {
             const Icon = plan.icon;
-            const isDark = plan.isRecommended; // The "Popular" styling
+            const isDark = plan.isRecommended;
             
             return (
               <motion.div 
@@ -205,17 +695,26 @@ function PaymentIntegrationPage() {
 
                 {/* Action Button */}
                 <button
-                  onClick={() => setSelectedPlan(plan.id)}
+                  onClick={() => handlePlanSelect(plan.id)}
+                  disabled={isProcessing && selectedPlan === plan.id}
                   className={`
                     w-full py-4 rounded-2xl font-bold text-sm tracking-wide transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 group
-                    ${isDark 
-                      ? 'bg-[#D4F478] text-black hover:bg-white hover:scale-[1.02]' 
-                      : 'bg-[#1A1A1A] text-white hover:bg-gray-800'
+                    ${isProcessing && selectedPlan === plan.id
+                      ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                      : isDark 
+                        ? 'bg-[#D4F478] text-black hover:bg-white hover:scale-[1.02]' 
+                        : 'bg-[#1A1A1A] text-white hover:bg-gray-800'
                     }
                   `}
                 >
-                  Choose {plan.name}
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  {isProcessing && selectedPlan === plan.id ? (
+                    <>Processing...</>
+                  ) : (
+                    <>
+                      Choose {plan.name}
+                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    </>
+                  )}
                 </button>
               </motion.div>
             );
@@ -230,593 +729,8 @@ function PaymentIntegrationPage() {
         </div>
 
       </div>
-
-      {/* --- PAYMENT MODAL --- */}
-      <AnimatePresence>
-        {selectedPlan && !showPaymentSuccess && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4"
-            onClick={handleClosePopup}
-          >
-            <motion.div 
-              initial={{ scale: 0.95, y: 20, opacity: 0 }}
-              animate={{ scale: 1, y: 0, opacity: 1 }}
-              exit={{ scale: 0.95, y: 20, opacity: 0 }}
-              className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]"
-              onClick={e => e.stopPropagation()}
-            >
-              {/* Modal Header */}
-              <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                <div>
-                  <h2 className="text-2xl font-black text-gray-900">Checkout</h2>
-                  <p className="text-sm text-gray-500 font-medium mt-1">
-                    Purchasing <span className="text-indigo-600 font-bold">{plans.find(p => p.id === selectedPlan)?.name}</span>
-                  </p>
-                </div>
-                <button 
-                  onClick={handleClosePopup}
-                  className="p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 text-gray-500 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Modal Body (Scrollable) */}
-              <div className="p-8 overflow-y-auto custom-scrollbar space-y-8">
-                
-                {/* Payment Methods */}
-                <div className="space-y-3">
-                   <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Select Method</label>
-                   <div className="grid grid-cols-3 gap-3">
-                      {['creditCard', 'gpay', 'paypal'].map(method => (
-                        <button
-                          key={method}
-                          onClick={() => setPaymentMethod(method)}
-                          className={`flex flex-col items-center justify-center gap-2 py-4 rounded-2xl border-2 transition-all font-bold text-xs ${
-                            paymentMethod === method 
-                              ? 'border-black bg-black text-white shadow-lg scale-[1.02]' 
-                              : 'border-gray-100 text-gray-500 hover:border-gray-300 hover:bg-gray-50'
-                          }`}
-                        >
-                          {method === 'creditCard' && <CreditCard className="w-5 h-5" />}
-                          {method === 'gpay' && <Smartphone className="w-5 h-5" />}
-                          {method === 'paypal' && <Globe className="w-5 h-5" />}
-                          {method === 'creditCard' ? 'Card' : method === 'gpay' ? 'GPay' : 'PayPal'}
-                        </button>
-                      ))}
-                   </div>
-                </div>
-
-                {/* Form Fields */}
-                {paymentMethod === 'creditCard' && (
-                  <motion.div 
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    className="space-y-4"
-                  >
-                     <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                           <label className="text-xs font-bold text-gray-900 ml-1">First Name</label>
-                           <input 
-                             name="firstName" 
-                             onChange={handleInputChange}
-                             className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-semibold focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
-                             placeholder="John"
-                           />
-                        </div>
-                        <div className="space-y-1">
-                           <label className="text-xs font-bold text-gray-900 ml-1">Last Name</label>
-                           <input 
-                             name="lastName" 
-                             onChange={handleInputChange}
-                             className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-semibold focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
-                             placeholder="Doe"
-                           />
-                        </div>
-                     </div>
-                     <div className="space-y-1">
-                        <label className="text-xs font-bold text-gray-900 ml-1">Card Number</label>
-                        <div className="relative">
-                           <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                           <input 
-                              name="cardNumber" 
-                              maxLength={19}
-                              onChange={handleInputChange}
-                              className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm font-semibold focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
-                              placeholder="0000 0000 0000 0000"
-                           />
-                        </div>
-                     </div>
-                     <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                           <label className="text-xs font-bold text-gray-900 ml-1">Expiry</label>
-                           <div className="flex gap-2">
-                              <input 
-                                name="expiryMonth" 
-                                placeholder="MM" 
-                                maxLength={2}
-                                onChange={handleInputChange}
-                                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-semibold focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all text-center"
-                              />
-                              <input 
-                                name="expiryYear" 
-                                placeholder="YY" 
-                                maxLength={2}
-                                onChange={handleInputChange}
-                                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-semibold focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all text-center"
-                              />
-                           </div>
-                        </div>
-                        <div className="space-y-1">
-                           <label className="text-xs font-bold text-gray-900 ml-1">CVV</label>
-                           <input 
-                              name="cvv" 
-                              placeholder="123" 
-                              maxLength={3}
-                              type="password"
-                              onChange={handleInputChange}
-                              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-semibold focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all text-center"
-                           />
-                        </div>
-                     </div>
-                  </motion.div>
-                )}
-              </div>
-
-              {/* Modal Footer */}
-              <div className="p-6 border-t border-gray-100 bg-gray-50/50">
-                 <button
-                    disabled={!paymentMethod}
-                    onClick={handlePayment}
-                    className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-wide transition-all shadow-lg flex items-center justify-center gap-2 ${
-                      !paymentMethod 
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-[#D4F478] text-black hover:scale-[1.02] hover:shadow-xl'
-                    }`}
-                  >
-                    Pay {plans.find(p => p.id === selectedPlan)?.price}
-                    {paymentMethod && <ArrowRight className="w-4 h-4" />}
-                  </button>
-              </div>
-
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* --- SUCCESS MODAL --- */}
-      <AnimatePresence>
-        {showPaymentSuccess && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={handleClosePopup}
-          >
-            <motion.div 
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="bg-white w-full max-w-sm rounded-[2.5rem] p-8 text-center shadow-2xl relative overflow-hidden"
-              onClick={e => e.stopPropagation()}
-            >
-               {/* Confetti effect placeholder or bg graphic */}
-               <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-green-50 to-transparent pointer-events-none" />
-
-               <div className="w-20 h-20 bg-[#D4F478] text-black rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-green-100 relative z-10">
-                  <Check className="w-10 h-10" strokeWidth={3} />
-               </div>
-               
-               <h2 className="text-3xl font-black text-gray-900 mb-2">Success!</h2>
-               <p className="text-gray-500 font-medium mb-8">
-                 You are now subscribed to the <br/>
-                 <span className="text-black font-bold">{plans.find(p => p.id === selectedPlan)?.name}</span>.
-               </p>
-               
-               <button
-                 onClick={handleClosePopup}
-                 className="w-full bg-[#1A1A1A] text-white font-bold py-4 rounded-2xl hover:bg-black transition-colors shadow-lg"
-               >
-                 Start Learning Now
-               </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
     </div>
   );
 }
 
-export default PaymentIntegrationPage;
-
-
-
-
-//Backup code hai yeah
-// import React, { useState } from "react";
-// import { CreditCard, Check, X, Zap, Crown, Rocket } from "lucide-react";
-
-// function PaymentIntegrationPage() {
-//     const [selectedPlan, setSelectedPlan] = useState(null);
-//     const [paymentMethod, setPaymentMethod] = useState(null);
-//     const [formData, setFormData] = useState({
-//         firstName: '',
-//         lastName: '',
-//         cardNumber: '',
-//         cvv: '',
-//         expiryMonth: '',
-//         expiryYear: '',
-//     });
-//     const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
-
-//     const plans = [
-//         {
-//             id: 'basic',
-//             name: 'Basic Plan',
-//             price: '₹499',
-//             duration: '/month',
-//             icon: Zap,
-//             color: 'from-blue-400 to-blue-600',
-//             features: [
-//                 'Access to 10 courses',
-//                 'Basic support',
-//                 'Course certificates',
-//                 'Mobile app access',
-//                 'Community forum access'
-//             ]
-//         },
-//         {
-//             id: 'premium',
-//             name: 'Premium Plan',
-//             price: '₹999',
-//             duration: '/month',
-//             icon: Crown,
-//             color: 'from-purple-400 to-purple-600',
-//             popular: true,
-//             features: [
-//                 'Unlimited course access',
-//                 'Priority support 24/7',
-//                 'All certificates',
-//                 'Download videos offline',
-//                 'Exclusive webinars',
-//                 'Interview preparation'
-//             ]
-//         },
-//         {
-//             id: 'enterprise',
-//             name: 'Enterprise Plan',
-//             price: '₹1,999',
-//             duration: '/month',
-//             icon: Rocket,
-//             color: 'from-orange-400 to-red-600',
-//             features: [
-//                 'Everything in Premium',
-//                 'Personal mentor support',
-//                 '1-on-1 doubt sessions',
-//                 'Job assistance',
-//                 'Custom learning path',
-//                 'Placement guarantee'
-//             ]
-//         }
-//     ];
-
-//     const handleInputChange = (e) => {
-//         const { name, value } = e.target;
-//         setFormData(prevData => ({
-//             ...prevData,
-//             [name]: value,
-//         }));
-//     };
-
-//     const handlePayment = () => {
-//         console.log('Payment Data:', formData);
-//         console.log('Payment Method:', paymentMethod);
-//         console.log('Selected Plan:', selectedPlan);
-
-//         setShowPaymentSuccess(true);
-//         setFormData({
-//             firstName: '',
-//             lastName: '',
-//             cardNumber: '',
-//             cvv: '',
-//             expiryMonth: '',
-//             expiryYear: '',
-//         });
-//         setPaymentMethod(null);
-//     };
-
-//     const handleClosePopup = () => {
-//         setSelectedPlan(null);
-//         setPaymentMethod(null);
-//         setShowPaymentSuccess(false);
-//     };
-
-//     const handlePlanSelect = (planId) => {
-//         setSelectedPlan(planId);
-//     };
-
-//     return (
-//         <div className="flex flex-col h-screen overflow-y-auto p-8">
-//             {/* Header */}
-//             <div className="mb-6">
-//                 <h2 className="text-2xl font-semibold text-gray-800 flex items-center gap-2">
-//                     <CreditCard className="w-6 h-6 text-indigo-600" />
-//                     Payment
-//                 </h2>
-//             </div>
-
-//             {/* Main Payment Area - Plan Selection */}
-//             <div className="flex-1 flex items-center justify-center">
-//                 <div className="w-full max-w-6xl">
-//                     <div className="text-center mb-8">
-//                         <h3 className="text-3xl font-bold text-gray-800 mb-2">Choose Your Plan, Bhidu!</h3>
-//                         <p className="text-gray-600">Select the perfect plan for your learning journey</p>
-//                     </div>
-                    
-//                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-//                         {plans.map((plan) => {
-//                             const IconComponent = plan.icon;
-//                             return (
-//                                 <div
-//                                     key={plan.id}
-//                                     className={`relative bg-white/50 backdrop-blur-sm border ${
-//                                         plan.popular ? 'border-purple-400 shadow-xl scale-105' : 'border-white/30'
-//                                     } rounded-3xl p-6 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer`}
-//                                     onClick={() => handlePlanSelect(plan.id)}
-//                                 >
-//                                     {plan.popular && (
-//                                         <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-purple-500 text-white text-xs font-bold px-4 py-1 rounded-full">
-//                                             MOST POPULAR
-//                                         </div>
-//                                     )}
-                                    
-//                                     <div className={`w-12 h-12 bg-gradient-to-br ${plan.color} rounded-2xl flex items-center justify-center mb-4`}>
-//                                         <IconComponent className="w-6 h-6 text-white" />
-//                                     </div>
-                                    
-//                                     <h4 className="text-xl font-bold text-gray-800 mb-2">{plan.name}</h4>
-                                    
-//                                     <div className="mb-4">
-//                                         <span className="text-4xl font-bold text-gray-800">{plan.price}</span>
-//                                         <span className="text-gray-600">{plan.duration}</span>
-//                                     </div>
-                                    
-//                                     <ul className="space-y-3 mb-6">
-//                                         {plan.features.map((feature, index) => (
-//                                             <li key={index} className="flex items-start gap-2 text-sm text-gray-700">
-//                                                 <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-//                                                 <span>{feature}</span>
-//                                             </li>
-//                                         ))}
-//                                     </ul>
-                                    
-//                                     <button
-//                                         onClick={() => handlePlanSelect(plan.id)}
-//                                         className={`w-full bg-gradient-to-r ${plan.color} text-white font-bold py-3 px-6 rounded-2xl transition-all duration-300 hover:shadow-lg`}
-//                                     >
-//                                         Select Plan
-//                                     </button>
-//                                 </div>
-//                             );
-//                         })}
-//                     </div>
-//                 </div>
-//             </div>
-
-//             {/* Payment Method Popup */}
-//             {selectedPlan && !showPaymentSuccess && (
-//                 <div 
-//                     className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-//                     onClick={handleClosePopup}
-//                 >
-//                     <div 
-//                         className="w-full max-w-md bg-white/90 backdrop-blur-2xl border border-white/50 rounded-3xl p-6 space-y-4 shadow-2xl transition-all duration-300 animate-in"
-//                         onClick={(e) => e.stopPropagation()}
-//                     >
-//                         {/* Close Button */}
-//                         <button
-//                             type="button"
-//                             onClick={handleClosePopup}
-//                             className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 transition p-2 rounded-full hover:bg-white/30"
-//                         >
-//                             <X className="w-5 h-5" />
-//                         </button>
-
-//                         {/* Selected Plan Summary */}
-//                         <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-2xl border border-indigo-100 mb-4">
-//                             <h4 className="text-sm text-gray-600 mb-1">Selected Plan</h4>
-//                             <h3 className="text-xl font-bold text-gray-800">{plans.find(p => p.id === selectedPlan)?.name}</h3>
-//                             <p className="text-2xl font-bold text-indigo-600 mt-1">
-//                                 {plans.find(p => p.id === selectedPlan)?.price}
-//                                 <span className="text-sm text-gray-600">{plans.find(p => p.id === selectedPlan)?.duration}</span>
-//                             </p>
-//                         </div>
-
-//                         <h3 className="text-lg font-medium text-gray-900">Select Payment Method</h3>
-
-//                         {/* Payment Method Selection */}
-//                         <div className="flex gap-4">
-//                             <button
-//                                 type="button"
-//                                 onClick={() => setPaymentMethod('creditCard')}
-//                                 className={`flex items-center gap-2 px-4 py-2 rounded-2xl transition-colors duration-200
-//                                     ${paymentMethod === 'creditCard'
-//                                         ? 'bg-blue-500 text-white'
-//                                         : 'text-gray-700 hover:bg-white/30 border border-white/30'
-//                                     }`}
-//                             >
-//                                 <CreditCard className="w-5 h-5" />
-//                                 Credit Card
-//                             </button>
-
-//                             <button
-//                                 type="button"
-//                                 onClick={() => setPaymentMethod('gpay')}
-//                                 className={`flex items-center gap-2 px-4 py-2 rounded-2xl transition-colors duration-200
-//                                     ${paymentMethod === 'gpay'
-//                                         ? 'bg-green-500 text-white'
-//                                         : 'text-gray-700 hover:bg-white/30 border border-white/30'
-//                                     }`}
-//                             >
-//                                 GPay
-//                             </button>
-
-//                             <button
-//                                 type="button"
-//                                 onClick={() => setPaymentMethod('paypal')}
-//                                 className={`flex items-center gap-2 px-4 py-2 rounded-2xl transition-colors duration-200
-//                                     ${paymentMethod === 'paypal'
-//                                         ? 'bg-yellow-500 text-white'
-//                                         : 'text-gray-700 hover:bg-white/30 border border-white/30'
-//                                     }`}
-//                             >
-//                                 PayPal
-//                             </button>
-//                         </div>
-
-//                         {/* Credit Card Form */}
-//                         {paymentMethod === 'creditCard' && (
-//                             <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-4 space-y-4 border border-white/30 shadow-inner">
-//                                 <h3 className="text-lg font-medium text-gray-900">Credit Card Details</h3>
-//                                 <div className="grid grid-cols-2 gap-4">
-//                                     <div className="col-span-2">
-//                                         <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">First Name</label>
-//                                         <input
-//                                             type="text"
-//                                             id="firstName"
-//                                             name="firstName"
-//                                             value={formData.firstName}
-//                                             onChange={handleInputChange}
-//                                             className="mt-1 block w-full p-2 border border-white/30 rounded-lg bg-white/40 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                                         />
-//                                     </div>
-//                                     <div className="col-span-2">
-//                                         <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">Last Name</label>
-//                                         <input
-//                                             type="text"
-//                                             id="lastName"
-//                                             name="lastName"
-//                                             value={formData.lastName}
-//                                             onChange={handleInputChange}
-//                                             className="mt-1 block w-full p-2 border border-white/30 rounded-lg bg-white/40 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                                         />
-//                                     </div>
-//                                     <div className="col-span-2">
-//                                         <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700">Card Number</label>
-//                                         <input
-//                                             type="text"
-//                                             id="cardNumber"
-//                                             name="cardNumber"
-//                                             value={formData.cardNumber}
-//                                             onChange={handleInputChange}
-//                                             placeholder="1234 5678 9012 3456"
-//                                             className="mt-1 block w-full p-2 border border-white/30 rounded-lg bg-white/40 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                                         />
-//                                     </div>
-//                                     <div>
-//                                         <label htmlFor="expiryMonth" className="block text-sm font-medium text-gray-700">Expiry Month</label>
-//                                         <input
-//                                             type="text"
-//                                             id="expiryMonth"
-//                                             name="expiryMonth"
-//                                             value={formData.expiryMonth}
-//                                             onChange={handleInputChange}
-//                                             placeholder="MM"
-//                                             className="mt-1 block w-full p-2 border border-white/30 rounded-lg bg-white/40 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                                         />
-//                                     </div>
-//                                     <div>
-//                                         <label htmlFor="expiryYear" className="block text-sm font-medium text-gray-700">Expiry Year</label>
-//                                         <input
-//                                             type="text"
-//                                             id="expiryYear"
-//                                             name="expiryYear"
-//                                             value={formData.expiryYear}
-//                                             onChange={handleInputChange}
-//                                             placeholder="YYYY"
-//                                             className="mt-1 block w-full p-2 border border-white/30 rounded-lg bg-white/40 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                                         />
-//                                     </div>
-//                                     <div className="col-span-2">
-//                                         <label htmlFor="cvv" className="block text-sm font-medium text-gray-700">CVV</label>
-//                                         <input
-//                                             type="text"
-//                                             id="cvv"
-//                                             name="cvv"
-//                                             value={formData.cvv}
-//                                             onChange={handleInputChange}
-//                                             placeholder="123"
-//                                             className="mt-1 block w-full p-2 border border-white/30 rounded-lg bg-white/40 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                                         />
-//                                     </div>
-//                                 </div>
-//                             </div>
-//                         )}
-
-//                         {/* GPay / PayPal Info */}
-//                         {(paymentMethod === 'gpay' || paymentMethod === 'paypal') && (
-//                             <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-4 space-y-4 border border-white/30 shadow-inner">
-//                                 <h3 className="text-lg font-medium text-gray-900">
-//                                     {paymentMethod === 'gpay' ? 'GPay' : 'PayPal'} Details
-//                                 </h3>
-//                                 <p className="text-gray-700">
-//                                     Click the button below to proceed with {paymentMethod === 'gpay' ? 'GPay' : 'PayPal'} payment.
-//                                 </p>
-//                             </div>
-//                         )}
-
-//                         {/* Confirm Payment Button */}
-//                         {paymentMethod && (
-//                             <button
-//                                 onClick={handlePayment}
-//                                 className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-2xl mt-4 transition-colors"
-//                             >
-//                                 Confirm Payment - {plans.find(p => p.id === selectedPlan)?.price}
-//                             </button>
-//                         )}
-//                     </div>
-//                 </div>
-//             )}
-
-//             {/* Payment Success Popup */}
-//             {showPaymentSuccess && (
-//                 <div 
-//                     className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-//                     onClick={handleClosePopup}
-//                 >
-//                     <div 
-//                         className="text-center p-8 bg-white/90 backdrop-blur-2xl border border-white/50 rounded-3xl shadow-2xl max-w-md w-full"
-//                         onClick={(e) => e.stopPropagation()}
-//                     >
-//                         <button
-//                             type="button"
-//                             onClick={handleClosePopup}
-//                             className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 transition p-2 rounded-full hover:bg-white/30"
-//                         >
-//                             <X className="w-5 h-5" />
-//                         </button>
-
-//                         <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-//                             <Check className="w-10 h-10 text-white" />
-//                         </div>
-//                         <h3 className="text-2xl font-bold text-gray-800 mb-2">Payment Successful!</h3>
-//                         <p className="text-gray-700 mb-2">Your transaction has been completed.</p>
-//                         <p className="text-sm text-gray-600 mb-6">Welcome to {plans.find(p => p.id === selectedPlan)?.name}, bhidu! 🎉</p>
-//                         <button
-//                             onClick={handleClosePopup}
-//                             className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-2xl transition-colors"
-//                         >
-//                             Start Learning
-//                         </button>
-//                     </div>
-//                 </div>
-//             )}
-//         </div>
-//     );
-// }
-
-// export default PaymentIntegrationPage;
+export default Payment;

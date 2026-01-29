@@ -3,13 +3,24 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, PlayCircle, CheckCircle2, Clock, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuthStore } from "../../../../store/authstore.js";
 
 const Rounds = ({ companyType, role }) => {
   const [rounds, setRounds] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { user } = useAuthStore();
 
-  useEffect(() => {
+   useEffect(() => {
+    console.log("📊 Current user:", user);
+    console.log("📊 Subscription:", user?.subscription);
+    console.log("📊 Active:", user?.subscription?.active);
+    console.log("📊 Credits remaining:", user?.subscription?.interviewsRemaining);
+  }, [user]);
+
+
+
+   useEffect(() => {
     const fetchRounds = async () => {
       try {
         const res = await axios.get(
@@ -29,33 +40,68 @@ const Rounds = ({ companyType, role }) => {
   }, [companyType, role]);
 
   const handleStartInterview = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      stream.getTracks().forEach((track) => track.stop());
+  try {
+    // Request camera permission
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    stream.getTracks().forEach((track) => track.stop());
 
-      const res = await axios.post(
-        "http://localhost:5000/api/interview-session/start",
-        { companyType, role },
-        { withCredentials: true }
-      );
+    console.log("✅ Camera access granted");
 
-      const sessionId = res.data.sessionId;
+    // Start interview session (this will consume 1 credit)
+    const res = await axios.post(
+      "http://localhost:5000/api/interview-session/start",
+      { companyType, role },
+      { withCredentials: true }
+    );
 
-      navigate("/services/check-your-ability/interview/start", {
-        state: {
-          companyType,
-          role,
-          rounds,
-          sessionId,
-          preventBack: true,
-        },
-        replace: true,
-      });
-    } catch (error) {
-      console.error(error);
-      alert("⚠️ Please allow camera access or login again.");
+    console.log("✅ Session started:", res.data);
+
+    const sessionId = res.data.sessionId;
+
+    navigate("/services/check-your-ability/interview/start", {
+      state: {
+        companyType,
+        role,
+        rounds,
+        sessionId,
+        preventBack: true,
+      },
+      replace: true,
+    });
+
+  } catch (error) {
+    console.error("❌ Full error:", error);
+    console.error("❌ Error response:", error.response?.data); // ✅ ADD THIS
+    console.error("❌ Error status:", error.response?.status); // ✅ ADD THIS
+    
+    if (error.name === 'NotAllowedError') {
+      alert("⚠️ Please allow camera access to continue.");
+    } else if (error.response?.status === 403) {
+      // ✅ HANDLE SUBSCRIPTION ERRORS
+      const data = error.response.data;
+      
+      console.log("🔒 403 Error data:", data); // ✅ ADD THIS
+      
+      if (data.requiresPayment) {
+        alert("⚠️ No active subscription. Please subscribe to continue.");
+        navigate("/dashboard/payroll");
+      } else if (data.needsUpgrade) {
+        alert("⚠️ No interview credits remaining. Please upgrade your plan.");
+        navigate("/dashboard/payroll");
+      } else {
+        alert(`⚠️ ${data.message || 'Access denied'}`);
+        navigate("/dashboard/payroll");
+      }
+    } else if (error.response) {
+      console.error("Server error:", error.response.data);
+      alert(`Server Error: ${error.response.data.message || 'Unknown error'}`);
+    } else if (error.request) {
+      alert("⚠️ No response from server. Check if backend is running.");
+    } else {
+      alert("⚠️ An unexpected error occurred.");
     }
-  };
+  }
+};
 
   const containerVariants = {
     hidden: { opacity: 0 },

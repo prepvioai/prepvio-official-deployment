@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Navigate, Route, Routes, Outlet } from "react-router-dom";
+import { Navigate, Route, Routes, Outlet, useNavigate } from "react-router-dom";
 
 import Home from "./HomePages/Home.jsx";
 import Layout from "./components/Layout.jsx";
@@ -22,6 +22,7 @@ import SavedCourses from "./Dashboard/SavedCourse.jsx";
 import Account from "./Dashboard/setting.jsx";
 import InterviewPreview from "./Dashboard/InterviewPreview.jsx";
 import AptitudeTestAnalysis from "./Dashboard/AptitudeTestAnalysis.jsx";
+import CurrentPlan from "./Dashboard/CurrentPlan.jsx";
 
 import LearnAndPerform from "./ServiceDetails/Learn and perfrom/LearnAndPerfrom.jsx";
 import Channels from "./ServiceDetails/Learn and perfrom/Channels.jsx";
@@ -70,6 +71,7 @@ const ProtectedRoute = ({ children }) => {
 
 const PaidOnlyRoute = () => {
   const { isAuthenticated, user } = useAuthStore();
+  const navigate = useNavigate();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -83,7 +85,22 @@ const PaidOnlyRoute = () => {
     return <Navigate to="/verify-email" replace />;
   }
 
-  if (user.subscription?.planId === "free") {
+  // Check if user has active subscription
+  if (!user.subscription?.active) {
+    return <Navigate to="/dashboard/payroll" replace />;
+  }
+
+  // Check if subscription expired
+  if (new Date() > new Date(user.subscription.endDate)) {
+    return <Navigate to="/dashboard/payroll" replace />;
+  }
+
+  // ✅ NEW: Check if user has interview credits
+  if (user.subscription.interviewsRemaining <= 0) {
+    // Show alert and redirect to payment
+    setTimeout(() => {
+      alert("⚠️ You have no interview credits remaining. Please upgrade your plan.");
+    }, 100);
     return <Navigate to="/dashboard/payroll" replace />;
   }
 
@@ -152,6 +169,7 @@ function App() {
 					<Route path="saved-courses" element={<SavedCourses />} />
 					<Route path="interview-analysis" element={<Interview />} />
 					<Route path="payroll" element={<Payment />} />
+					<Route path="current-plan" element={<CurrentPlan />} /> 
 					<Route path="messages/inbox" element={<Message />} />
 					<Route path="help/faq" element={<FAQs />} />
 					<Route path="feedback" element={<Feedback />} />

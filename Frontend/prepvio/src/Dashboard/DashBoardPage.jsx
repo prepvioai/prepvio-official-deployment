@@ -32,12 +32,19 @@ import {
   BarElement,
   Title,
   Tooltip,
+  Legend
 } from "chart.js";
 import { useAuthStore } from "../store/authstore";
-import { formatDate } from "../utils/date";
 
 // Register Chart.js components
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const USER_API = "http://localhost:5000/api";
 
@@ -58,7 +65,15 @@ const containerVariants = {
 
 const itemUpVariants = {
   hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 100, damping: 20 } },
+  visible: { 
+    y: 0, 
+    opacity: 1, 
+    transition: { 
+      type: "spring", 
+      stiffness: 100, 
+      damping: 20 
+    } 
+  },
 };
 
 const hoverCardEffect = {
@@ -77,28 +92,58 @@ const motivationalQuotes = [
   "Today is your day! 🔥"
 ];
 
-
-
-
 const serviceConfigs = [
-  { key: 'checkYourAbility', name: 'Check Your Ability', icon: MonitorCheck, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-  { key: 'jobPortal', name: 'Job Portal Access', icon: Globe, color: 'text-green-600', bg: 'bg-green-50' },
-  { key: 'aiSystem', name: 'AI System Tools', icon: Sparkles, color: 'text-yellow-600', bg: 'bg-yellow-50' },
-  { key: 'resumeAnalyzer', name: 'Resume Analyzer', icon: FileText, color: 'text-red-600', bg: 'bg-red-50' },
+  { 
+    key: 'checkYourAbility', 
+    name: 'Check Your Ability', 
+    icon: MonitorCheck, 
+    color: 'text-indigo-600', 
+    bg: 'bg-indigo-50' 
+  },
+  { 
+    key: 'jobPortal', 
+    name: 'Job Portal Access', 
+    icon: Globe, 
+    color: 'text-green-600', 
+    bg: 'bg-green-50' 
+  },
+  { 
+    key: 'aiSystem', 
+    name: 'AI System Tools', 
+    icon: Sparkles, 
+    color: 'text-yellow-600', 
+    bg: 'bg-yellow-50' 
+  },
+  { 
+    key: 'resumeAnalyzer', 
+    name: 'Resume Analyzer', 
+    icon: FileText, 
+    color: 'text-red-600', 
+    bg: 'bg-red-50' 
+  },
 ];
-
-
-
 
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   scales: {
-    x: { grid: { display: false }, ticks: { color: "#9ca3af", font: { weight: 'bold' } } },
-    y: { grid: { color: "#f3f4f6" }, ticks: { color: "#9ca3af" } },
+    x: { 
+      grid: { display: false }, 
+      ticks: { 
+        color: "#9ca3af", 
+        font: { weight: 'bold' } 
+      } 
+    },
+    y: { 
+      grid: { color: "#f3f4f6" }, 
+      ticks: { color: "#9ca3af" },
+      beginAtZero: true
+    },
   },
   plugins: {
-    legend: { display: false },
+    legend: { 
+      display: false 
+    },
     tooltip: { 
       backgroundColor: "#1A1A1A",
       padding: 12,
@@ -118,14 +163,20 @@ const StatCard = ({ label, value, trend, icon: Icon, iconStyle, trendStyle, tren
     whileHover={hoverCardEffect}
     className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col justify-between h-44 relative overflow-hidden group"
   >
-    <div className={`absolute -top-6 -right-6 w-32 h-32 rounded-full opacity-5 pointer-events-none ${iconStyle.includes('text-blue') ? 'bg-blue-500' : iconStyle.includes('text-purple') ? 'bg-purple-500' : 'bg-green-500'}`} />
+    <div className={`absolute -top-6 -right-6 w-32 h-32 rounded-full opacity-5 pointer-events-none ${
+      iconStyle.includes('text-blue') ? 'bg-blue-500' : 
+      iconStyle.includes('text-purple') ? 'bg-purple-500' : 
+      iconStyle.includes('text-green') ? 'bg-green-500' :
+      iconStyle.includes('text-orange') ? 'bg-orange-500' :
+      iconStyle.includes('text-red') ? 'bg-red-500' : 'bg-gray-500'
+    }`} />
     
     <div className="flex justify-between items-start z-10">
       <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm ${iconStyle}`}>
         <Icon className="w-7 h-7" />
       </div>
       <div className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 ${trendStyle}`}>
-        <TrendIcon className={`w-3 h-3`} /> 
+        {TrendIcon && <TrendIcon className="w-3 h-3" />} 
         {trend}
       </div>
     </div>
@@ -184,9 +235,10 @@ const RecommendedSessionCard = ({ onContinue, hasResume }) => (
 );
 
 // 3. Service Card
-const ServiceCard = ({ icon: Icon, name, color, bg }) => (
+const ServiceCard = ({ icon: Icon, name, color, bg, onClick }) => (
   <motion.div 
     whileHover={hoverCardEffect}
+    onClick={onClick}
     className="p-5 rounded-[1.5rem] border bg-white border-gray-100 transition-all duration-300 flex items-center gap-4 cursor-pointer shadow-sm hover:shadow-md"
   >
     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${bg}`}>
@@ -199,13 +251,13 @@ const ServiceCard = ({ icon: Icon, name, color, bg }) => (
       </p>
     </div>
     <div className="w-8 h-8 rounded-full bg-[#D4F478] flex items-center justify-center shrink-0">
-         <ArrowRight className="w-4 h-4 text-black" />
+      <ArrowRight className="w-4 h-4 text-black" />
     </div>
   </motion.div>
 );
 
 // 4. Course Row
-const CourseRow = ({ course }) => {
+const CourseRow = ({ course, onClick }) => {
   const progress = course.totalSeconds > 0 
     ? Math.round((course.watchedSeconds / course.totalSeconds) * 100) 
     : 0;
@@ -214,33 +266,49 @@ const CourseRow = ({ course }) => {
   const color = course.completed ? "green" : "yellow";
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-gray-50 rounded-2xl transition-colors cursor-pointer group border border-transparent hover:border-gray-100 gap-4 sm:gap-0">
+    <div 
+      onClick={onClick}
+      className="flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-gray-50 rounded-2xl transition-colors cursor-pointer group border border-transparent hover:border-gray-100 gap-4 sm:gap-0"
+    >
       <div className="flex items-center gap-4">
         {course.channelThumbnail ? (
           <img 
             src={course.channelThumbnail} 
             alt={course.channelName}
             className="w-12 h-12 rounded-2xl object-cover"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = `${ASSETS.avatarPlaceholder}${encodeURIComponent(course.channelName || 'C')}`;
+            }}
           />
         ) : (
-          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors font-bold text-lg ${color === 'green' ? 'bg-[#D4F478] text-black' : 'bg-yellow-100 text-yellow-700'}`}>
-            {course.courseTitle.charAt(0)}
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors font-bold text-lg ${
+            color === 'green' ? 'bg-[#D4F478] text-black' : 'bg-yellow-100 text-yellow-700'
+          }`}>
+            {course.courseTitle?.charAt(0) || 'C'}
           </div>
         )}
         <div>
-          <h4 className="font-bold text-gray-900 text-sm group-hover:text-black transition-colors">{course.courseTitle}</h4>
+          <h4 className="font-bold text-gray-900 text-sm group-hover:text-black transition-colors">
+            {course.courseTitle || 'Untitled Course'}
+          </h4>
           <div className="flex items-center gap-2 text-xs text-gray-400 mt-1 font-medium">
-            <User className="w-3 h-3" /> {course.channelName}
+            <User className="w-3 h-3" /> {course.channelName || 'Unknown Channel'}
           </div>
         </div>
       </div>
       <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 sm:gap-1 w-full sm:w-auto">
-         <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-           {status}
-         </span>
-         <div className="w-full sm:w-20 bg-gray-100 rounded-full h-1.5 mt-0 sm:mt-1">
-            <div className={`h-1.5 rounded-full ${color === 'green' ? 'bg-green-500' : 'bg-yellow-500'}`} style={{ width: `${progress}%` }}></div>
-         </div>
+        <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${
+          status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+        }`}>
+          {status}
+        </span>
+        <div className="w-full sm:w-20 bg-gray-100 rounded-full h-1.5 mt-0 sm:mt-1">
+          <div 
+            className={`h-1.5 rounded-full ${color === 'green' ? 'bg-green-500' : 'bg-yellow-500'}`} 
+            style={{ width: `${Math.min(progress, 100)}%` }}
+          ></div>
+        </div>
       </div>
     </div>
   );
@@ -252,7 +320,9 @@ export const DashboardModal = ({ onClose }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleEsc = (e) => { if (e.key === "Escape") onClose(); };
+    const handleEsc = (e) => { 
+      if (e.key === "Escape") onClose(); 
+    };
     window.addEventListener("keydown", handleEsc);
     return () => window.removeEventListener("keydown", handleEsc);
   }, [onClose]);
@@ -290,7 +360,10 @@ export const DashboardModal = ({ onClose }) => {
           onClick={(e) => e.stopPropagation()}
           className="max-w-md w-full p-6 md:p-8 bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 relative"
         >
-          <button onClick={onClose} className="absolute top-6 right-6 p-2 rounded-full hover:bg-gray-100 transition-colors">
+          <button 
+            onClick={onClose} 
+            className="absolute top-6 right-6 p-2 rounded-full hover:bg-gray-100 transition-colors"
+          >
             <X className="w-5 h-5 text-gray-500" />
           </button>
 
@@ -303,20 +376,34 @@ export const DashboardModal = ({ onClose }) => {
           </div>
 
           <div className="space-y-4">
-             <div className="p-5 rounded-2xl bg-[#FDFBF9] border border-gray-100">
-               <div className="flex items-center gap-2 mb-2 text-gray-900 font-bold text-sm uppercase tracking-wider">
-                 <ShieldCheck size={16} /> Profile Info
-               </div>
-               <p className="text-sm text-gray-600 font-medium break-all">Name: <span className="text-gray-900">{user.name}</span></p>
-               <p className="text-sm text-gray-600 font-medium break-all">Email: <span className="text-gray-900">{user.email}</span></p>
-             </div>
+            <div className="p-5 rounded-2xl bg-[#FDFBF9] border border-gray-100">
+              <div className="flex items-center gap-2 mb-2 text-gray-900 font-bold text-sm uppercase tracking-wider">
+                <ShieldCheck size={16} /> Profile Info
+              </div>
+              <p className="text-sm text-gray-600 font-medium break-all">
+                Name: <span className="text-gray-900">{user.name}</span>
+              </p>
+              <p className="text-sm text-gray-600 font-medium break-all">
+                Email: <span className="text-gray-900">{user.email}</span>
+              </p>
+            </div>
           </div>
 
           <div className="mt-8 space-y-3">
-            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={handleManageAccount} className="w-full py-3.5 px-4 bg-[#1A1A1A] text-white font-bold rounded-xl shadow-lg shadow-gray-200 hover:bg-black transition-colors">
+            <motion.button 
+              whileHover={{ scale: 1.02 }} 
+              whileTap={{ scale: 0.98 }} 
+              onClick={handleManageAccount} 
+              className="w-full py-3.5 px-4 bg-[#1A1A1A] text-white font-bold rounded-xl shadow-lg shadow-gray-200 hover:bg-black transition-colors"
+            >
               View Full Dashboard
             </motion.button>
-            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={handleLogout} className="w-full py-3.5 px-4 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 hover:text-red-500 hover:border-red-100 transition-colors">
+            <motion.button 
+              whileHover={{ scale: 1.02 }} 
+              whileTap={{ scale: 0.98 }} 
+              onClick={handleLogout} 
+              className="w-full py-3.5 px-4 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 hover:text-red-500 hover:border-red-100 transition-colors"
+            >
               Log Out
             </motion.button>
           </div>
@@ -326,7 +413,6 @@ export const DashboardModal = ({ onClose }) => {
   );
 };
 
-// --- MAIN PAGE ---
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -364,15 +450,51 @@ export default function DashboardPage() {
   }, []);
 
   const handleContinue = () => {
-    if (!dashboard?.resume) return;
+    if (!dashboard?.resume) {
+      // If no resume, navigate to courses page or show message
+      navigate("/courses");
+      return;
+    }
 
     const { courseId, channelId, videoId } = dashboard.resume;
+    
+    if (!courseId || !channelId) {
+      console.error("Missing courseId or channelId in resume data");
+      return;
+    }
 
     navigate(
-      `/course/${channelId}/${courseId}${
-        videoId ? `?video=${videoId}` : ""
-      }`
+      `/course/${channelId}/${courseId}${videoId ? `?video=${videoId}` : ""}`
     );
+  };
+
+  const handleCourseClick = (course) => {
+    if (!course.courseId || !course.channelId) {
+      console.error("Missing course data for navigation");
+      return;
+    }
+    
+    navigate(`/course/${course.channelId}/${course.courseId}`);
+  };
+
+  const handleServiceClick = (serviceKey) => {
+    // Navigate to respective service page
+    switch(serviceKey) {
+      case 'checkYourAbility':
+        navigate("/ability-check");
+        break;
+      case 'jobPortal':
+        navigate("/jobs");
+        break;
+      case 'aiSystem':
+        navigate("/ai-tools");
+        break;
+      case 'resumeAnalyzer':
+        navigate("/resume-analyzer");
+        break;
+      default:
+        console.log("Service not implemented");
+    }
   };
 
   if (loading) {
@@ -392,64 +514,64 @@ export default function DashboardPage() {
   }
 
   const stats = dashboard?.stats || {
-  totalCourses: 0,
-  completedCourses: 0,
-  inProgressCourses: 0,
-  totalWatchedHours: 0,
-};
+    totalCourses: 0,
+    completedCourses: 0,
+    inProgressCourses: 0,
+    totalWatchedHours: 0,
+  };
 
-const weeklyActivity = dashboard?.weeklyActivity || {
-  "3 Weeks Ago": 0,
-  "2 Weeks Ago": 0,
-  "Last Week": 0,
-  "This Week": 0,
-};
+  const weeklyActivity = dashboard?.weeklyActivity || {
+    "3 Weeks Ago": 0,
+    "2 Weeks Ago": 0,
+    "Last Week": 0,
+    "This Week": 0,
+  };
 
+  const chartData = {
+    labels: Object.keys(weeklyActivity),
+    datasets: [
+      {
+        label: "Learning Hours",
+        data: Object.values(weeklyActivity).map(v => Math.round(v * 10) / 10),
+        backgroundColor: "#D4F478",
+        borderRadius: 12,
+        borderSkipped: false,
+      },
+    ],
+  };
 
+  const courses = dashboard?.courses || [];
 
-const chartData = {
-  labels: Object.keys(weeklyActivity),
-  datasets: [
-    {
-      label: "Learning Hours",
-      data: Object.values(weeklyActivity).map(v =>
-        Math.round(v * 10) / 10
-      ),
-      backgroundColor: "#D4F478",
-      borderRadius: 12,
-      borderSkipped: false,
-    },
-  ],
-};
+  const derivedAchievements = courses
+    .filter(course => course.watchedSeconds > 0)
+    .map(course => {
+      if (course.completed) {
+        return {
+          title: `Completed ${course.courseTitle || 'Course'}`,
+          desc: `by ${course.channelName || 'Unknown'}`,
+          icon: CheckCircle,
+        };
+      }
 
-
-const courses = dashboard?.courses || [];
-
-const derivedAchievements = courses
-  .filter(course => course.watchedSeconds > 0)
-  .map(course => {
-    if (course.completed) {
       return {
-        title: `Completed ${course.courseTitle}`,
-        desc: `by ${course.channelName}`,
-        icon: CheckCircle,
+        title: `Started ${course.courseTitle || 'Course'}`,
+        desc: `by ${course.channelName || 'Unknown'}`,
+        icon: BookOpen,
       };
-    }
-
-    return {
-      title: `Started ${course.courseTitle}`,
-      desc: `by ${course.channelName}`,
-      icon: BookOpen,
-    };
-  })
-  .slice(0, 3);
-
+    })
+    .slice(0, 3);
 
   const displayName = user?.name?.split(' ')[0] || 'User';
   const userAvatar = user?.profilePic || `${ASSETS.avatarPlaceholder}${encodeURIComponent(user?.name || 'User')}`;
-  const activeServices = serviceConfigs.filter(service => user[service.key]);
+  
+  // Fixed: Check for service access properly
+  const activeServices = serviceConfigs.filter(service => {
+    // Check if user has this service enabled
+    // This assumes services are stored in user object or dashboard
+    const userServices = dashboard?.services || user?.services || {};
+    return userServices[service.key] === true;
+  });
 
-  // Updated Cards with real data
   const staticCards = [
     { 
       label: "Total Courses", 
@@ -487,6 +609,23 @@ const derivedAchievements = courses
       trendStyle: "bg-green-50 text-green-600",
       trendIcon: TrendingUp 
     },
+    { 
+      label: "Interview Credits", 
+      value: (user?.subscription?.interviewsRemaining || 0).toString(), 
+      icon: MonitorCheck, 
+      iconStyle: (user?.subscription?.interviewsRemaining || 0) > 0 
+        ? "bg-green-50 text-green-600" 
+        : "bg-red-50 text-red-600", 
+      trend: (user?.subscription?.interviewsRemaining || 0) > 0 
+        ? "Credits available" 
+        : "No credits left", 
+      trendStyle: (user?.subscription?.interviewsRemaining || 0) > 0 
+        ? "bg-green-50 text-green-600" 
+        : "bg-red-50 text-red-600",
+      trendIcon: (user?.subscription?.interviewsRemaining || 0) > 0 
+        ? CheckCircle 
+        : Clock
+    },
   ];
 
   return (
@@ -496,22 +635,39 @@ const derivedAchievements = courses
       <nav className="sticky top-0 z-50 bg-[#FDFBF9]/80 backdrop-blur-md border-b border-gray-100 px-4 md:px-6 py-4">
         <div className="max-w-[1600px] mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
-             <div className="w-10 h-10 bg-[#1A1A1A] rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-black/10">P</div>
-             <span className="font-bold text-xl tracking-tight text-gray-900 hidden sm:block">Prepvio.AI</span>
+            <div className="w-10 h-10 bg-[#1A1A1A] rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-black/10">
+              P
+            </div>
+            <span className="font-bold text-xl tracking-tight text-gray-900 hidden sm:block">
+              Prepvio.AI
+            </span>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="relative hidden md:block">
-               <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-               <input type="text" placeholder="Search courses..." className="bg-white border border-gray-200 pl-10 pr-4 py-2.5 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-black/5 w-64 shadow-sm" />
+              <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input 
+                type="text" 
+                placeholder="Search courses..." 
+                className="bg-white border border-gray-200 pl-10 pr-4 py-2.5 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-black/5 w-64 shadow-sm" 
+              />
             </div>
             <button className="w-11 h-11 bg-white rounded-xl border border-gray-200 flex items-center justify-center text-gray-500 hover:text-black hover:shadow-md transition-all relative">
               <Bell className="w-5 h-5" />
               <span className="absolute top-3 right-3 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
             </button>
-            <div onClick={() => setShowModal(true)} className="flex items-center gap-3 bg-white pl-2 pr-4 py-1.5 rounded-full border border-gray-200 shadow-sm cursor-pointer hover:shadow-md transition-all">
-              <img src={userAvatar} alt="Profile" className="w-8 h-8 rounded-full object-cover bg-gray-100" />
-              <span className="text-sm font-bold text-gray-700 hidden sm:block">{displayName}</span>
+            <div 
+              onClick={() => setShowModal(true)} 
+              className="flex items-center gap-3 bg-white pl-2 pr-4 py-1.5 rounded-full border border-gray-200 shadow-sm cursor-pointer hover:shadow-md transition-all"
+            >
+              <img 
+                src={userAvatar} 
+                alt="Profile" 
+                className="w-8 h-8 rounded-full object-cover bg-gray-100" 
+              />
+              <span className="text-sm font-bold text-gray-700 hidden sm:block">
+                {displayName}
+              </span>
               <ChevronLeft className="-rotate-90 w-4 h-4 text-gray-400" />
             </div>
           </div>
@@ -524,123 +680,163 @@ const derivedAchievements = courses
         
         {/* Header */}
         <motion.div 
-          initial="hidden" animate="visible" variants={containerVariants}
+          initial="hidden" 
+          animate="visible" 
+          variants={containerVariants}
           className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6"
         >
           <div>
             <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight leading-tight">
               {greeting}, <span className="text-gray-400">{displayName}.</span>
             </h1>
-            <p className="text-gray-500 font-medium mt-2 text-base md:text-lg">{quote}</p>
+            <p className="text-gray-500 font-medium mt-2 text-base md:text-lg">
+              {quote}
+            </p>
           </div>
         </motion.div>
 
         {/* Stats Grid */}
-        <motion.div initial="hidden" animate="visible" variants={containerVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <motion.div 
+          initial="hidden" 
+          animate="visible" 
+          variants={containerVariants} 
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6"
+        >
           {staticCards.map((card, idx) => (
-             <StatCard key={idx} {...card} />
+            <StatCard key={idx} {...card} />
           ))}
         </motion.div>
 
         {/* Main Bento Grid */}
-        <motion.div initial="hidden" animate="visible" variants={containerVariants} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <motion.div 
+          initial="hidden" 
+          animate="visible" 
+          variants={containerVariants} 
+          className="grid grid-cols-1 lg:grid-cols-12 gap-8"
+        >
           
           {/* Left Column (Main Content) */}
           <div className="lg:col-span-8 space-y-8">
              
-             {/* Recommended Session Card */}
-             <RecommendedSessionCard 
-               onContinue={handleContinue}
-               hasResume={!!dashboard.resume}
-             />
+            {/* Recommended Session Card */}
+            <RecommendedSessionCard 
+              onContinue={handleContinue}
+              hasResume={!!dashboard.resume}
+            />
 
-             {/* Chart Section */}
-             <motion.div variants={itemUpVariants} className="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
-               <div className="flex items-center justify-between mb-6">
-                 <div>
-                   <h3 className="font-bold text-xl text-gray-900">Learning Activity</h3>
-                   <p className="text-sm text-gray-500 font-medium">You've learned {stats.totalWatchedHours} hours in total!</p>
-                 </div>
-                 <div className="p-2 bg-gray-50 rounded-xl"><TrendingUp className="w-5 h-5 text-gray-500" /></div>
-               </div>
-               <div className="h-64 w-full relative">
-                 <Bar data={chartData} options={chartOptions} />
-               </div>
-             </motion.div>
+            {/* Chart Section */}
+            <motion.div 
+              variants={itemUpVariants} 
+              className="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-gray-100"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="font-bold text-xl text-gray-900">Learning Activity</h3>
+                  <p className="text-sm text-gray-500 font-medium">
+                    You've learned {stats.totalWatchedHours} hours in total!
+                  </p>
+                </div>
+                <div className="p-2 bg-gray-50 rounded-xl">
+                  <TrendingUp className="w-5 h-5 text-gray-500" />
+                </div>
+              </div>
+              <div className="h-64 w-full relative">
+                <Bar data={chartData} options={chartOptions} />
+              </div>
+            </motion.div>
 
-             {/* Services Grid (Quick Actions) */}
-             {activeServices.length > 0 && (
-               <motion.div variants={itemUpVariants}>
-                 <h3 className="font-bold text-xl text-gray-900 mb-4 ml-2">Your Premium Access</h3>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                   {activeServices.map(service => (
-                     <ServiceCard 
-                       key={service.key}
-                       {...service}
-                     />
-                   ))}
-                 </div>
-               </motion.div>
-             )}
+            {/* Services Grid (Quick Actions) */}
+            {activeServices.length > 0 && (
+              <motion.div variants={itemUpVariants}>
+                <h3 className="font-bold text-xl text-gray-900 mb-4 ml-2">
+                  Your Premium Access
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {activeServices.map(service => (
+                    <ServiceCard 
+                      key={service.key}
+                      {...service}
+                      onClick={() => handleServiceClick(service.key)}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+            )}
           </div>
 
           {/* Right Column (Sidebar Content) */}
           <div className="lg:col-span-4 space-y-8">
              
-             {/* Achievements */}
-             <motion.div variants={itemUpVariants} className="bg-[#1A1A1A] p-8 rounded-[2.5rem] shadow-xl shadow-gray-200 text-white relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full blur-[60px] opacity-40" />
-                <div className="relative z-10">
-                   <div className="flex items-center gap-2 mb-6 text-[#D4F478]">
-                      <Award className="w-5 h-5" />
-                      <h3 className="font-bold text-lg">Achievements</h3>
-                   </div>
-                   <div className="space-y-4">
-                      {derivedAchievements.length > 0 ? (
-  derivedAchievements.map((item, idx) => {
-    const Icon = item.icon;
-    return (
-      <div
-        key={idx}
-        className="flex items-start gap-3 p-3 bg-white/10 rounded-xl border border-white/5 backdrop-blur-sm"
-      >
-        <div className="mt-1 w-8 h-8 bg-[#D4F478] rounded-lg flex items-center justify-center text-black shrink-0">
-          <Icon size={16} />
-        </div>
-        <div>
-          <h4 className="font-bold text-sm">{item.title}</h4>
-          <p className="text-xs text-gray-400 mt-0.5">{item.desc}</p>
-        </div>
-      </div>
-    );
-  })
-) : (
-  <p className="text-sm text-gray-400">
-    Start a course to unlock achievements 🚀
-  </p>
-)}
-
-                   </div>
-                   <button className="w-full mt-6 py-3 bg-[#D4F478] text-black font-bold rounded-xl text-sm hover:bg-white transition-colors">
-                     View All Trophies
-                   </button>
+            {/* Achievements */}
+            <motion.div 
+              variants={itemUpVariants} 
+              className="bg-[#1A1A1A] p-8 rounded-[2.5rem] shadow-xl shadow-gray-200 text-white relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full blur-[60px] opacity-40" />
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-6 text-[#D4F478]">
+                  <Award className="w-5 h-5" />
+                  <h3 className="font-bold text-lg">Achievements</h3>
                 </div>
-             </motion.div>
-
-             {/* Course List */}
-             <motion.div variants={itemUpVariants} className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-100">
-                <div className="flex items-center justify-between mb-4">
-                   <h3 className="font-bold text-lg text-gray-900">Your Courses</h3>
-                   <MoreHorizontal className="text-gray-400 w-5 h-5 cursor-pointer" />
+                <div className="space-y-4">
+                  {derivedAchievements.length > 0 ? (
+                    derivedAchievements.map((item, idx) => {
+                      const Icon = item.icon;
+                      return (
+                        <div
+                          key={idx}
+                          className="flex items-start gap-3 p-3 bg-white/10 rounded-xl border border-white/5 backdrop-blur-sm"
+                        >
+                          <div className="mt-1 w-8 h-8 bg-[#D4F478] rounded-lg flex items-center justify-center text-black shrink-0">
+                            <Icon size={16} />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-sm">{item.title}</h4>
+                            <p className="text-xs text-gray-400 mt-0.5">{item.desc}</p>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p className="text-sm text-gray-400">
+                      Start a course to unlock achievements 🚀
+                    </p>
+                  )}
                 </div>
-                <div className="space-y-2">
-                   {courses.map((course, idx) => (
-  <CourseRow key={`${course.courseId}-${idx}`} course={course} />
-))}
+                <button 
+                  onClick={() => navigate("/achievements")}
+                  className="w-full mt-6 py-3 bg-[#D4F478] text-black font-bold rounded-xl text-sm hover:bg-white transition-colors"
+                >
+                  View All Trophies
+                </button>
+              </div>
+            </motion.div>
 
-                </div>
-             </motion.div>
-
+            {/* Course List */}
+            <motion.div 
+              variants={itemUpVariants} 
+              className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-100"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-lg text-gray-900">Your Courses</h3>
+                <MoreHorizontal className="text-gray-400 w-5 h-5 cursor-pointer" />
+              </div>
+              <div className="space-y-2">
+                {courses.length > 0 ? (
+                  courses.map((course, idx) => (
+                    <CourseRow 
+                      key={`${course.courseId}-${idx}`} 
+                      course={course}
+                      onClick={() => handleCourseClick(course)}
+                    />
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-400 text-center py-4">
+                    No courses yet. Start learning! 📚
+                  </p>
+                )}
+              </div>
+            </motion.div>
           </div>
         </motion.div>
       </main>

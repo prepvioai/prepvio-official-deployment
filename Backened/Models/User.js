@@ -329,14 +329,22 @@ const userSchema = new mongoose.Schema(
     payments: [paymentSchema],
 
     subscription: {
-      type: subscriptionSchema,
-      default: () => ({
-        active: false,
-        planId: "free",
-        interviewsTotal: 0,
-        interviewsUsed: 0,
-        interviewsRemaining: 0,
-      }),
+  type: subscriptionSchema,
+  default: () => ({
+    active: true,  // ✅ Changed to true
+    planId: "free",
+    planName: "Free Plan",  // ✅ Added plan name
+    interviewsTotal: 1,  // ✅ Changed from 0 to 1
+    interviewsUsed: 0,
+    interviewsRemaining: 1,  // ✅ Changed from 0 to 1
+    startDate: new Date(),  // ✅ Added start date
+    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),  // ✅ Added 30 days expiry
+  }),
+},
+
+    hasClaimedFreeSession: {
+      type: Boolean,
+      default: false,
     },
 
     /* ================= INTERVIEWS ================= */
