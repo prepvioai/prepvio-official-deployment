@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
-import { 
+import {
   Calendar,
   CheckCircle2,
   AlertCircle,
@@ -31,10 +31,10 @@ function CurrentPlan() {
       try {
         setLoading(true);
         const res = await axios.get(
-          "http://localhost:5000/api/payment/interview-status",
+          "/api/payment/interview-status",
           { withCredentials: true }
         );
-        
+
         if (res.data.success && res.data.subscription) {
           setCurrentPlan(res.data.subscription);
         }
@@ -71,7 +71,7 @@ function CurrentPlan() {
   const handleRefresh = async () => {
     await refreshUser();
     const res = await axios.get(
-      "http://localhost:5000/api/payment/interview-status",
+      "/api/payment/interview-status",
       { withCredentials: true }
     );
     if (res.data.success && res.data.subscription) {
@@ -104,7 +104,7 @@ function CurrentPlan() {
 
   if (!currentPlan || !currentPlan.active) {
     return (
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="max-w-4xl mx-auto"
@@ -113,7 +113,7 @@ function CurrentPlan() {
           {/* Decorative elements */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#D4F478]/10 to-transparent rounded-full blur-3xl" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-[#D4F478]/10 to-transparent rounded-full blur-3xl" />
-          
+
           <div className="relative z-10">
             <div className="flex items-start justify-between mb-6">
               <div>
@@ -205,7 +205,7 @@ function CurrentPlan() {
   }[statusColor];
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="max-w-4xl mx-auto"
@@ -215,11 +215,11 @@ function CurrentPlan() {
         {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-black" />
         <div className={`absolute inset-0 bg-gradient-to-br ${colorClasses.bg}`} />
-        
+
         {/* Decorative elements */}
         <div className="absolute -top-32 -right-32 w-64 h-64 rounded-full blur-3xl opacity-20 bg-gradient-to-br from-white/10 to-transparent" />
         <div className="absolute -bottom-32 -left-32 w-64 h-64 rounded-full blur-3xl opacity-20 bg-gradient-to-tr from-white/10 to-transparent" />
-        
+
         {/* Content */}
         <div className="relative z-10 p-8">
           {/* Header */}
@@ -240,7 +240,7 @@ function CurrentPlan() {
                   Refresh
                 </button>
               </div>
-              
+
               <div className="flex items-center gap-4">
                 <div className={`w-16 h-16 rounded-2xl ${colorClasses.iconBg} flex items-center justify-center border ${colorClasses.border}`}>
                   <PlanIcon className="w-8 h-8 text-white" />
@@ -319,8 +319,8 @@ function CurrentPlan() {
               <div className="h-3 bg-gray-700 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
-                  animate={{ 
-                    width: `${((currentPlan.interviewsTotal - currentPlan.interviewsRemaining) / currentPlan.interviewsTotal) * 100}%` 
+                  animate={{
+                    width: `${((currentPlan.interviewsTotal - currentPlan.interviewsRemaining) / currentPlan.interviewsTotal) * 100}%`
                   }}
                   transition={{ duration: 1.5, ease: "easeOut" }}
                   className={`h-full rounded-full ${colorClasses.accent}`}
@@ -341,7 +341,7 @@ function CurrentPlan() {
                   <CheckCircle2 className="w-6 h-6 text-white" strokeWidth={2} />
                 )}
               </div>
-              
+
               <div className="flex-1">
                 <h4 className="text-xl font-black text-white mb-2">
                   {currentPlan.interviewsRemaining === 0 ? (
@@ -352,7 +352,7 @@ function CurrentPlan() {
                     "You're All Set!"
                   )}
                 </h4>
-                
+
                 <p className="text-gray-300 font-medium mb-4">
                   {currentPlan.interviewsRemaining === 0 ? (
                     "You've used all your interview credits. Upgrade your plan to continue practicing!"
@@ -373,7 +373,7 @@ function CurrentPlan() {
                       {currentPlan.interviewsRemaining === 0 ? "Upgrade Now" : "View Plans"}
                     </button>
                   )}
-                  
+
                   {currentPlan.interviewsRemaining > 0 && (
                     <button
                       onClick={() => window.location.href = "/services/check-your-ability/interview"}
@@ -383,7 +383,7 @@ function CurrentPlan() {
                       <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </button>
                   )}
-                  
+
                   <button
                     onClick={() => window.location.href = "/dashboard"}
                     className="bg-gray-700 text-white font-bold px-6 py-3 rounded-xl hover:bg-gray-600 transition-colors"

@@ -2,16 +2,16 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import YouTube from "react-youtube";
-import { 
-  PlayCircle, 
-  Clock, 
-  CheckCircle, 
-  XCircle, 
-  ArrowLeft, 
-  Layers, 
-  ListVideo, 
-  MonitorPlay, 
-  AlertCircle, 
+import {
+  PlayCircle,
+  Clock,
+  CheckCircle,
+  XCircle,
+  ArrowLeft,
+  Layers,
+  ListVideo,
+  MonitorPlay,
+  AlertCircle,
   Sparkles,
   ChevronRight
 } from "lucide-react";
@@ -24,8 +24,8 @@ const youtubeaxios = axios.create({
 /* ======================================================
    CONFIG
 ====================================================== */
-const BASE_URL = "http://localhost:8000/api";
-const USER_API = "http://localhost:5000/api";
+const BASE_URL = "/api";
+const USER_API = "/api";
 const YOUTUBE_API_KEY = "AIzaSyBs569PnYQUNFUXon5AMersGFuKS8aS1QQ";
 
 /* ======================================================
@@ -36,12 +36,12 @@ const YOUTUBE_API_KEY = "AIzaSyBs569PnYQUNFUXon5AMersGFuKS8aS1QQ";
 const ChannelCard = ({ name, imageUrl }) => (
   <div className="bg-white/60 backdrop-blur-md rounded-[2rem] p-6 mb-6 flex items-center space-x-5 shadow-sm border border-white/50 transition-all hover:shadow-md">
     <div className="w-16 h-16 rounded-full overflow-hidden shadow-md ring-4 ring-white flex-shrink-0 bg-gray-100">
-       <img 
-         src={imageUrl || "/fallback.jpg"} 
-         alt={name} 
-         className="w-full h-full object-cover"
-         onError={(e) => { e.target.src = "https://placehold.co/100x100?text=CH"; }} 
-       />
+      <img
+        src={imageUrl || "/fallback.jpg"}
+        alt={name}
+        className="w-full h-full object-cover"
+        onError={(e) => { e.target.src = "https://placehold.co/100x100?text=CH"; }}
+      />
     </div>
     <div className="min-w-0 flex-1">
       <div className="text-xl font-black text-gray-900 line-clamp-1">{name || "Channel Name"}</div>
@@ -57,9 +57,9 @@ const PlayListItem = ({ video, index, duration, onVideoSelect, isPlaying, videoP
   const title = video?.snippet?.title || "No Title";
   const thumbnail = video?.snippet?.thumbnails?.medium?.url;
   const videoId =
-  video?.snippet?.resourceId?.videoId ||
-  video?.id ||
-  null;
+    video?.snippet?.resourceId?.videoId ||
+    video?.id ||
+    null;
 
   const progress = videoProgress[videoId] || 0;
   const totalSeconds = duration || 0;
@@ -76,25 +76,24 @@ const PlayListItem = ({ video, index, duration, onVideoSelect, isPlaying, videoP
       ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
       : `${m}:${String(s).padStart(2, "0")}`;
   };
-  
+
   return (
     <motion.div
       whileHover={{ scale: 1.01 }}
       whileTap={{ scale: 0.99 }}
       onClick={() => onVideoSelect(video)}
-      className={`group cursor-pointer rounded-2xl p-3 flex items-start gap-4 transition-all duration-300 border ${
-        isPlaying 
-          ? "bg-[#1A1A1A] text-white shadow-xl border-[#1A1A1A]" 
-          : "bg-white text-gray-800 hover:bg-gray-50 hover:shadow-sm border-gray-100"
-      }`}
+      className={`group cursor-pointer rounded-2xl p-3 flex items-start gap-4 transition-all duration-300 border ${isPlaying
+        ? "bg-[#1A1A1A] text-white shadow-xl border-[#1A1A1A]"
+        : "bg-white text-gray-800 hover:bg-gray-50 hover:shadow-sm border-gray-100"
+        }`}
     >
       <div className="relative w-28 h-20 flex-shrink-0 overflow-hidden rounded-xl bg-gray-200 shadow-inner">
         {thumbnail ? (
-            <img src={thumbnail} alt={title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          <img src={thumbnail} alt={title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
         ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-800"><MonitorPlay className="text-gray-500"/></div>
+          <div className="w-full h-full flex items-center justify-center bg-gray-800"><MonitorPlay className="text-gray-500" /></div>
         )}
-        
+
         {/* Progress Bar */}
         {progress > 0 && totalSeconds > 0 && (
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-600/50">
@@ -109,14 +108,14 @@ const PlayListItem = ({ video, index, duration, onVideoSelect, isPlaying, videoP
 
         {/* Play Overlay */}
         {isPlaying && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[1px]">
-                <div className="w-8 h-8 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20">
-                    <div className="w-2 h-2 bg-[#D4F478] rounded-full animate-pulse" />
-                </div>
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[1px]">
+            <div className="w-8 h-8 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20">
+              <div className="w-2 h-2 bg-[#D4F478] rounded-full animate-pulse" />
             </div>
+          </div>
         )}
       </div>
-      
+
       <div className="flex flex-col justify-between h-20 py-0.5 w-full min-w-0">
         <div className={`text-sm font-bold leading-tight line-clamp-2 ${isPlaying ? 'text-gray-100' : 'text-gray-900'}`}>
           <span className={`mr-2 text-xs font-mono opacity-60 ${isPlaying ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -131,7 +130,7 @@ const PlayListItem = ({ video, index, duration, onVideoSelect, isPlaying, videoP
           {isPlaying && <span className="text-[#1A1A1A] bg-[#D4F478] font-black text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full shadow-sm">Playing</span>}
           {!isPlaying && isCompleted && <span className="text-emerald-700 bg-emerald-50 font-black text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full">Completed</span>}
           {!isPlaying && showResume && <span className="text-amber-600 bg-amber-50 font-black text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full">Resume at {Math.floor(progress / 60)}:
-              {String(Math.floor(progress % 60)).padStart(2, "0")}</span>}
+            {String(Math.floor(progress % 60)).padStart(2, "0")}</span>}
         </div>
       </div>
     </motion.div>
@@ -141,9 +140,9 @@ const PlayListItem = ({ video, index, duration, onVideoSelect, isPlaying, videoP
 // Player Component
 const PlayListPlayer = ({ video, onPlayerReady, onStateChange, onWatchLater, isSaved, isSaving }) => {
   const videoId =
-  video?.snippet?.resourceId?.videoId ||
-  video?.id ||
-  null;
+    video?.snippet?.resourceId?.videoId ||
+    video?.id ||
+    null;
 
   const title = video?.snippet?.title || "";
 
@@ -162,7 +161,7 @@ const PlayListPlayer = ({ video, onPlayerReady, onStateChange, onWatchLater, isS
     return (
       <div className="w-full lg:w-[68%] bg-white/40 backdrop-blur-xl border border-white/60 rounded-[2.5rem] shadow-xl p-8 flex flex-col items-center justify-center min-h-[400px] md:min-h-[500px] text-center">
         <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-6 shadow-lg animate-pulse ring-8 ring-white/30">
-            <PlayCircle className="w-12 h-12 text-indigo-400" />
+          <PlayCircle className="w-12 h-12 text-indigo-400" />
         </div>
         <h3 className="text-3xl font-black text-gray-900 tracking-tight">Ready to start?</h3>
         <p className="text-gray-500 mt-2 font-medium">Select a lesson from the playlist to begin watching.</p>
@@ -181,15 +180,15 @@ const PlayListPlayer = ({ video, onPlayerReady, onStateChange, onWatchLater, isS
       {/* Video Container */}
       <div className="relative w-full aspect-video bg-black rounded-[2.5rem] overflow-hidden shadow-2xl border-[6px] border-white ring-1 ring-gray-200 group z-10 transition-transform duration-500">
         <div className="absolute inset-0">
-             <YouTube 
-                key={`${videoId}-${video?.id || "playlist"}`}
-  videoId={videoId}
-  opts={opts}
-  onReady={onPlayerReady}
-  onStateChange={onStateChange}
-                className="w-full h-full"
-                iframeClassName="w-full h-full"
-             />
+          <YouTube
+            key={`${videoId}-${video?.id || "playlist"}`}
+            videoId={videoId}
+            opts={opts}
+            onReady={onPlayerReady}
+            onStateChange={onStateChange}
+            className="w-full h-full"
+            iframeClassName="w-full h-full"
+          />
         </div>
       </div>
 
@@ -197,28 +196,28 @@ const PlayListPlayer = ({ video, onPlayerReady, onStateChange, onWatchLater, isS
       <div className="bg-white/80 backdrop-blur-xl border border-white rounded-[2rem] p-6 md:p-8 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
         {/* Decorative blob inside card */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/50 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-        
+
         <h2 className="text-xl md:text-2xl font-black text-gray-900 leading-tight flex-1 line-clamp-2 relative z-10">{title}</h2>
         <div className="flex gap-2 relative z-10">
-            <button 
-              onClick={onWatchLater}
-              disabled={isSaved || isSaving}
-              className={`px-6 py-3.5 rounded-full font-bold text-sm shadow-lg transition-all hover:-translate-y-0.5 whitespace-nowrap flex items-center gap-2 group active:scale-95
-                ${isSaved 
-                  ? "bg-emerald-50 text-emerald-700 border-2 border-emerald-200 cursor-default" 
-                  : "bg-[#1A1A1A] hover:bg-black text-white"
-                }`}
-            >
-                {isSaved ? (
-                  <>
-                    <CheckCircle className="w-4 h-4" /> Saved
-                  </>
-                ) : (
-                  <>
-                    <Clock className="w-4 h-4 group-hover:text-[#D4F478] transition-colors" /> Watch Later
-                  </>
-                )}
-            </button>
+          <button
+            onClick={onWatchLater}
+            disabled={isSaved || isSaving}
+            className={`px-6 py-3.5 rounded-full font-bold text-sm shadow-lg transition-all hover:-translate-y-0.5 whitespace-nowrap flex items-center gap-2 group active:scale-95
+                ${isSaved
+                ? "bg-emerald-50 text-emerald-700 border-2 border-emerald-200 cursor-default"
+                : "bg-[#1A1A1A] hover:bg-black text-white"
+              }`}
+          >
+            {isSaved ? (
+              <>
+                <CheckCircle className="w-4 h-4" /> Saved
+              </>
+            ) : (
+              <>
+                <Clock className="w-4 h-4 group-hover:text-[#D4F478] transition-colors" /> Watch Later
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>
@@ -230,27 +229,27 @@ const PlayListSidebar = ({ videos, durations, onVideoSelect, selectedVideoId, ch
   return (
     <div className="w-full lg:w-[32%] flex flex-col h-full mt-8 lg:mt-0">
       <ChannelCard name={channelData?.name} imageUrl={channelData?.imageUrl} />
-      
+
       <div className="bg-white/50 backdrop-blur-xl border border-white rounded-[2.5rem] p-5 shadow-lg flex-1 flex flex-col min-h-[400px] max-h-[600px] lg:max-h-[calc(100vh-120px)] relative overflow-hidden">
         {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-40 h-40 bg-purple-50/50 rounded-full blur-3xl pointer-events-none" />
 
         <div className="flex items-center gap-3 mb-6 px-2 pt-2 relative z-10">
-            <div className="w-12 h-12 bg-[#1A1A1A] rounded-2xl flex items-center justify-center text-[#D4F478] shadow-md transform -rotate-3 transition-transform hover:rotate-0">
-                <ListVideo className="w-6 h-6" />
-            </div>
-            <div>
-                <h3 className="text-lg font-black text-gray-900 tracking-tight">Course Content</h3>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{videos.length} Lessons</p>
-            </div>
+          <div className="w-12 h-12 bg-[#1A1A1A] rounded-2xl flex items-center justify-center text-[#D4F478] shadow-md transform -rotate-3 transition-transform hover:rotate-0">
+            <ListVideo className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="text-lg font-black text-gray-900 tracking-tight">Course Content</h3>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{videos.length} Lessons</p>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar relative z-10">
           {videos.map((video, index) => {
             const videoId =
-  video?.snippet?.resourceId?.videoId ||
-  video?.id ||
-  `item-${index}`;
+              video?.snippet?.resourceId?.videoId ||
+              video?.id ||
+              `item-${index}`;
 
             const key = videoId || video?.id || index;
             return (
@@ -274,7 +273,7 @@ const PlayListSidebar = ({ videos, durations, onVideoSelect, selectedVideoId, ch
 // Quiz Modal (Redesigned)
 const QuizModal = ({ quiz, onAnswer, onClose }) => {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
-  
+
   const handleButtonClick = (option) => {
     setSelectedAnswer(option);
     onAnswer(option);
@@ -282,7 +281,7 @@ const QuizModal = ({ quiz, onAnswer, onClose }) => {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center p-4 bg-[#1A1A1A]/90 backdrop-blur-sm z-[200]">
-      <motion.div 
+      <motion.div
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.9, opacity: 0 }}
@@ -291,22 +290,22 @@ const QuizModal = ({ quiz, onAnswer, onClose }) => {
       >
         {/* Top Gradient Bar */}
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500" />
-        
+
         <div className="flex justify-between items-start mb-8">
           <div>
-             <motion.span 
-               initial={{ x: -10, opacity: 0 }}
-               animate={{ x: 0, opacity: 1 }}
-               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-indigo-50 text-indigo-600 text-xs font-bold uppercase tracking-wider mb-3 border border-indigo-100"
-             >
-                <Sparkles className="w-3 h-3 fill-current" /> Pop Quiz
-             </motion.span>
-             <h2 className="text-3xl font-black text-gray-900 leading-none tracking-tight">Test Knowledge</h2>
+            <motion.span
+              initial={{ x: -10, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-indigo-50 text-indigo-600 text-xs font-bold uppercase tracking-wider mb-3 border border-indigo-100"
+            >
+              <Sparkles className="w-3 h-3 fill-current" /> Pop Quiz
+            </motion.span>
+            <h2 className="text-3xl font-black text-gray-900 leading-none tracking-tight">Test Knowledge</h2>
           </div>
           {selectedAnswer && (
-            <button 
-                onClick={onClose} 
-                className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors text-gray-500 hover:text-gray-900"
+            <button
+              onClick={onClose}
+              className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors text-gray-500 hover:text-gray-900"
             >
               <XCircle className="w-6 h-6" />
             </button>
@@ -314,10 +313,10 @@ const QuizModal = ({ quiz, onAnswer, onClose }) => {
         </div>
 
         <div className="mb-8 bg-gray-50 p-6 rounded-[1.5rem] border border-gray-100 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-white rounded-bl-[4rem] pointer-events-none opacity-50" />
-            <p className="text-gray-700 text-lg font-bold leading-relaxed relative z-10">
-                {quiz.question}
-            </p>
+          <div className="absolute top-0 right-0 w-20 h-20 bg-white rounded-bl-[4rem] pointer-events-none opacity-50" />
+          <p className="text-gray-700 text-lg font-bold leading-relaxed relative z-10">
+            {quiz.question}
+          </p>
         </div>
 
         <div className="flex flex-col gap-3">
@@ -339,10 +338,10 @@ const QuizModal = ({ quiz, onAnswer, onClose }) => {
             }
 
             return (
-              <button 
-                key={i} 
-                className={`group w-full py-4 px-6 rounded-2xl font-bold text-left transition-all duration-200 flex items-center justify-between active:scale-[0.98] ${styleClass}`} 
-                onClick={() => handleButtonClick(option)} 
+              <button
+                key={i}
+                className={`group w-full py-4 px-6 rounded-2xl font-bold text-left transition-all duration-200 flex items-center justify-between active:scale-[0.98] ${styleClass}`}
+                onClick={() => handleButtonClick(option)}
                 disabled={!!selectedAnswer}
               >
                 <span>{option}</span>
@@ -353,15 +352,15 @@ const QuizModal = ({ quiz, onAnswer, onClose }) => {
         </div>
 
         {selectedAnswer && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className={`mt-6 text-center p-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 ${selectedAnswer === quiz.correctAnswer ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
           >
             {selectedAnswer === quiz.correctAnswer ? (
-                <>🎉 Correct! Resuming video...</>
+              <>🎉 Correct! Resuming video...</>
             ) : (
-                <>Incorrect. The answer was: <span className="underline decoration-2">{quiz.correctAnswer}</span></>
+              <>Incorrect. The answer was: <span className="underline decoration-2">{quiz.correctAnswer}</span></>
             )}
           </motion.div>
         )}
@@ -512,21 +511,21 @@ export default function VideoPlayer() {
      PLAYER HANDLERS
   ====================================================== */
   const handlePlayerReady = (event) => {
-  const playerInstance = event.target;
-  setPlayer(playerInstance);
+    const playerInstance = event.target;
+    setPlayer(playerInstance);
 
-  // ✅ Make sure selectedVideoId is set before this runs
-  const savedTime = videoProgress[selectedVideoId];
+    // ✅ Make sure selectedVideoId is set before this runs
+    const savedTime = videoProgress[selectedVideoId];
 
-  try {
-    if (savedTime && savedTime > 5) {
-      playerInstance.seekTo(savedTime, true);
+    try {
+      if (savedTime && savedTime > 5) {
+        playerInstance.seekTo(savedTime, true);
+      }
+      playerInstance.playVideo(); // 🔥 REQUIRED FOR SINGLE VIDEO
+    } catch (err) {
+      console.error("Error in handlePlayerReady:", err);
     }
-    playerInstance.playVideo(); // 🔥 REQUIRED FOR SINGLE VIDEO
-  } catch (err) {
-    console.error("Error in handlePlayerReady:", err);
-  }
-};
+  };
 
 
   const handleStateChange = (event) => {
@@ -543,7 +542,7 @@ export default function VideoPlayer() {
         try {
           const currentTime = Math.floor(playerInstance.getCurrentTime());
           handleTimeUpdate(currentTime);
-        } catch {}
+        } catch { }
       }, 1000);
     }
     // PAUSED / ENDED
@@ -556,42 +555,42 @@ export default function VideoPlayer() {
       try {
         const time = Math.floor(playerInstance.getCurrentTime());
         saveProgress(time);
-      } catch {}
+      } catch { }
     }
   };
 
   const handleVideoSelect = (video) => {
-  // Save current video progress
-  if (player && selectedVideoId) {
-    try {
-      const time = Math.floor(player.getCurrentTime());
-      saveProgress(time);
-    } catch {}
-  }
+    // Save current video progress
+    if (player && selectedVideoId) {
+      try {
+        const time = Math.floor(player.getCurrentTime());
+        saveProgress(time);
+      } catch { }
+    }
 
-  if (player?.interval) {
-    clearInterval(player.interval);
-    player.interval = null;
-  }
+    if (player?.interval) {
+      clearInterval(player.interval);
+      player.interval = null;
+    }
 
-  lastSavedRef.current = 0;
+    lastSavedRef.current = 0;
 
-  // ✅ USE THE VIDEO YOU CLICKED
-  const vid =
-    video?.snippet?.resourceId?.videoId ||
-    video?.id;
+    // ✅ USE THE VIDEO YOU CLICKED
+    const vid =
+      video?.snippet?.resourceId?.videoId ||
+      video?.id;
 
-  if (!vid) return;
+    if (!vid) return;
 
-  setSelectedVideo(video);
-  setSelectedVideoId(vid);
+    setSelectedVideo(video);
+    setSelectedVideoId(vid);
 
-  // Reset quiz state
-  setShownQuizzes(new Set());
-  setQuizQueue([]);
-  setIsQuizActive(false);
-  setCurrentQuiz(null);
-};
+    // Reset quiz state
+    setShownQuizzes(new Set());
+    setQuizQueue([]);
+    setIsQuizActive(false);
+    setCurrentQuiz(null);
+  };
 
 
 
@@ -602,8 +601,8 @@ export default function VideoPlayer() {
     if (!selectedVideo) return;
 
     const videoId =
-  selectedVideo?.snippet?.resourceId?.videoId ||
-  selectedVideo?.id;
+      selectedVideo?.snippet?.resourceId?.videoId ||
+      selectedVideo?.id;
 
     if (savedVideoIds.has(videoId)) return;
 
@@ -730,11 +729,11 @@ export default function VideoPlayer() {
       try {
         setLoading(true);
         const response = await axios.get(`${BASE_URL}/playlists`, {
-  params: {
-    channelId,
-    courseId
-  }
-});
+          params: {
+            channelId,
+            courseId
+          }
+        });
         const data = response.data.data;
         if (Array.isArray(data) && data.length > 0) {
           setSelectedPlaylist(data[0]);
@@ -752,159 +751,159 @@ export default function VideoPlayer() {
   }, [channelId, courseId]);
 
   useEffect(() => {
-  const fetchContent = async () => {
-    if (!selectedPlaylist || !channelInfo) return;
+    const fetchContent = async () => {
+      if (!selectedPlaylist || !channelInfo) return;
 
-    const contentLink = selectedPlaylist.link;
-    const contentType = selectedPlaylist.type;
+      const contentLink = selectedPlaylist.link;
+      const contentType = selectedPlaylist.type;
 
-    let videoItems = [];
+      let videoItems = [];
 
-    try {
-      // ===============================
-      // 1️⃣ FETCH VIDEOS
-      // ===============================
-      if (contentType === "playlist") {
-        const playlistUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=${contentLink}&key=${YOUTUBE_API_KEY}&maxResults=50`;
-        const playlistRes = await youtubeaxios.get(playlistUrl);
-
-        videoItems = playlistRes.data.items || [];
-      } else if (contentType === "video") {
-  const videoId = contentLink; // 🔥 already a video ID
-
-  if (!videoId) {
-    console.error("❌ Missing videoId for single video");
-    return;
-  }
-
-  const videoUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=${YOUTUBE_API_KEY}`;
-  const videoRes = await youtubeaxios.get(videoUrl);
-
-  const videoItem = videoRes.data.items?.[0];
-
-  if (videoItem) {
-    videoItems = [
-      {
-        id: videoItem.id,
-        snippet: {
-          ...videoItem.snippet,
-          resourceId: { videoId: videoItem.id },
-        },
-        contentDetails: videoItem.contentDetails,
-      },
-    ];
-  }
-}
-
-
-
-      if (!videoItems.length) return;
-
-      setVideos(videoItems);
-
-      // ===============================
-      // 2️⃣ SELECT VIDEO (FIXED)
-      // ===============================
-      let initialVideo = null;
-
-      if (targetVideoId) {
-        initialVideo = videoItems.find((v) => {
-          const vid =
-            v?.snippet?.resourceId?.videoId ||
-            v?.id;
-          return vid === targetVideoId;
-        });
-      }
-
-      if (!initialVideo) {
-        initialVideo = videoItems[0];
-      }
-
-      const selectedVid =
-        initialVideo?.snippet?.resourceId?.videoId ||
-        initialVideo?.id;
-
-      setSelectedVideo(initialVideo);
-      setSelectedVideoId(selectedVid);
-
-      // ===============================
-      // 3️⃣ START LEARNING
-      // ===============================
       try {
-        await axios.post(
-          `${USER_API}/users/start-learning`,
-          {
-            courseId,
-            courseTitle: selectedPlaylist.courseId?.name || "Unknown Course",
-            courseThumbnail: "",
-            channelId,
-            channelName: channelInfo.name,
-            channelThumbnail: channelInfo.imageUrl || "",
-          },
-          { withCredentials: true }
-        );
+        // ===============================
+        // 1️⃣ FETCH VIDEOS
+        // ===============================
+        if (contentType === "playlist") {
+          const playlistUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=${contentLink}&key=${YOUTUBE_API_KEY}&maxResults=50`;
+          const playlistRes = await youtubeaxios.get(playlistUrl);
 
-        console.log("✅ start-learning initialized");
-      } catch (err) {
-        console.error(
-          "❌ start-learning failed",
-          err.response?.data || err.message
-        );
-      }
+          videoItems = playlistRes.data.items || [];
+        } else if (contentType === "video") {
+          const videoId = contentLink; // 🔥 already a video ID
 
-      // ===============================
-      // 4️⃣ FETCH DURATIONS (FIXED)
-      // ===============================
-      const videoIds = videoItems
-        .map((v) => v?.snippet?.resourceId?.videoId || v?.id)
-        .filter(Boolean)
-        .join(",");
+          if (!videoId) {
+            console.error("❌ Missing videoId for single video");
+            return;
+          }
 
-      if (videoIds) {
-        const videosUrl = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${videoIds}&key=${YOUTUBE_API_KEY}`;
-        const videosRes = await youtubeaxios.get(videosUrl);
+          const videoUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=${YOUTUBE_API_KEY}`;
+          const videoRes = await youtubeaxios.get(videoUrl);
 
-        const newDurations = {};
-        videosRes.data.items?.forEach((video) => {
-          newDurations[video.id] = durationToSeconds(
-            formatDuration(video.contentDetails.duration)
+          const videoItem = videoRes.data.items?.[0];
+
+          if (videoItem) {
+            videoItems = [
+              {
+                id: videoItem.id,
+                snippet: {
+                  ...videoItem.snippet,
+                  resourceId: { videoId: videoItem.id },
+                },
+                contentDetails: videoItem.contentDetails,
+              },
+            ];
+          }
+        }
+
+
+
+        if (!videoItems.length) return;
+
+        setVideos(videoItems);
+
+        // ===============================
+        // 2️⃣ SELECT VIDEO (FIXED)
+        // ===============================
+        let initialVideo = null;
+
+        if (targetVideoId) {
+          initialVideo = videoItems.find((v) => {
+            const vid =
+              v?.snippet?.resourceId?.videoId ||
+              v?.id;
+            return vid === targetVideoId;
+          });
+        }
+
+        if (!initialVideo) {
+          initialVideo = videoItems[0];
+        }
+
+        const selectedVid =
+          initialVideo?.snippet?.resourceId?.videoId ||
+          initialVideo?.id;
+
+        setSelectedVideo(initialVideo);
+        setSelectedVideoId(selectedVid);
+
+        // ===============================
+        // 3️⃣ START LEARNING
+        // ===============================
+        try {
+          await axios.post(
+            `${USER_API}/users/start-learning`,
+            {
+              courseId,
+              courseTitle: selectedPlaylist.courseId?.name || "Unknown Course",
+              courseThumbnail: "",
+              channelId,
+              channelName: channelInfo.name,
+              channelThumbnail: channelInfo.imageUrl || "",
+            },
+            { withCredentials: true }
           );
-        });
 
-        setDurations(newDurations);
-      }
+          console.log("✅ start-learning initialized");
+        } catch (err) {
+          console.error(
+            "❌ start-learning failed",
+            err.response?.data || err.message
+          );
+        }
 
-      // ===============================
-      // 5️⃣ FETCH QUIZZES
-      // ===============================
-      try {
-        const quizRes = await axios.get(
-          `${BASE_URL}/quizzes/by-playlist-document/${selectedPlaylist._id}`
-        );
+        // ===============================
+        // 4️⃣ FETCH DURATIONS (FIXED)
+        // ===============================
+        const videoIds = videoItems
+          .map((v) => v?.snippet?.resourceId?.videoId || v?.id)
+          .filter(Boolean)
+          .join(",");
 
-        if (quizRes.data.success) {
-          const allQuestions =
-            quizRes.data.data?.videos?.flatMap((v) =>
-              v.questions.map((q) => ({
-                ...q,
-                videoId: v.videoId,
-              }))
-            ) || [];
+        if (videoIds) {
+          const videosUrl = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${videoIds}&key=${YOUTUBE_API_KEY}`;
+          const videosRes = await youtubeaxios.get(videosUrl);
 
-          setQuizQuestions(allQuestions);
-        } else {
+          const newDurations = {};
+          videosRes.data.items?.forEach((video) => {
+            newDurations[video.id] = durationToSeconds(
+              formatDuration(video.contentDetails.duration)
+            );
+          });
+
+          setDurations(newDurations);
+        }
+
+        // ===============================
+        // 5️⃣ FETCH QUIZZES
+        // ===============================
+        try {
+          const quizRes = await axios.get(
+            `${BASE_URL}/quizzes/by-playlist-document/${selectedPlaylist._id}`
+          );
+
+          if (quizRes.data.success) {
+            const allQuestions =
+              quizRes.data.data?.videos?.flatMap((v) =>
+                v.questions.map((q) => ({
+                  ...q,
+                  videoId: v.videoId,
+                }))
+              ) || [];
+
+            setQuizQuestions(allQuestions);
+          } else {
+            setQuizQuestions([]);
+          }
+        } catch {
           setQuizQuestions([]);
         }
-      } catch {
-        setQuizQuestions([]);
+      } catch (error) {
+        console.error("❌ fetchContent failed", error);
       }
-    } catch (error) {
-      console.error("❌ fetchContent failed", error);
-    }
-  };
+    };
 
-  fetchContent();
-}, [selectedPlaylist, targetVideoId, channelInfo]);
+    fetchContent();
+  }, [selectedPlaylist, targetVideoId, channelInfo]);
 
 
   // Cleanup intervals
@@ -959,7 +958,7 @@ export default function VideoPlayer() {
         try {
           const time = Math.floor(player.getCurrentTime());
           saveProgress(time);
-        } catch {}
+        } catch { }
       }
     };
 
@@ -1038,9 +1037,9 @@ export default function VideoPlayer() {
             onStateChange={handleStateChange}
             onWatchLater={handleWatchLater}
             isSaved={savedVideoIds.has(
-  selectedVideo?.snippet?.resourceId?.videoId ||
-  selectedVideo?.id
-)}
+              selectedVideo?.snippet?.resourceId?.videoId ||
+              selectedVideo?.id
+            )}
 
             isSaving={isSaving}
           />

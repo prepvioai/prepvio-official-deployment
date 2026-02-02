@@ -6,6 +6,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Editor from "@monaco-editor/react";
 
+import { useAuthStore } from "../store/authstore";
+import UpgradeModal from "../components/UpgradeModal";
+
 // Static 3D Model
 function StaticModel(props) {
     const { nodes, materials } = useGLTF('/final_prepvio_model.glb');
@@ -429,6 +432,8 @@ const InterviewPreview = () => {
     const [interviewData, setInterviewData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [conversationTab, setConversationTab] = useState("questions");
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+    const { user } = useAuthStore();
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -442,7 +447,7 @@ const InterviewPreview = () => {
         const fetchInterview = async () => {
             try {
                 const res = await fetch(
-                    `http://localhost:5000/api/interview-session/${sessionId}`,
+                    `/api/interview-session/${sessionId}`,
                     { credentials: "include" }
                 );
 
@@ -642,7 +647,18 @@ const InterviewPreview = () => {
                                         <motion.button
                                             whileHover={{ scale: 1.02 }}
                                             whileTap={{ scale: 0.98 }}
-                                            onClick={() => setConversationTab("highlights")}
+                                            onClick={() => {
+                                                // ✅ Gating Logic: Block if (Basic OR Pro Access) AND no promo code used AND not on Free Plan
+                                                const isBasicOrPro = user?.subscription?.planId === 'monthly' || user?.subscription?.planId === 'premium';
+                                                const isFreePlan = user?.subscription?.planId === 'free';
+                                                const hasUsedPromo = user?.payments?.some(p => p.promoCode && p.status === 'success');
+
+                                                if (isBasicOrPro && !hasUsedPromo && !isFreePlan) {
+                                                    setShowUpgradeModal(true);
+                                                } else {
+                                                    setConversationTab("highlights");
+                                                }
+                                            }}
                                             className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${conversationTab === "highlights"
                                                     ? "bg-[#1A1A1A] text-white shadow-md"
                                                     : "text-gray-600 hover:text-gray-900"
@@ -792,6 +808,12 @@ const InterviewPreview = () => {
                     </AnimatePresence>
                 </div>
             </div>
+
+            <UpgradeModal
+                isOpen={showUpgradeModal}
+                onClose={() => setShowUpgradeModal(false)}
+                featureName="Highlighted Clips"
+            />
         </div>
     );
 };
@@ -1230,7 +1252,7 @@ export default InterviewPreview;
 //         const fetchInterview = async () => {
 //             try {
 //                 const res = await fetch(
-//                     `http://localhost:5000/api/interview-session/${sessionId}`,
+//                     `/api/interview-session/${sessionId}`,
 //                     { credentials: "include" }
 //                 );
 

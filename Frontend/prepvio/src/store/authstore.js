@@ -2,10 +2,7 @@
 import { create } from "zustand";
 import axios from "axios";
 
-const API_URL =
-    import.meta.env.MODE === "development"
-        ? "http://localhost:5000/api/auth"
-        : "/api/auth";
+const API_URL = "/api/auth";
 
 axios.defaults.withCredentials = true;
 
@@ -21,16 +18,16 @@ export const useAuthStore = create((set) => ({
         set({ isLoading: true, error: null, message: null });
         try {
             const response = await axios.post(`${API_URL}/signup`, { email, password, name });
-            set({ 
-                user: response.data.user, 
+            set({
+                user: response.data.user,
                 isAuthenticated: false,  // Not authenticated until verified
                 isLoading: false,
-                message: response.data.message 
+                message: response.data.message
             });
         } catch (error) {
-            set({ 
-                error: error.response?.data?.message || "Error signing up", 
-                isLoading: false 
+            set({
+                error: error.response?.data?.message || "Error signing up",
+                isLoading: false
             });
             throw error;
         }
@@ -51,9 +48,9 @@ export const useAuthStore = create((set) => ({
                 isLoading: false,
             });
         } catch (error) {
-            set({ 
-                error: error.response?.data?.message || "Error logging in", 
-                isLoading: false 
+            set({
+                error: error.response?.data?.message || "Error logging in",
+                isLoading: false
             });
             throw error;
         }
@@ -65,11 +62,11 @@ export const useAuthStore = create((set) => ({
             await axios.post(`${API_URL}/logout`);
             // ✅ Clear token from localStorage on logout
             localStorage.removeItem("token");
-            set({ 
-                user: null, 
-                isAuthenticated: false, 
-                error: null, 
-                isLoading: false 
+            set({
+                user: null,
+                isAuthenticated: false,
+                error: null,
+                isLoading: false
             });
         } catch (error) {
             set({ error: "Error logging out", isLoading: false });
@@ -85,56 +82,56 @@ export const useAuthStore = create((set) => ({
             if (response.data.token) {
                 localStorage.setItem("token", response.data.token);
             }
-            set({ 
-                user: response.data.user, 
+            set({
+                user: response.data.user,
                 isAuthenticated: true,  // ✅ Now authenticated after verification
-                isLoading: false 
+                isLoading: false
             });
             return response.data;
         } catch (error) {
-            set({ 
-                error: error.response?.data?.message || "Error verifying email", 
-                isLoading: false 
+            set({
+                error: error.response?.data?.message || "Error verifying email",
+                isLoading: false
             });
             throw error;
         }
     },
 
     checkAuth: async () => {
-  set({ isCheckingAuth: true, error: null });
+        set({ isCheckingAuth: true, error: null });
 
-  try {
-    const response = await axios.get(
-      "http://localhost:5000/api/users/me",
-      { withCredentials: true }
-    );
+        try {
+            const response = await axios.get(
+                `${API_URL}/check-auth`,
+                { withCredentials: true }
+            );
 
-    set({
-      user: response.data.user,
-      isAuthenticated: true,
-      isCheckingAuth: false,
-    });
-  } catch (error) {
-    console.log("checkAuth failed (expected if not logged in)");
-    set({
-      user: null,
-      isAuthenticated: false,
-      isCheckingAuth: false,
-      error: null,
-    });
-  }
-},
+            set({
+                user: response.data.user,
+                isAuthenticated: true,
+                isCheckingAuth: false,
+            });
+        } catch (error) {
+            console.log("checkAuth failed (expected if not logged in)");
+            set({
+                user: null,
+                isAuthenticated: false,
+                isCheckingAuth: false,
+                error: null,
+            });
+        }
+    },
 
-refreshUser: async () => {
-    try {
-      const response = await axios.get(`${API_URL}/auth/check-auth`, {
-        withCredentials: true,
-      });
-      set({ user: response.data.user });
-    } catch (error) {
-      console.error("Failed to refresh user:", error);
-    }
-  },
+    refreshUser: async () => {
+        try {
+            const response = await axios.get(`${API_URL}/check-auth`, {
+                withCredentials: true,
+            });
+            set({ user: response.data.user });
+        } catch (error) {
+            console.error("Failed to refresh user:", error);
+        }
+    },
 
 
     forgotPassword: async (email) => {

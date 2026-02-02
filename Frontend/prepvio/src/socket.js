@@ -15,7 +15,7 @@ const decodeToken = (token) => {
   }
 };
 
-const socket = io("http://localhost:5000", {
+const socket = io("/", {
   transports: ["websocket"],
   autoConnect: false,
   withCredentials: true, // Important for cookies
@@ -26,7 +26,7 @@ export const connectSocket = (userId) => {
   // Try to get token from multiple sources
   // 1. First check localStorage (set during login)
   let token = localStorage.getItem("token");
-  
+
   // 2. If not in localStorage, try to extract from cookie (for httpOnly fallback)
   if (!token) {
     token = document.cookie

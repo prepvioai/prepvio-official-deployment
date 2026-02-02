@@ -8,15 +8,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import socket from "../socket";
 import { useNotificationStore } from "../store/notificationStore";
 
-import { 
-  Menu, 
-  Search, 
-  Bell, 
-  Volume2, 
-  VolumeX, 
-  LayoutDashboard, 
-  LogOut, 
-  X 
+import {
+  Menu,
+  Search,
+  Bell,
+  Volume2,
+  VolumeX,
+  LayoutDashboard,
+  LogOut,
+  X
 } from 'lucide-react';
 
 const Header = () => {
@@ -28,7 +28,7 @@ const Header = () => {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  
+
   // ✅ SEARCH STATE
   const [search, setSearch] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -40,7 +40,7 @@ const Header = () => {
   const headerRef = useRef(null);
   const searchInputRef = useRef(null);
   const profileDropdownRef = useRef(null);
-  
+
   // ✅ USE STORE - Only recent notifications for bell icon
   const {
     recentNotifications,
@@ -67,15 +67,15 @@ const Header = () => {
   const filteredCourses = search.length === 0
     ? courses
     : courses.filter((course) => {
-        const name = course.name || course.title || "";
-        return name.toLowerCase().includes(search.toLowerCase());
-      });
+      const name = course.name || course.title || "";
+      return name.toLowerCase().includes(search.toLowerCase());
+    });
 
   // ✅ FETCH COURSES ON MOUNT
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const res = await fetch("http://localhost:8000/api/courses");
+        const res = await fetch("/api/courses");
         const data = await res.json();
 
         const list = Array.isArray(data)
@@ -133,7 +133,7 @@ const Header = () => {
   };
 
   const handleMuteClick = () => setIsMuted(!isMuted);
-  
+
   const handleProfileClick = () => setIsProfileDropdownOpen(!isProfileDropdownOpen);
   const handleDashboardClick = (e) => {
     e.preventDefault();
@@ -168,29 +168,28 @@ const Header = () => {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 px-4 md:px-10 py-4 ${
-          isScrolled ? "bg-white/70 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] py-3" : "bg-transparent"
-        }`}
+        className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 px-4 md:px-10 py-4 ${isScrolled ? "bg-white/70 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] py-3" : "bg-transparent"
+          }`}
       >
         <div className="max-w-[1600px] mx-auto flex justify-between items-center">
-          
+
           {/* 1. BRANDING - RESPONSIVE LOGOS */}
           <Link to="/" className="flex items-center gap-3 cursor-pointer group shrink-0">
             {/* ICON LOGO: Always visible (Square Icon) */}
             <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center overflow-hidden group-hover:rotate-12 transition-transform duration-300 shadow-lg shadow-black/20">
-              <img 
-                className="w-full h-full object-cover" 
-                src="/newuilogo1.png" 
-                alt="Icon" 
+              <img
+                className="w-full h-full object-cover"
+                src="/newuilogo1.png"
+                alt="Icon"
               />
             </div>
 
             {/* TEXT LOGO: Hidden on mobile, visible on Large screens (md and up) */}
             <div className="hidden md:block">
-              <img 
-                className="h-10 w-auto object-contain" 
-                src="/prepvio (1).png" 
-                alt="PrepVio AI" 
+              <img
+                className="h-10 w-auto object-contain"
+                src="/prepvio (1).png"
+                alt="PrepVio AI"
               />
             </div>
           </Link>
@@ -200,7 +199,7 @@ const Header = () => {
             <div className="relative flex items-center" >
               <AnimatePresence mode="wait">
                 {isSearchVisible ? (
-                  <motion.div 
+                  <motion.div
                     initial={{ width: 0, opacity: 0 }}
                     animate={{ width: "auto", opacity: 1 }}
                     exit={{ width: 0, opacity: 0 }}
@@ -231,10 +230,10 @@ const Header = () => {
                     </button>
                   </motion.div>
                 ) : (
-                  <motion.button 
-                    initial={{ scale: 0.8 }} 
+                  <motion.button
+                    initial={{ scale: 0.8 }}
                     animate={{ scale: 1 }}
-                    onClick={handleSearchClick} 
+                    onClick={handleSearchClick}
                     className="hover:text-black transition-colors"
                   >
                     <Search className="w-4.5 h-4.5" />
@@ -253,18 +252,18 @@ const Header = () => {
                   >
                     {/* 🔹 INTERVIEW (ALWAYS ON TOP) */}
                     <button
-  onClick={() => {
-    setShowSuggestions(false);
-    setSearch("");
-    setIsSearchVisible(false);
+                      onClick={() => {
+                        setShowSuggestions(false);
+                        setSearch("");
+                        setIsSearchVisible(false);
 
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
+                        if (!isAuthenticated) {
+                          navigate("/login");
+                          return;
+                        }
 
-    navigate(INTERVIEW_SEARCH_ITEM.path);
-  }}
+                        navigate(INTERVIEW_SEARCH_ITEM.path);
+                      }}
 
                       className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors border-b border-gray-100"
                     >
@@ -284,19 +283,19 @@ const Header = () => {
                     ) : (
                       filteredCourses.slice(0, 5).map((course) => (
                         <button
-  key={course._id}
-  onClick={() => {
-    setShowSuggestions(false);
-    setSearch("");
-    setIsSearchVisible(false);
+                          key={course._id}
+                          onClick={() => {
+                            setShowSuggestions(false);
+                            setSearch("");
+                            setIsSearchVisible(false);
 
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
+                            if (!isAuthenticated) {
+                              navigate("/login");
+                              return;
+                            }
 
-    navigate(`/services/learn-and-perform/${course._id}`);
-  }}
+                            navigate(`/services/learn-and-perform/${course._id}`);
+                          }}
 
                           className="w-full px-4 py-3 text-left text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
                         >
@@ -325,7 +324,7 @@ const Header = () => {
               <button onClick={handleMuteClick} className="hover:text-black transition-colors">
                 {isMuted ? <VolumeX className="w-4.5 h-4.5" /> : <Volume2 className="w-4.5 h-4.5" />}
               </button>
-              
+
               {/* ✅ NOTIFICATION BELL ICON */}
               <div className="relative">
                 <button
@@ -350,7 +349,7 @@ const Header = () => {
 
                 {/* ✅ NOTIFICATION DROPDOWN - ONLY SHOW IF AUTHENTICATED */}
                 {isAuthenticated && isNotificationOpen && (
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -360,7 +359,7 @@ const Header = () => {
                     <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
                       <span className="text-sm font-bold text-gray-900">Recent Notifications</span>
                       {recentNotifications.length > 0 && (
-                        <button 
+                        <button
                           onClick={handleViewAllNotifications}
                           className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors"
                         >
@@ -381,9 +380,8 @@ const Header = () => {
                           <div
                             key={n._id}
                             onClick={() => handleNotificationClick(n._id)}
-                            className={`px-4 py-3 cursor-pointer hover:bg-gray-50 border-b border-gray-50 last:border-b-0 transition-colors ${
-                              n.isRead ? "bg-white" : "bg-blue-50/50"
-                            }`}
+                            className={`px-4 py-3 cursor-pointer hover:bg-gray-50 border-b border-gray-50 last:border-b-0 transition-colors ${n.isRead ? "bg-white" : "bg-blue-50/50"
+                              }`}
                           >
                             <div className="flex items-start justify-between gap-2">
                               <p className={`flex-1 text-sm ${n.isRead ? "text-gray-600" : "font-bold text-gray-900"}`}>
@@ -485,7 +483,7 @@ const Header = () => {
         {/* MOBILE MENU OVERLAY */}
         <AnimatePresence>
           {isMobileMenuOpen && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
@@ -508,7 +506,7 @@ const Header = () => {
       {isDashboardOpen && (
         <DashboardModal onClose={() => setIsDashboardOpen(false)} />
       )}
-      
+
       {/* FIXED SPACER */}
       <div className="h-16 md:h-20" />
     </>

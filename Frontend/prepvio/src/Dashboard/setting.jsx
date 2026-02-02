@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
+import {
   Settings, User, Mail, Phone, MapPin, Globe, Briefcase, Save,
   Camera, ExternalLink, ArrowLeft, Sparkles, Cpu, MessageSquare,
   Trophy, Users, Github, Twitter, Linkedin, ShieldCheck, Code2, Award, Zap, Target,
@@ -38,9 +38,9 @@ const SkillBadge = ({ name, level }) => (
     </div>
     <div className="flex gap-1">
       {[1, 2, 3, 4, 5].map((step) => (
-        <div 
-          key={step} 
-          className={`h-1 md:h-1.5 flex-1 rounded-full ${step <= level ? 'bg-[#1A1A1A]' : 'bg-gray-100'}`} 
+        <div
+          key={step}
+          className={`h-1 md:h-1.5 flex-1 rounded-full ${step <= level ? 'bg-[#1A1A1A]' : 'bg-gray-100'}`}
         />
       ))}
     </div>
@@ -48,7 +48,7 @@ const SkillBadge = ({ name, level }) => (
 );
 
 const ProjectCard = ({ project, onEdit, onDelete }) => (
-  <motion.div 
+  <motion.div
     variants={itemUpVariants}
     className="bg-white rounded-[2rem] md:rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 group relative"
   >
@@ -57,9 +57,9 @@ const ProjectCard = ({ project, onEdit, onDelete }) => (
       <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
       <div className="absolute top-3 right-3 md:top-4 md:right-4 flex gap-2">
         {project.liveLink && (
-          <a 
-            href={project.liveLink} 
-            target="_blank" 
+          <a
+            href={project.liveLink}
+            target="_blank"
             rel="noopener noreferrer"
             className="bg-white/90 backdrop-blur-md p-2 rounded-full shadow-lg hover:bg-white transition-colors"
           >
@@ -67,9 +67,9 @@ const ProjectCard = ({ project, onEdit, onDelete }) => (
           </a>
         )}
         {project.githubLink && (
-          <a 
-            href={project.githubLink} 
-            target="_blank" 
+          <a
+            href={project.githubLink}
+            target="_blank"
             rel="noopener noreferrer"
             className="bg-white/90 backdrop-blur-md p-2 rounded-full shadow-lg hover:bg-white transition-colors"
           >
@@ -82,13 +82,13 @@ const ProjectCard = ({ project, onEdit, onDelete }) => (
       <div className="flex justify-between items-start mb-2">
         <h3 className="text-xl md:text-2xl font-black text-gray-900 flex-1">{project.title}</h3>
         <div className="flex gap-2 ml-2">
-          <button 
+          <button
             onClick={() => onEdit(project)}
             className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <Edit2 className="w-4 h-4 text-gray-600" />
           </button>
-          <button 
+          <button
             onClick={() => onDelete(project._id)}
             className="p-1.5 hover:bg-red-50 rounded-lg transition-colors"
           >
@@ -177,7 +177,7 @@ const ProjectModal = ({ isOpen, onClose, onSave, editingProject }) => {
       .split(",")
       .map(t => t.trim())
       .filter(t => t);
-    
+
     onSave({
       ...formData,
       tags: tagsArray,
@@ -188,7 +188,7 @@ const ProjectModal = ({ isOpen, onClose, onSave, editingProject }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
@@ -198,7 +198,7 @@ const ProjectModal = ({ isOpen, onClose, onSave, editingProject }) => {
             <h2 className="text-2xl md:text-3xl font-black text-gray-900">
               {editingProject ? "Edit Project" : "Add New Project"}
             </h2>
-            <button 
+            <button
               onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
             >
@@ -312,18 +312,18 @@ function AccountView({ onNavigate }) {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/users/me", { withCredentials: true });
+        const res = await axios.get("/api/users/me", { withCredentials: true });
         const u = res.data.user;
         setUser(u);
-        
+
         setFormData({
-          firstName: u.firstName || "", 
+          firstName: u.firstName || "",
           lastName: u.lastName || "",
-          phone: u.phone || "", 
+          phone: u.phone || "",
           email: u.email || "",
-          city: u.location?.city || "", 
+          city: u.location?.city || "",
           state: u.location?.state || "",
-          country: u.location?.country || "", 
+          country: u.location?.country || "",
           pincode: u.location?.pincode || "",
           bio: u.bio || "",
         });
@@ -343,21 +343,21 @@ function AccountView({ onNavigate }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
-    
+
     try {
-      const res = await axios.put("http://localhost:5000/api/users/me", {
-        firstName: formData.firstName, 
+      const res = await axios.put("/api/users/me", {
+        firstName: formData.firstName,
         lastName: formData.lastName,
-        phone: formData.phone, 
+        phone: formData.phone,
         bio: formData.bio,
         location: {
-          city: formData.city, 
+          city: formData.city,
           state: formData.state,
-          country: formData.country, 
+          country: formData.country,
           pincode: formData.pincode,
         },
       }, { withCredentials: true });
-      
+
       if (res.data.success && res.data.user) {
         setUser(res.data.user);
         alert("Account updated successfully ✅");
@@ -395,10 +395,10 @@ function AccountView({ onNavigate }) {
       const reader = new FileReader();
       reader.onload = async (event) => {
         const base64Image = event.target?.result;
-        
+
         try {
           const res = await axios.post(
-            "http://localhost:5000/api/users/upload-profile-pic",
+            "/api/users/upload-profile-pic",
             { profilePic: base64Image },
             { withCredentials: true }
           );
@@ -447,13 +447,13 @@ function AccountView({ onNavigate }) {
         <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full blur-[100px] opacity-30 pointer-events-none" />
         <div className="relative group shrink-0">
           <div className="w-32 h-32 md:w-40 md:h-40 rounded-full p-1 bg-gradient-to-br from-white/20 to-white/5 border border-white/10 shadow-2xl">
-            <img 
-              src={user?.profilePic || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(formData.firstName + ' ' + formData.lastName)}`} 
-              alt="Profile" 
-              className="w-full h-full object-cover rounded-full" 
+            <img
+              src={user?.profilePic || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(formData.firstName + ' ' + formData.lastName)}`}
+              alt="Profile"
+              className="w-full h-full object-cover rounded-full"
             />
           </div>
-          <button 
+          <button
             onClick={handleCameraClick}
             disabled={uploading}
             className="absolute bottom-2 right-2 bg-[#D4F478] text-black p-2.5 rounded-full shadow-lg hover:scale-110 transition-transform cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
@@ -502,14 +502,13 @@ function AccountView({ onNavigate }) {
             </div>
           </div>
           <div className="pt-6 border-t border-gray-100 flex justify-end">
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={saving}
-              className={`bg-[#1A1A1A] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-all shadow-xl shadow-gray-200 ${
-                saving 
-                  ? 'opacity-50 cursor-not-allowed' 
-                  : 'hover:bg-black hover:scale-105'
-              }`}
+              className={`bg-[#1A1A1A] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-all shadow-xl shadow-gray-200 ${saving
+                ? 'opacity-50 cursor-not-allowed'
+                : 'hover:bg-black hover:scale-105'
+                }`}
             >
               {saving ? (
                 <>
@@ -534,14 +533,14 @@ function PortfolioView({ onBack }) {
   const [view, setView] = useState("creator");
   const [portfolio, setPortfolio] = useState(null);
   const [loading, setLoading] = useState(true);
-  
+
   // ✅ Project management state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
 
   const fetchPortfolio = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/users/portfolio", { withCredentials: true });
+      const res = await axios.get("/api/users/portfolio", { withCredentials: true });
       setPortfolio(res.data);
     } catch (err) {
       console.error("Failed to fetch portfolio", err);
@@ -560,7 +559,7 @@ function PortfolioView({ onBack }) {
       if (editingProject) {
         // Update existing project
         await axios.put(
-          `http://localhost:5000/api/users/projects/${editingProject._id}`,
+          `/api/users/projects/${editingProject._id}`,
           projectData,
           { withCredentials: true }
         );
@@ -568,13 +567,13 @@ function PortfolioView({ onBack }) {
       } else {
         // Create new project
         await axios.post(
-          "http://localhost:5000/api/users/projects",
+          "/api/users/projects",
           projectData,
           { withCredentials: true }
         );
         alert("Project added successfully! ✅");
       }
-      
+
       setIsModalOpen(false);
       setEditingProject(null);
       fetchPortfolio(); // Refresh data
@@ -587,10 +586,10 @@ function PortfolioView({ onBack }) {
   // ✅ Handle Delete Project
   const handleDeleteProject = async (projectId) => {
     if (!confirm("Are you sure you want to delete this project?")) return;
-    
+
     try {
       await axios.delete(
-        `http://localhost:5000/api/users/projects/${projectId}`,
+        `/api/users/projects/${projectId}`,
         { withCredentials: true }
       );
       alert("Project deleted successfully! ✅");
@@ -650,8 +649,8 @@ function PortfolioView({ onBack }) {
     }, {})
   );
 
-  const avgLogic = aptitude.length > 0 
-    ? Math.round(aptitude.reduce((acc, curr) => acc + (curr.percentage || 0), 0) / aptitude.length) 
+  const avgLogic = aptitude.length > 0
+    ? Math.round(aptitude.reduce((acc, curr) => acc + (curr.percentage || 0), 0) / aptitude.length)
     : 0;
 
   return (
@@ -707,10 +706,10 @@ function PortfolioView({ onBack }) {
                     <div className="flex items-center gap-3 ml-1 md:ml-2"><div className="p-1.5 md:p-2 bg-black text-white rounded-lg md:rounded-xl"><Cpu className="w-4 h-4 md:w-5 md:h-5" /></div><h2 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight text-left">Verified Skills</h2></div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
                       {verifiedSkills.length > 0 ? verifiedSkills.map((s) => (
-                        <SkillBadge 
-                          key={s.courseId} 
-                          name={s.name} 
-                          level={s.level} 
+                        <SkillBadge
+                          key={s.courseId}
+                          name={s.name}
+                          level={s.level}
                         />
                       )) : (
                         <p className="text-gray-400 font-bold p-4 col-span-full">Start learning courses to unlock skills.</p>
@@ -732,7 +731,7 @@ function PortfolioView({ onBack }) {
                       <div className="p-1.5 md:p-2 bg-black text-white rounded-lg md:rounded-xl"><Code2 className="w-4 h-4 md:w-5 md:h-5" /></div>
                       <h2 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight text-left">Recent Builds</h2>
                     </div>
-                    <button 
+                    <button
                       onClick={() => {
                         setEditingProject(null);
                         setIsModalOpen(true);
@@ -745,8 +744,8 @@ function PortfolioView({ onBack }) {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                     {projects.length > 0 ? projects.map((p) => (
-                      <ProjectCard 
-                        key={p._id} 
+                      <ProjectCard
+                        key={p._id}
                         project={p}
                         onEdit={handleEditProject}
                         onDelete={handleDeleteProject}
@@ -755,7 +754,7 @@ function PortfolioView({ onBack }) {
                       <div className="col-span-full text-center py-12 bg-white rounded-3xl border border-gray-100">
                         <Code2 className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                         <p className="text-gray-400 font-bold mb-4">No projects yet</p>
-                        <button 
+                        <button
                           onClick={() => {
                             setEditingProject(null);
                             setIsModalOpen(true);

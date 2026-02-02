@@ -4,14 +4,17 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, PlayCircle, CheckCircle2, Clock, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "../../../../store/authstore.js";
+import PlanBlockModal from "../../../../components/PlanBlockModal.jsx";
 
 const Rounds = ({ companyType, role }) => {
   const [rounds, setRounds] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const [modalType, setModalType] = useState(null); // 'payment' | 'upgrade' | null
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-   useEffect(() => {
+  useEffect(() => {
     console.log("📊 Current user:", user);
     console.log("📊 Subscription:", user?.subscription);
     console.log("📊 Active:", user?.subscription?.active);
@@ -20,11 +23,11 @@ const Rounds = ({ companyType, role }) => {
 
 
 
-   useEffect(() => {
+  useEffect(() => {
     const fetchRounds = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:5000/api/companies/${encodeURIComponent(
+          `/api/companies/${encodeURIComponent(
             companyType
           )}/${encodeURIComponent(role)}/rounds`
         );
@@ -40,68 +43,68 @@ const Rounds = ({ companyType, role }) => {
   }, [companyType, role]);
 
   const handleStartInterview = async () => {
-  try {
-    // Request camera permission
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    stream.getTracks().forEach((track) => track.stop());
+    try {
+      // Request camera permission
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      stream.getTracks().forEach((track) => track.stop());
 
-    console.log("✅ Camera access granted");
+      console.log("✅ Camera access granted");
 
-    // Start interview session (this will consume 1 credit)
-    const res = await axios.post(
-      "http://localhost:5000/api/interview-session/start",
-      { companyType, role },
-      { withCredentials: true }
-    );
+      // Start interview session (this will consume 1 credit)
+      const res = await axios.post(
+        "/api/interview-session/start",
+        { companyType, role },
+        { withCredentials: true }
+      );
 
-    console.log("✅ Session started:", res.data);
+      console.log("✅ Session started:", res.data);
 
-    const sessionId = res.data.sessionId;
+      const sessionId = res.data.sessionId;
 
-    navigate("/services/check-your-ability/interview/start", {
-      state: {
-        companyType,
-        role,
-        rounds,
-        sessionId,
-        preventBack: true,
-      },
-      replace: true,
-    });
+      navigate("/services/check-your-ability/interview/start", {
+        state: {
+          companyType,
+          role,
+          rounds,
+          sessionId,
+          preventBack: true,
+        },
+        replace: true,
+      });
 
-  } catch (error) {
-    console.error("❌ Full error:", error);
-    console.error("❌ Error response:", error.response?.data); // ✅ ADD THIS
-    console.error("❌ Error status:", error.response?.status); // ✅ ADD THIS
-    
-    if (error.name === 'NotAllowedError') {
-      alert("⚠️ Please allow camera access to continue.");
-    } else if (error.response?.status === 403) {
-      // ✅ HANDLE SUBSCRIPTION ERRORS
-      const data = error.response.data;
-      
-      console.log("🔒 403 Error data:", data); // ✅ ADD THIS
-      
-      if (data.requiresPayment) {
-        alert("⚠️ No active subscription. Please subscribe to continue.");
-        navigate("/dashboard/pricing");
-      } else if (data.needsUpgrade) {
-        alert("⚠️ No interview credits remaining. Please upgrade your plan.");
-        navigate("/dashboard/pricing");
+    } catch (error) {
+      console.error("❌ Full error:", error);
+      console.error("❌ Error response:", error.response?.data); // ✅ ADD THIS
+      console.error("❌ Error status:", error.response?.status); // ✅ ADD THIS
+
+      if (error.name === 'NotAllowedError') {
+        alert("⚠️ Please allow camera access to continue.");
+      } else if (error.response?.status === 403) {
+        // ✅ HANDLE SUBSCRIPTION ERRORS
+        const data = error.response.data;
+
+        console.log("🔒 403 Error data:", data);
+
+        if (data.requiresPayment) {
+          setModalType('payment');
+          setIsModalOpen(true);
+        } else if (data.needsUpgrade) {
+          setModalType('upgrade');
+          setIsModalOpen(true);
+        } else {
+          alert(`⚠️ ${data.message || 'Access denied'}`);
+          navigate("/dashboard/pricing");
+        }
+      } else if (error.response) {
+        console.error("Server error:", error.response.data);
+        alert(`Server Error: ${error.response.data.message || 'Unknown error'}`);
+      } else if (error.request) {
+        alert("⚠️ No response from server. Check if backend is running.");
       } else {
-        alert(`⚠️ ${data.message || 'Access denied'}`);
-        navigate("/dashboard/pricing");
+        alert("⚠️ An unexpected error occurred.");
       }
-    } else if (error.response) {
-      console.error("Server error:", error.response.data);
-      alert(`Server Error: ${error.response.data.message || 'Unknown error'}`);
-    } else if (error.request) {
-      alert("⚠️ No response from server. Check if backend is running.");
-    } else {
-      alert("⚠️ An unexpected error occurred.");
     }
-  }
-};
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -188,7 +191,7 @@ const Rounds = ({ companyType, role }) => {
           }}
           className="absolute -top-8 -right-8 w-32 h-32 bg-purple-200/40 rounded-full blur-3xl pointer-events-none"
         />
-        
+
         <motion.div
           animate={{
             y: [0, 12, 0],
@@ -215,18 +218,18 @@ const Rounds = ({ companyType, role }) => {
               Interview Preparation
             </span>
           </div>
-          
+
           <h1 className="text-4xl md:text-5xl font-black tracking-tight text-gray-900 leading-tight">
             Interview Rounds
           </h1>
-          
+
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: 100 }}
             transition={{ delay: 0.5, duration: 1 }}
             className="h-1.5 bg-[#D4F478] mx-auto rounded-full"
           />
-          
+
           <div className="text-gray-500 text-lg leading-relaxed max-w-2xl mx-auto font-medium pt-2">
             Practice interview for{" "}
             <span className="font-bold text-gray-900 bg-[#D4F478]/20 px-3 py-1 rounded-full">
@@ -257,7 +260,7 @@ const Rounds = ({ companyType, role }) => {
                 >
                   {/* Decorative gradient */}
                   <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#D4F478]/10 to-transparent rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                  
+
                   <div className="flex items-start gap-4 relative z-10">
                     <motion.div
                       whileHover={{ rotate: 360 }}
@@ -266,7 +269,7 @@ const Rounds = ({ companyType, role }) => {
                     >
                       {index + 1}
                     </motion.div>
-                    
+
                     <div className="flex-grow">
                       <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
                         {round.name}
@@ -275,7 +278,7 @@ const Rounds = ({ companyType, role }) => {
                       <p className="text-gray-600 text-sm leading-relaxed">
                         {round.description}
                       </p>
-                      
+
                       {/* Optional duration indicator */}
                       {round.duration && (
                         <div className="flex items-center gap-2 mt-3 text-xs text-gray-500 font-medium">
@@ -359,6 +362,14 @@ const Rounds = ({ companyType, role }) => {
           </div>
         </motion.div>
       </motion.div>
+
+      {/* Plan Block Modal */}
+      <PlanBlockModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        remainingCredits={user?.subscription?.interviewsRemaining || 0}
+        type={modalType}
+      />
     </div>
   );
 };
@@ -397,7 +408,7 @@ export default Rounds;
 //     const fetchRounds = async () => {
 //       try {
 //         const res = await axios.get(
-//           `http://localhost:5000/api/companies/${encodeURIComponent(
+//           `/api/companies/${encodeURIComponent(
 //             companyType
 //           )}/${encodeURIComponent(role)}/rounds`
 //         );
@@ -418,7 +429,7 @@ export default Rounds;
 //       stream.getTracks().forEach((track) => track.stop());
 
 //       const res = await axios.post(
-//         "http://localhost:5000/api/interview-session/start",
+//         "/api/interview-session/start",
 //         { companyType, role },
 //         { withCredentials: true }
 //       );

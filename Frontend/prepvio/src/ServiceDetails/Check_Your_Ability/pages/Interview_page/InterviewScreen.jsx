@@ -12,6 +12,8 @@ import axios from "axios";
 
 // Import the coding questions
 import { codingQuestions } from "./codingQuestions";
+import { useAuthStore } from "../../../../store/authstore";
+import UpgradeModal from "../../../../components/UpgradeModal";
 
 // --- Animation Variants ---
 const containerVariants = {
@@ -98,7 +100,7 @@ const CodeEditorModal = ({ isOpen, onClose, problem, onSuccess, onSkip }) => {
               ? `\n#include <iostream>\nint main(){ std::cout << ${problem.functionName}(${t.input}); }`
               : `\nconsole.log(${problem.functionName}(${t.input}));`;
 
-        const res = await fetch("http://localhost:5000/run", {
+        const res = await fetch("/run", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -748,6 +750,8 @@ const InterviewScreen = ({
   const [rounds, setRounds] = useState([]);
   const [hasCodingRound, setHasCodingRound] = useState(false);
   const [technicalQuestionCount, setTechnicalQuestionCount] = useState(0);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const { user } = useAuthStore();
 
 
 
@@ -755,9 +759,18 @@ const InterviewScreen = ({
 
   useEffect(() => {
     if (interviewStage === "coding" && codingProblem) {
-      setIsCodeEditorOpen(true);
+      // ✅ Gating Logic: Block if on Basic Plan AND no promo code used AND not on Free Plan
+      const isBasicPlan = user?.subscription?.planId === 'monthly';
+      const isFreePlan = user?.subscription?.planId === 'free';
+      const hasUsedPromo = user?.payments?.some(p => p.promoCode && p.status === 'success');
+
+      if (isBasicPlan && !hasUsedPromo && !isFreePlan) {
+        setShowUpgradeModal(true);
+      } else {
+        setIsCodeEditorOpen(true);
+      }
     }
-  }, [interviewStage, codingProblem]);
+  }, [interviewStage, codingProblem, user]);
 
 
   // Fetch rounds for the selected company and role
@@ -767,7 +780,7 @@ const InterviewScreen = ({
         console.log("🔍 Fetching rounds for:", { companyType, role });
 
         const response = await axios.get(
-          `http://localhost:5000/api/companies/${encodeURIComponent(companyType)}/${encodeURIComponent(role)}/rounds`
+          `/api/companies/${encodeURIComponent(companyType)}/${encodeURIComponent(role)}/rounds`
         );
 
         let roundsList = [];
@@ -831,31 +844,7 @@ const InterviewScreen = ({
     }
   }, [companyType, role]);
 
-  useEffect(() => {
-    const consumeCredit = async () => {
-      try {
-        await axios.post(
-          "http://localhost:5000/api/payment/consume-interview",
-          {},
-          { withCredentials: true }
-        );
-        console.log("✅ Interview credit consumed");
-      } catch (err) {
-        console.error("❌ Credit consumption failed:", err);
 
-        if (err.response?.status === 403) {
-          const data = err.response.data;
-
-          if (data.requiresPayment || data.needsUpgrade) {
-            alert(`⚠️ ${data.message}`);
-            navigate("/dashboard/pricing", { replace: true });
-          }
-        }
-      }
-    };
-
-    consumeCredit();
-  }, []);
 
   const captureFrame = () => {
     const video = userVideoRef.current;
@@ -1702,6 +1691,8 @@ In the meantime, if you have any follow-up questions, please don't hesitate to r
     setIsLoadingAI(true);
     setError("Analyzing the Interview");
 
+    const sessionId = location.state?.sessionId;
+
     try {
       const response = await fetch(BACKEND_UPLOAD_URL, {
         method: "POST",
@@ -1712,6 +1703,7 @@ In the meantime, if you have any follow-up questions, please don't hesitate to r
           role,
           companyType,
           solvedProblems,
+          sessionId, // ✅ Added sessionId
         }),
       });
 
@@ -1727,7 +1719,7 @@ In the meantime, if you have any follow-up questions, please don't hesitate to r
 
       if (sessionId) {
         await fetch(
-          `http://localhost:5000/api/interview-session/complete/${sessionId}`,
+          `/api/interview-session/complete/${sessionId}`,
           {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
@@ -2219,7 +2211,13 @@ Key points:
                 },
               ]);
 
-              setTimeout(() => setIsCodeEditorOpen(true), 500);
+              const isBasicPlan = user?.subscription?.planId === 'monthly';
+              const isFreePlan = user?.subscription?.planId === 'free';
+              const hasUsedPromo = user?.payments?.some(p => p.promoCode && p.status === 'success');
+
+              if (!isBasicPlan || hasUsedPromo || isFreePlan) {
+                setTimeout(() => setIsCodeEditorOpen(true), 500);
+              }
 
               return newCount;
             });
@@ -2235,6 +2233,17 @@ Key points:
           problems={solvedProblems}
         />
       )}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        featureName="Code Editor"
+        onClose={() => {
+          setShowUpgradeModal(false);
+          // If we are in coding stage and blocked, skip it
+          if (interviewStage === "coding") {
+            setInterviewStage("final");
+          }
+        }}
+      />
     </div>
   );
 };

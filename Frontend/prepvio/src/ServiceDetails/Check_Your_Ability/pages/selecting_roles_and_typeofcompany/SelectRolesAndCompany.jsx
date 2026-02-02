@@ -64,10 +64,9 @@ const SelectionButton = ({
         disabled={disabled}
         className={`
           w-full px-6 py-4 rounded-2xl text-left border-2 transition-all font-medium
-          ${
-            disabled
-              ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
-              : "bg-white/90 backdrop-blur-sm text-gray-900 border-gray-200 hover:border-[#D4F478] hover:bg-white shadow-sm hover:shadow-md"
+          ${disabled
+            ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+            : "bg-white/90 backdrop-blur-sm text-gray-900 border-gray-200 hover:border-[#D4F478] hover:bg-white shadow-sm hover:shadow-md"
           }
           flex items-center justify-between
         `}
@@ -76,9 +75,8 @@ const SelectionButton = ({
           {displayValue}
         </span>
         <ChevronDown
-          className={`transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
+          className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+            }`}
           size={20}
         />
       </button>
@@ -90,9 +88,8 @@ const SelectionButton = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: dropdownDirection === "up" ? 10 : -10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className={`absolute z-50 w-full bg-white rounded-2xl shadow-2xl border-2 border-gray-200 overflow-hidden ${
-              dropdownDirection === "up" ? "bottom-full mb-2" : "top-full mt-2"
-            }`}
+            className={`absolute z-50 w-full bg-white rounded-2xl shadow-2xl border-2 border-gray-200 overflow-hidden ${dropdownDirection === "up" ? "bottom-full mb-2" : "top-full mt-2"
+              }`}
           >
             {/* Search bar for long lists */}
             {options.length > 5 && showSearch && (
@@ -134,10 +131,9 @@ const SelectionButton = ({
                     }}
                     className={`
                       px-6 py-3.5 cursor-pointer flex justify-between items-center transition-all
-                      ${
-                        value === option
-                          ? "bg-[#D4F478]/20 font-semibold text-gray-900"
-                          : "hover:bg-gray-50 text-gray-700 hover:pl-8"
+                      ${value === option
+                        ? "bg-[#D4F478]/20 font-semibold text-gray-900"
+                        : "hover:bg-gray-50 text-gray-700 hover:pl-8"
                       }
                       border-b border-gray-100 last:border-b-0
                     `}
@@ -201,7 +197,7 @@ const SelectRolesAndCompany = ({
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/companies");
+        const res = await axios.get("/api/companies");
         if (Array.isArray(res.data)) setCompanies(res.data);
       } catch (error) {
         console.error("Error fetching companies:", error);
@@ -218,7 +214,7 @@ const SelectRolesAndCompany = ({
       }
       try {
         const res = await axios.get(
-          `http://localhost:5000/api/companies/roles/${encodeURIComponent(
+          `/api/companies/roles/${encodeURIComponent(
             companyType
           )}`
         );
@@ -369,18 +365,16 @@ const SelectRolesAndCompany = ({
               w-full px-8 py-5 rounded-2xl font-bold text-lg
               transition-all duration-300 transform
               flex items-center justify-center gap-3 group
-              ${
-                companyType && role
-                  ? "bg-gradient-to-r from-gray-900 to-gray-800 text-white hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98]"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              ${companyType && role
+                ? "bg-gradient-to-r from-gray-900 to-gray-800 text-white hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98]"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
               }
             `}
           >
             Start Your Interview
             <ArrowRight
-              className={`transition-transform ${
-                companyType && role ? "group-hover:translate-x-1" : ""
-              }`}
+              className={`transition-transform ${companyType && role ? "group-hover:translate-x-1" : ""
+                }`}
               size={24}
             />
           </button>

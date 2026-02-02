@@ -174,9 +174,9 @@
 // 					<Route path="help/faq" element={<FAQs />} />
 // 					<Route path="feedback" element={<Feedback />} />
 // 					<Route path="aptitude-test-analysis" element={<AptitudeTestAnalysis />} />
-					
+
 // 				</Route>
-				
+
 
 // 				{/* Auth */}
 // 				<Route
@@ -208,7 +208,7 @@
 // 				{/* Check Your Ability Flow */}
 // 				{/* Check Your Ability Flow */}
 // <Route path="/services/check-your-ability">
-  
+
 //   {/* ✅ Categories – always visible */}
 //   <Route index element={<ProtectedRoute><Categories /></ProtectedRoute>} />
 
@@ -217,7 +217,7 @@
 
 //   {/* 🔒 Interview – PAID ONLY */}
 //   <Route element={<PaidOnlyRoute />}>
-    
+
 //     <Route
 //       path="interview"
 //       element={
@@ -370,25 +370,25 @@ function App() {
 		};
 	}, [isAuthenticated, user]);
 
-	// ✅ Setup socket listener for new notifications (ONLY ONCE)
+	// ✅ Setup socket listener and initial count
 	useEffect(() => {
-		fetchUnreadCount();
-
-		// Remove any existing listeners first
-		socket.off("NEW_NOTIFICATION");
-
-		// Add listener ONCE
-		socket.on("NEW_NOTIFICATION", (notification) => {
-			// ✅ Add notification directly to store (real-time) - NO FETCHING
-			addNotification(notification);
-			// ✅ Just update unread count
+		if (isAuthenticated) {
 			fetchUnreadCount();
-		});
+
+			// Remove any existing listeners first
+			socket.off("NEW_NOTIFICATION");
+
+			// Add listener
+			socket.on("NEW_NOTIFICATION", (notification) => {
+				addNotification(notification);
+				fetchUnreadCount();
+			});
+		}
 
 		return () => {
 			socket.off("NEW_NOTIFICATION");
 		};
-	}, []); // ✅ Empty dependency array - run ONLY ONCE
+	}, [isAuthenticated, fetchUnreadCount, addNotification]);
 
 	// Check Your Ability shared state
 	const [companyType, setCompanyType] = useState(null);

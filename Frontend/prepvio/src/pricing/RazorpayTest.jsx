@@ -27,7 +27,7 @@ function RazorpayTest() {
     setIsValidating(true);
     try {
       const { data } = await axios.post(
-        "http://localhost:5000/api/promo/validate",
+        "/api/promo/validate",
         { code: promoCode, planId }
       );
 
@@ -61,7 +61,7 @@ function RazorpayTest() {
 
       console.log("Creating order with data:", requestData);
       const { data } = await axios.post(
-        "http://localhost:5000/api/payment/create-order",
+        "/api/payment/create-order",
         requestData
       );
 
@@ -77,7 +77,7 @@ function RazorpayTest() {
         handler: async function (response) {
           try {
             const verifyRes = await axios.post(
-              "http://localhost:5000/api/payment/verify",
+              "/api/payment/verify",
               response
             );
 

@@ -22,8 +22,8 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
 
   const handleGoogleLogin = () => {
-  window.location.href = "http://localhost:5000/api/auth/google";
-};
+    window.location.href = "/api/auth/google";
+  };
 
 
   const { login, isLoading, error } = useAuthStore();
@@ -75,10 +75,10 @@ const LoginPage = () => {
         <div className="space-y-4">
           <div className="space-y-2">
             <SocialButton
-  icon={Globe}
-  label="Continue with Google"
-  onClick={handleGoogleLogin}
-/>
+              icon={Globe}
+              label="Continue with Google"
+              onClick={handleGoogleLogin}
+            />
 
             {/* <SocialButton icon={Linkedin} label="Continue with LinkedIn" /> */}
           </div>
@@ -165,7 +165,7 @@ export default LoginPage;
 
 
 
-//backup code hai login page ka 
+//backup code hai login page ka
 // import { useState } from "react";
 // import { motion } from "framer-motion";
 // import { Mail, Lock, Loader } from "lucide-react";

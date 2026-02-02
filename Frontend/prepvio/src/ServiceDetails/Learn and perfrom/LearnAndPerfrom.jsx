@@ -45,8 +45,8 @@ function LearnAndPerform() {
     const fetchData = async () => {
       try {
         const [coursesRes, categoriesRes] = await Promise.all([
-          axios.get("http://localhost:8000/api/courses"),
-          axios.get("http://localhost:8000/api/categories")
+          axios.get("/api/courses"),
+          axios.get("/api/categories")
         ]);
 
         // 1. Handle Courses
@@ -355,7 +355,7 @@ export default LearnAndPerform;
 //     window.scrollTo(0, 0);
 //     const fetchCourses = async () => {
 //       try {
-//         const res = await axios.get("http://localhost:8000/api/courses");
+//         const res = await axios.get("/api/courses");
 //         setCourses(res.data);
 //       } catch (err) {
 //         console.error("Failed to load courses:", err);
@@ -577,7 +577,7 @@ export default LearnAndPerform;
 //     const fetchCourses = async () => {
 //       try {
 //         // --- KEEPING YOUR ORIGINAL BACKEND FETCH LOGIC ---
-//         const res = await axios.get("http://localhost:8000/api/courses");
+//         const res = await axios.get("/api/courses");
 //         setCourses(res.data);
 //       } catch (err) {
 //         console.error("Failed to load courses:", err);

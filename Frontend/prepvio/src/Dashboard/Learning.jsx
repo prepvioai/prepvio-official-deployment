@@ -18,7 +18,7 @@ import {
   Zap
 } from "lucide-react";
 
-const USER_API = "http://localhost:5000/api";
+const BASE_URL = "/api";
 
 // --- ANIMATION VARIANTS ---
 const containerVariants = {
@@ -294,27 +294,27 @@ function Learning() {
 
                       {/* Action Button */}
                       <button
-  onClick={() => {
-    if (course.completed && !course.hasFeedback) {
-      navigate(
-        `/dashboard/feedback?courseId=${course.courseId}&channelId=${course.channelId}`
-      );
-    } else {
-      handleRestartCourse(course); // Revise
-    }
-  }}
-  className="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 bg-[#1A1A1A] text-white hover:bg-black shadow-lg"
->
-  {course.completed ? (
-    course.hasFeedback ? (
-      <> <RotateCcw className="w-4 h-4" /> Revise </>
-    ) : (
-      <> <Zap className="w-4 h-4" /> Give Feedback </>
-    )
-  ) : (
-    <> <Play className="w-4 h-4 fill-current" /> Continue Learning </>
-  )}
-</button>
+                        onClick={() => {
+                          if (course.completed && !course.hasFeedback) {
+                            navigate(
+                              `/dashboard/feedback?courseId=${course.courseId}&channelId=${course.channelId}`
+                            );
+                          } else {
+                            handleRestartCourse(course); // Revise
+                          }
+                        }}
+                        className="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 bg-[#1A1A1A] text-white hover:bg-black shadow-lg"
+                      >
+                        {course.completed ? (
+                          course.hasFeedback ? (
+                            <> <RotateCcw className="w-4 h-4" /> Revise </>
+                          ) : (
+                            <> <Zap className="w-4 h-4" /> Give Feedback </>
+                          )
+                        ) : (
+                          <> <Play className="w-4 h-4 fill-current" /> Continue Learning </>
+                        )}
+                      </button>
 
 
                     </div>

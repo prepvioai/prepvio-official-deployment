@@ -8,7 +8,7 @@ export const useNotificationStore = create((set) => ({
   // Fetch recent notifications (for bell icon - 2 most recent)
   fetchRecentNotifications: async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/notifications/recent', {
+      const response = await fetch('/api/notifications/recent', {
         credentials: 'include'
       });
       if (!response.ok) throw new Error('Failed to fetch recent notifications');
@@ -22,7 +22,7 @@ export const useNotificationStore = create((set) => ({
   // Fetch all notifications (for dashboard)
   fetchNotifications: async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/notifications', {
+      const response = await fetch('/api/notifications', {
         credentials: 'include'
       });
       if (!response.ok) throw new Error('Failed to fetch notifications');
@@ -36,7 +36,7 @@ export const useNotificationStore = create((set) => ({
   // Fetch unread count
   fetchUnreadCount: async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/notifications/unread-count', {
+      const response = await fetch('/api/notifications/unread-count', {
         credentials: 'include'
       });
       if (!response.ok) throw new Error('Failed to fetch unread count');
@@ -50,13 +50,13 @@ export const useNotificationStore = create((set) => ({
   // Mark single notification as read
   markAsRead: async (id) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/notifications/${id}/read`, {
+      const response = await fetch(`/api/notifications/${id}/read`, {
         method: 'PATCH',
         credentials: 'include'
       });
-      
+
       if (!response.ok) throw new Error('Failed to mark as read');
-      
+
       // Update both lists
       set((state) => ({
         notifications: state.notifications.map(n =>
@@ -75,13 +75,13 @@ export const useNotificationStore = create((set) => ({
   // Mark all notifications as read
   markAllAsRead: async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/notifications/read-all', {
+      const response = await fetch('/api/notifications/read-all', {
         method: 'PATCH',
         credentials: 'include'
       });
-      
+
       if (!response.ok) throw new Error('Failed to mark all as read');
-      
+
       set((state) => ({
         notifications: state.notifications.map(n => ({ ...n, isRead: true })),
         recentNotifications: state.recentNotifications.map(n => ({ ...n, isRead: true })),
@@ -95,13 +95,13 @@ export const useNotificationStore = create((set) => ({
   // Delete a notification
   deleteNotification: async (id) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/notifications/${id}`, {
+      const response = await fetch(`/api/notifications/${id}`, {
         method: 'DELETE',
         credentials: 'include'
       });
-      
+
       if (!response.ok) throw new Error('Failed to delete notification');
-      
+
       set((state) => {
         const deletedNotif = state.notifications.find(n => n._id === id);
         return {
@@ -118,23 +118,23 @@ export const useNotificationStore = create((set) => ({
   },
 
   // Add new notification from socket (real-time)
-addNotification: (notification) =>
-  set((state) => {
-    // ⛔ Prevent duplicates
-    if (state.notifications.some(n => n._id === notification._id)) {
-      return state;
-    }
+  addNotification: (notification) =>
+    set((state) => {
+      // ⛔ Prevent duplicates
+      if (state.notifications.some(n => n._id === notification._id)) {
+        return state;
+      }
 
-    return {
-      notifications: [notification, ...state.notifications],
-      recentNotifications: [notification, ...state.recentNotifications]
-        .filter((n, i, arr) => arr.findIndex(x => x._id === n._id) === i)
-        .slice(0, 2),
-      unreadCount: notification.isRead
-        ? state.unreadCount
-        : state.unreadCount + 1,
-    };
-  }),
+      return {
+        notifications: [notification, ...state.notifications],
+        recentNotifications: [notification, ...state.recentNotifications]
+          .filter((n, i, arr) => arr.findIndex(x => x._id === n._id) === i)
+          .slice(0, 2),
+        unreadCount: notification.isRead
+          ? state.unreadCount
+          : state.unreadCount + 1,
+      };
+    }),
 
 
 }));

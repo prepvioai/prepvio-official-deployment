@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Timer, 
-  User, 
-  ChevronRight, 
-  ChevronLeft, 
-  CheckCircle2, 
+import {
+  Timer,
+  User,
+  ChevronRight,
+  ChevronLeft,
+  CheckCircle2,
   AlertCircle,
   Flag,
   Trophy,
@@ -24,7 +24,7 @@ import {
 // --- ANIMATION VARIANTS ---
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: { 
+  visible: {
     opacity: 1,
     transition: { staggerChildren: 0.08, delayChildren: 0.1 }
   }
@@ -54,51 +54,51 @@ export default function AptitudeTest() {
 
   // Fetch random questions from API
   useEffect(() => {
-  const fetchQuestions = async () => {
-    try {
-      const res = await fetch(
-        "http://localhost:8000/api/aptitude/test/mixed",
-        { credentials: "include" }
-      );
+    const fetchQuestions = async () => {
+      try {
+        const res = await fetch(
+          "/api/aptitude/test/mixed",
+          { credentials: "include" }
+        );
 
-      const data = await res.json();
-      const qs = data.data || [];
+        const data = await res.json();
+        const qs = data.data || [];
 
-      setQuestions(qs);
-      setActiveTopic("Mixed Aptitude");
+        setQuestions(qs);
+        setActiveTopic("Mixed Aptitude");
 
-    } catch (err) {
-      console.error("Failed to load questions", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      } catch (err) {
+        console.error("Failed to load questions", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchQuestions();
-}, []);
+    fetchQuestions();
+  }, []);
 
 
   useEffect(() => {
-  const fetchLatestAttempt = async () => {
-    try {
-      const res = await fetch(
-        "http://localhost:5000/api/users/aptitude/latest",
-        {
-          credentials: "include",
+    const fetchLatestAttempt = async () => {
+      try {
+        const res = await fetch(
+          "/api/users/aptitude/latest",
+          {
+            credentials: "include",
+          }
+        );
+
+        const data = await res.json();
+        if (data.success) {
+          setAttempt(data.data);
         }
-      );
-
-      const data = await res.json();
-      if (data.success) {
-        setAttempt(data.data);
+      } catch (err) {
+        console.error("Failed to load aptitude analysis", err);
       }
-    } catch (err) {
-      console.error("Failed to load aptitude analysis", err);
-    }
-  };
+    };
 
-  fetchLatestAttempt();
-}, []);
+    fetchLatestAttempt();
+  }, []);
 
 
   // Timer
@@ -141,54 +141,54 @@ export default function AptitudeTest() {
   };
 
   const handleSubmit = async () => {
-  const score = calculateScore();
-  const percentage = (score / questions.length) * 100;
-  const timeTakenSeconds = 1800 - timeLeft;
+    const score = calculateScore();
+    const percentage = (score / questions.length) * 100;
+    const timeTakenSeconds = 1800 - timeLeft;
 
-  const answersPayload = questions.map((q, idx) => ({
-  questionId: q._id,
+    const answersPayload = questions.map((q, idx) => ({
+      questionId: q._id,
 
-  // 🔑 SNAPSHOT REQUIRED BY BACKEND
-  question: q.question,
-  options: q.options.map(opt => ({
-    text: opt.text,
-  })),
-  explanation: q.explanation || "",
-  difficulty: q.difficulty || "medium",
+      // 🔑 SNAPSHOT REQUIRED BY BACKEND
+      question: q.question,
+      options: q.options.map(opt => ({
+        text: opt.text,
+      })),
+      explanation: q.explanation || "",
+      difficulty: q.difficulty || "medium",
 
-  selectedIndex: selectedAnswers[idx],
-  correctIndex: q.correctAnswerIndex,
-  isCorrect: selectedAnswers[idx] === q.correctAnswerIndex,
-}));
+      selectedIndex: selectedAnswers[idx],
+      correctIndex: q.correctAnswerIndex,
+      isCorrect: selectedAnswers[idx] === q.correctAnswerIndex,
+    }));
 
 
-  try {
-    await fetch("http://localhost:5000/api/users/aptitude/submit", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        topic: activeTopic,
-        totalQuestions: questions.length,
-        correctAnswers: score,
-        percentage,
-        timeTakenSeconds,
-        answers: answersPayload,
-      }),
-    });
-  } catch (err) {
-    console.error("Failed to submit aptitude test", err);
-  }
+    try {
+      await fetch("/api/users/aptitude/submit", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          topic: activeTopic,
+          totalQuestions: questions.length,
+          correctAnswers: score,
+          percentage,
+          timeTakenSeconds,
+          answers: answersPayload,
+        }),
+      });
+    } catch (err) {
+      console.error("Failed to submit aptitude test", err);
+    }
 
-  setIsFinished(true);
-  setShowResults(true);
-};
+    setIsFinished(true);
+    setShowResults(true);
+  };
 
 
   const getDifficultyColor = (difficulty) => {
-    switch(difficulty?.toLowerCase()) {
+    switch (difficulty?.toLowerCase()) {
       case "easy": return "bg-green-50 border-green-200 text-green-700";
       case "medium": return "bg-orange-50 border-orange-200 text-orange-700";
       case "hard": return "bg-red-50 border-red-200 text-red-700";
@@ -203,8 +203,8 @@ export default function AptitudeTest() {
         <div className="text-center">
           <Brain className="w-16 h-16 text-[#D4F478] mx-auto mb-4 animate-pulse" />
           <p className="text-xl font-bold text-gray-900">
-  Loading questions for {activeTopic || "Aptitude"}...
-</p>
+            Loading questions for {activeTopic || "Aptitude"}...
+          </p>
 
         </div>
       </div>
@@ -228,13 +228,13 @@ export default function AptitudeTest() {
   if (showResults) {
     const score = calculateScore();
     const percentage = (score / questions.length) * 100;
-    
+
     return (
       <div className="min-h-screen bg-[#FDFBF9] flex items-center justify-center p-6 overflow-hidden relative">
         <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-[#D4F478]/20 rounded-full blur-[100px]" />
-        <motion.div 
-          initial={{ scale: 0.9, opacity: 0 }} 
-          animate={{ scale: 1, opacity: 1 }} 
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
           className="bg-white p-12 rounded-[3.5rem] shadow-2xl border border-gray-100 text-center max-w-md w-full relative z-10"
         >
           <div className="w-24 h-24 bg-[#D4F478] rounded-[2rem] rotate-12 flex items-center justify-center mx-auto mb-8 shadow-xl shadow-[#D4F478]/40">
@@ -242,24 +242,24 @@ export default function AptitudeTest() {
           </div>
           <h2 className="text-4xl font-black text-gray-900 mb-3 tracking-tight">Test Over!</h2>
           <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">
-  {activeTopic}
-</p>
+            {activeTopic}
+          </p>
 
           <p className="text-gray-500 font-medium mb-10 leading-relaxed">Your performance metrics are being analyzed. Great job staying focused!</p>
-          
+
           <div className="bg-gray-50 rounded-3xl p-8 mb-8 text-left space-y-4 border border-gray-100">
-             <div className="flex justify-between items-center text-sm font-bold">
-               <span className="text-gray-400 uppercase tracking-widest text-[10px]">Score</span>
-               <span className="bg-black text-white px-3 py-1 rounded-full">{score}/{questions.length}</span>
-             </div>
-             <div className="flex justify-between items-center text-sm font-bold">
-               <span className="text-gray-400 uppercase tracking-widest text-[10px]">Percentage</span>
-               <span className="text-[#D4F478]">{percentage.toFixed(1)}%</span>
-             </div>
-             <div className="flex justify-between items-center text-sm font-bold">
-               <span className="text-gray-400 uppercase tracking-widest text-[10px]">Time Taken</span>
-               <span className="text-emerald-500">{formatTime(1800 - timeLeft)}</span>
-             </div>
+            <div className="flex justify-between items-center text-sm font-bold">
+              <span className="text-gray-400 uppercase tracking-widest text-[10px]">Score</span>
+              <span className="bg-black text-white px-3 py-1 rounded-full">{score}/{questions.length}</span>
+            </div>
+            <div className="flex justify-between items-center text-sm font-bold">
+              <span className="text-gray-400 uppercase tracking-widest text-[10px]">Percentage</span>
+              <span className="text-[#D4F478]">{percentage.toFixed(1)}%</span>
+            </div>
+            <div className="flex justify-between items-center text-sm font-bold">
+              <span className="text-gray-400 uppercase tracking-widest text-[10px]">Time Taken</span>
+              <span className="text-emerald-500">{formatTime(1800 - timeLeft)}</span>
+            </div>
           </div>
 
           {/* Performance Badge */}
@@ -283,35 +283,35 @@ export default function AptitudeTest() {
           </div>
 
           <button
-  onClick={() => {
-    // 1️⃣ Calculate time here (scope-safe)
-    const timeTakenSeconds = 1800 - timeLeft;
+            onClick={() => {
+              // 1️⃣ Calculate time here (scope-safe)
+              const timeTakenSeconds = 1800 - timeLeft;
 
-    // 2️⃣ Store review data (MUST be before opening tab)
-    localStorage.setItem(
-      "aptitude_review_data",
-      JSON.stringify({
-        topic: activeTopic,
-        timeTakenSeconds,
-        answers: questions.map((q, idx) => ({
-          question: q.question,
-          options: q.options,
-          correctIndex: q.correctAnswerIndex,
-          selectedIndex: selectedAnswers[idx],
-          explanation: q.explanation,
-          difficulty: q.difficulty,
-          isCorrect:
-            q.correctAnswerIndex === selectedAnswers[idx],
-        })),
-      })
-    );
+              // 2️⃣ Store review data (MUST be before opening tab)
+              localStorage.setItem(
+                "aptitude_review_data",
+                JSON.stringify({
+                  topic: activeTopic,
+                  timeTakenSeconds,
+                  answers: questions.map((q, idx) => ({
+                    question: q.question,
+                    options: q.options,
+                    correctIndex: q.correctAnswerIndex,
+                    selectedIndex: selectedAnswers[idx],
+                    explanation: q.explanation,
+                    difficulty: q.difficulty,
+                    isCorrect:
+                      q.correctAnswerIndex === selectedAnswers[idx],
+                  })),
+                })
+              );
 
-    // 3️⃣ OPEN REVIEW PAGE IN NEW TAB
-    window.open("/aptitude-review", "_blank", "noopener,noreferrer");
-  }}
->
-  View Detailed Analysis
-</button>
+              // 3️⃣ OPEN REVIEW PAGE IN NEW TAB
+              window.open("/aptitude-review", "_blank", "noopener,noreferrer");
+            }}
+          >
+            View Detailed Analysis
+          </button>
 
 
 
@@ -382,26 +382,25 @@ export default function AptitudeTest() {
                   )}
                 </div>
               </div>
-              
+
               {/* Options */}
               <div className="grid gap-4 mb-10">
                 {question.options.map((opt, i) => {
                   const isUserAnswer = userAnswer === i;
                   const isCorrectAnswer = correctAnswerIndex === i;
-                  
+
                   return (
-                    <div 
-                      key={i} 
-                      className={`p-6 rounded-2xl border-2 text-left font-bold transition-all ${
-                        isCorrectAnswer 
-                          ? "bg-green-50 border-green-300 text-green-900" 
-                          : isUserAnswer 
+                    <div
+                      key={i}
+                      className={`p-6 rounded-2xl border-2 text-left font-bold transition-all ${isCorrectAnswer
+                        ? "bg-green-50 border-green-300 text-green-900"
+                        : isUserAnswer
                           ? "bg-red-50 border-red-300 text-red-900"
                           : "bg-gray-50 border-gray-200 text-gray-600"
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span>{String.fromCharCode(65+i)}. {opt.text}</span>
+                        <span>{String.fromCharCode(65 + i)}. {opt.text}</span>
                         {isCorrectAnswer && <CheckCircle2 className="w-5 h-5 text-green-600" />}
                         {isUserAnswer && !isCorrectAnswer && <XCircle className="w-5 h-5 text-red-600" />}
                       </div>
@@ -420,15 +419,15 @@ export default function AptitudeTest() {
 
               {/* Navigation */}
               <div className="flex justify-between items-center pt-8 border-t border-gray-100">
-                <button 
-                  onClick={() => currentQuestion > 0 && setCurrentQuestion(c => c - 1)} 
+                <button
+                  onClick={() => currentQuestion > 0 && setCurrentQuestion(c => c - 1)}
                   disabled={currentQuestion === 0}
                   className="text-gray-400 font-bold flex items-center gap-2 hover:text-gray-900 transition-colors disabled:opacity-30"
                 >
                   <ChevronLeft className="w-5 h-5" /> Previous
                 </button>
-                <button 
-                  onClick={() => currentQuestion < questions.length - 1 && setCurrentQuestion(c => c + 1)} 
+                <button
+                  onClick={() => currentQuestion < questions.length - 1 && setCurrentQuestion(c => c + 1)}
                   disabled={currentQuestion === questions.length - 1}
                   className="bg-black text-white px-8 py-4 rounded-2xl font-black hover:bg-gray-900 transition-colors disabled:opacity-30 flex items-center gap-2"
                 >
@@ -446,20 +445,19 @@ export default function AptitudeTest() {
                 {questions.map((_, i) => {
                   const isAnswered = selectedAnswers[i] !== undefined;
                   const isCorrect = selectedAnswers[i] === questions[i].correctAnswerIndex;
-                  
+
                   return (
-                    <button 
-                      key={i} 
+                    <button
+                      key={i}
                       onClick={() => setCurrentQuestion(i)}
-                      className={`h-12 rounded-xl font-bold transition-all flex items-center justify-center ${
-                        currentQuestion === i 
-                          ? "bg-black text-white scale-110 shadow-lg" 
-                          : isAnswered && isCorrect
+                      className={`h-12 rounded-xl font-bold transition-all flex items-center justify-center ${currentQuestion === i
+                        ? "bg-black text-white scale-110 shadow-lg"
+                        : isAnswered && isCorrect
                           ? "bg-green-500 text-white"
                           : isAnswered
-                          ? "bg-red-500 text-white"
-                          : "bg-gray-100 text-gray-400"
-                      }`}
+                            ? "bg-red-500 text-white"
+                            : "bg-gray-100 text-gray-400"
+                        }`}
                     >
                       {i + 1}
                     </button>
@@ -493,7 +491,7 @@ export default function AptitudeTest() {
       <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-blue-100/30 rounded-full blur-[120px] pointer-events-none" />
 
       <motion.div variants={containerVariants} initial="hidden" animate="visible" className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-10 relative z-10">
-        
+
         {/* LEFT SIDE: QUIZ CONTENT */}
         <div className="lg:col-span-8 space-y-8">
           <header className="flex flex-col sm:flex-row justify-between items-center bg-white/80 backdrop-blur-md p-8 rounded-[2.5rem] border border-white/20 shadow-xl shadow-black/[0.02]">
@@ -504,25 +502,25 @@ export default function AptitudeTest() {
               <div>
                 <h1 className="font-black text-2xl tracking-tighter text-gray-900">Aptitude Arena</h1>
                 <div className="flex items-center gap-2">
-                   <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{activeTopic}</span>
-                   <div className="w-1 h-1 rounded-full bg-gray-300" />
-                   <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${getDifficultyColor(question?.difficulty)}`}>
-                     {question?.difficulty || "Medium"}
-                   </span>
+                  <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{activeTopic}</span>
+                  <div className="w-1 h-1 rounded-full bg-gray-300" />
+                  <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${getDifficultyColor(question?.difficulty)}`}>
+                    {question?.difficulty || "Medium"}
+                  </span>
                 </div>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-6 w-full sm:w-auto">
               <div className="flex-1 sm:flex-none text-right">
                 <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">Session Progress</p>
                 <div className="flex items-center gap-3">
-                   <span className="text-sm font-black">{Math.round(progress)}%</span>
-                   <div className="w-24 md:w-40 h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <motion.div 
+                  <span className="text-sm font-black">{Math.round(progress)}%</span>
+                  <div className="w-24 md:w-40 h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <motion.div
                       initial={{ width: 0 }}
-                      animate={{ width: `${progress}%` }} 
-                      className="h-full bg-black rounded-full" 
+                      animate={{ width: `${progress}%` }}
+                      className="h-full bg-black rounded-full"
                     />
                   </div>
                 </div>
@@ -533,7 +531,7 @@ export default function AptitudeTest() {
           <main className="bg-white rounded-[3rem] p-8 md:p-14 border border-gray-100 shadow-sm relative overflow-hidden">
             {/* Visual indicator for current category */}
             <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
-               <Target className="w-48 h-48 text-black" />
+              <Target className="w-48 h-48 text-black" />
             </div>
 
             <div className="mb-12 relative z-10">
@@ -552,27 +550,25 @@ export default function AptitudeTest() {
                 <button
                   key={idx}
                   onClick={() => handleSelect(idx)}
-                  className={`flex items-center justify-between p-7 rounded-[2rem] border-2 transition-all duration-300 group ${
-                    selectedAnswers[currentQuestion] === idx
+                  className={`flex items-center justify-between p-7 rounded-[2rem] border-2 transition-all duration-300 group ${selectedAnswers[currentQuestion] === idx
                     ? "border-black bg-black text-white shadow-2xl shadow-black/20 translate-x-3"
                     : "border-gray-50 bg-gray-50/50 text-gray-600 hover:border-gray-200 hover:bg-white"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-5">
-                    <span className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm transition-colors ${
-                      selectedAnswers[currentQuestion] === idx 
-                        ? "bg-[#D4F478] text-black" 
-                        : "bg-white text-gray-400 group-hover:text-black shadow-sm"
-                    }`}>
+                    <span className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm transition-colors ${selectedAnswers[currentQuestion] === idx
+                      ? "bg-[#D4F478] text-black"
+                      : "bg-white text-gray-400 group-hover:text-black shadow-sm"
+                      }`}>
                       {String.fromCharCode(65 + idx)}
                     </span>
                     <span className="font-bold text-lg">{opt.text}</span>
                   </div>
                   <AnimatePresence>
                     {selectedAnswers[currentQuestion] === idx && (
-                      <motion.div 
-                        initial={{ scale: 0 }} 
-                        animate={{ scale: 1 }} 
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
                         exit={{ scale: 0 }}
                       >
                         <CheckCircle2 className="w-6 h-6 text-[#D4F478]" />
@@ -584,7 +580,7 @@ export default function AptitudeTest() {
             </div>
 
             <div className="mt-auto pt-10 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-6">
-              <button 
+              <button
                 disabled={currentQuestion === 0}
                 onClick={() => setCurrentQuestion(prev => prev - 1)}
                 className="flex items-center gap-3 font-black text-gray-400 hover:text-black disabled:opacity-30 transition-all uppercase tracking-widest text-xs group"
@@ -596,28 +592,27 @@ export default function AptitudeTest() {
               </button>
 
               <div className="flex items-center gap-4 w-full sm:w-auto">
-                <button 
+                <button
                   onClick={toggleFlag}
-                  className={`flex items-center gap-2 font-black px-6 py-4 rounded-2xl transition-all uppercase tracking-widest text-xs border ${
-                    flagged[currentQuestion] 
-                    ? "bg-orange-50 border-orange-200 text-orange-600" 
+                  className={`flex items-center gap-2 font-black px-6 py-4 rounded-2xl transition-all uppercase tracking-widest text-xs border ${flagged[currentQuestion]
+                    ? "bg-orange-50 border-orange-200 text-orange-600"
                     : "bg-white border-gray-100 text-gray-400 hover:text-orange-500"
-                  }`}
+                    }`}
                 >
-                  <Flag className={`w-4 h-4 ${flagged[currentQuestion] ? "fill-orange-500" : ""}`} /> 
+                  <Flag className={`w-4 h-4 ${flagged[currentQuestion] ? "fill-orange-500" : ""}`} />
                   {flagged[currentQuestion] ? "Flagged" : "Flag"}
                 </button>
 
                 {currentQuestion === questions.length - 1 ? (
-                  <button 
-                    onClick={handleSubmit} 
+                  <button
+                    onClick={handleSubmit}
                     className="flex-1 sm:flex-none bg-black text-white px-12 py-5 rounded-[1.5rem] font-black text-lg hover:bg-gray-800 transition-all shadow-xl shadow-black/10 hover:scale-[1.02] active:scale-95"
                   >
                     Submit Test
                   </button>
                 ) : (
-                  <button 
-                    onClick={() => setCurrentQuestion(prev => prev + 1)} 
+                  <button
+                    onClick={() => setCurrentQuestion(prev => prev + 1)}
                     className="flex-1 sm:flex-none bg-black text-white px-12 py-5 rounded-[1.5rem] font-black text-lg flex items-center justify-center gap-3 hover:scale-[1.05] active:scale-95 transition-all shadow-xl shadow-black/20 group"
                   >
                     Next Question
@@ -637,8 +632,8 @@ export default function AptitudeTest() {
             <div className="relative z-10">
               <div className="w-28 h-28 mx-auto mb-6 relative">
                 <div className="absolute inset-0 bg-gradient-to-tr from-[#D4F478] to-blue-500 rounded-full animate-spin-slow opacity-30" />
-                <img 
-                  src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=400" 
+                <img
+                  src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=400"
                   className="w-full h-full object-cover rounded-full border-4 border-white/10 shadow-2xl relative z-10"
                   alt="Candidate"
                 />
@@ -646,8 +641,8 @@ export default function AptitudeTest() {
               </div>
               <h3 className="text-2xl font-black text-white tracking-tight">Swaroop Bhati</h3>
               <div className="flex items-center justify-center gap-2 mt-2">
-                 <ShieldCheck className="w-3 h-3 text-[#D4F478]" />
-                 <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em]">Verified Candidate</p>
+                <ShieldCheck className="w-3 h-3 text-[#D4F478]" />
+                <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em]">Verified Candidate</p>
               </div>
             </div>
           </div>
@@ -655,7 +650,7 @@ export default function AptitudeTest() {
           {/* Time & Navigator Card */}
           <div className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-sm space-y-10 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gray-50" />
-            
+
             <div className="text-center">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-4 block">Time Remaining</label>
               <div className={`flex items-center justify-center gap-4 text-5xl font-black tracking-tighter ${timeLeft < 300 ? 'text-red-500 animate-pulse' : 'text-gray-900'}`}>
@@ -669,19 +664,18 @@ export default function AptitudeTest() {
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block">Jump to Question</label>
                 <span className="text-[10px] font-black text-black">{attemptedCount} / {questions.length} done</span>
               </div>
-              
+
               <div className="grid grid-cols-5 gap-3">
                 {questions.map((_, i) => (
                   <button
                     key={i}
                     onClick={() => setCurrentQuestion(i)}
-                    className={`h-12 rounded-2xl font-black text-sm transition-all relative overflow-hidden ${
-                      currentQuestion === i 
-                        ? "bg-black text-white shadow-lg scale-110 z-10" 
-                        : selectedAnswers[i] !== undefined
-                          ? "bg-[#D4F478] text-black hover:bg-[#c4e468]"
-                          : "bg-gray-50 text-gray-300 hover:bg-gray-100 hover:text-gray-600"
-                    }`}
+                    className={`h-12 rounded-2xl font-black text-sm transition-all relative overflow-hidden ${currentQuestion === i
+                      ? "bg-black text-white shadow-lg scale-110 z-10"
+                      : selectedAnswers[i] !== undefined
+                        ? "bg-[#D4F478] text-black hover:bg-[#c4e468]"
+                        : "bg-gray-50 text-gray-300 hover:bg-gray-100 hover:text-gray-600"
+                      }`}
                   >
                     {i + 1}
                     {flagged[i] && (
@@ -690,24 +684,24 @@ export default function AptitudeTest() {
                   </button>
                 ))}
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4 pt-6 border-t border-gray-50">
-                 <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-tighter">
-                      <div className="w-2 h-2 rounded-full bg-[#D4F478]" /> Answered
-                    </div>
-                    <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-tighter">
-                      <div className="w-2 h-2 rounded-full bg-black" /> Current
-                    </div>
-                 </div>
-                 <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-tighter">
-                      <div className="w-2 h-2 rounded-full bg-orange-500" /> Flagged
-                    </div>
-                    <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-tighter">
-                      <div className="w-2 h-2 rounded-full bg-gray-100" /> Pending
-                    </div>
-                 </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-tighter">
+                    <div className="w-2 h-2 rounded-full bg-[#D4F478]" /> Answered
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-tighter">
+                    <div className="w-2 h-2 rounded-full bg-black" /> Current
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-tighter">
+                    <div className="w-2 h-2 rounded-full bg-orange-500" /> Flagged
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-tighter">
+                    <div className="w-2 h-2 rounded-full bg-gray-100" /> Pending
+                  </div>
+                </div>
               </div>
             </div>
           </div>

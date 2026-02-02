@@ -29,16 +29,14 @@ const SidebarLink = ({ icon: Icon, label, to, badge, showDot, collapsed }) => {
   return (
     <Link to={to} className="block w-full">
       <div
-        className={`relative flex items-center w-full gap-4 py-3.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 group overflow-hidden ${
-          isActive
+        className={`relative flex items-center w-full gap-4 py-3.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 group overflow-hidden ${isActive
             ? "bg-[#1A1A1A] text-white shadow-lg shadow-gray-200"
             : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
-        }`}
+          }`}
       >
         <Icon
-          className={`w-5 h-5 flex-shrink-0 transition-colors ${
-            isActive ? "text-[#D4F478]" : "text-gray-400 group-hover:text-gray-900"
-          }`}
+          className={`w-5 h-5 flex-shrink-0 transition-colors ${isActive ? "text-[#D4F478]" : "text-gray-400 group-hover:text-gray-900"
+            }`}
         />
         <AnimatePresence>
           {!collapsed && (
@@ -54,32 +52,30 @@ const SidebarLink = ({ icon: Icon, label, to, badge, showDot, collapsed }) => {
           )}
         </AnimatePresence>
         {isActive && (
-           <div className={`absolute w-1.5 h-1.5 rounded-full bg-[#D4F478] ${collapsed ? 'top-2 right-2' : 'right-2 top-1/2 -translate-y-1/2'}`} />
+          <div className={`absolute w-1.5 h-1.5 rounded-full bg-[#D4F478] ${collapsed ? 'top-2 right-2' : 'right-2 top-1/2 -translate-y-1/2'}`} />
         )}
         {/* Show dot indicator instead of badge count */}
         {showDot && (
-          <motion.span 
-             initial={{ opacity: 0, scale: 0 }}
-             animate={{ opacity: 1, scale: 1 }}
-             exit={{ opacity: 0, scale: 0 }}
-             className={`w-2 h-2 rounded-full ${
-               isActive 
-                 ? "bg-[#D4F478]" 
-                 : "bg-green-500 animate-pulse"
-             }`}
+          <motion.span
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0 }}
+            className={`w-2 h-2 rounded-full ${isActive
+                ? "bg-[#D4F478]"
+                : "bg-green-500 animate-pulse"
+              }`}
           />
         )}
         {/* Regular badge for counts (used for Learning, etc.) */}
         {!collapsed && badge && !showDot && (
-          <motion.span 
-             initial={{ opacity: 0, scale: 0 }}
-             animate={{ opacity: 1, scale: 1 }}
-             exit={{ opacity: 0, scale: 0 }}
-             className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-               isActive 
-                 ? "bg-[#D4F478] text-black" 
-                 : "bg-gray-100 text-gray-600 group-hover:bg-gray-200"
-             }`}
+          <motion.span
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0 }}
+            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isActive
+                ? "bg-[#D4F478] text-black"
+                : "bg-gray-100 text-gray-600 group-hover:bg-gray-200"
+              }`}
           >
             {badge}
           </motion.span>
@@ -102,10 +98,10 @@ const DropdownMenu = ({ title, icon: Icon, children, collapsed, setSidebarCollap
 
   const handleToggle = () => {
     if (collapsed) {
-        setSidebarCollapsed(false);
-        setTimeout(() => setIsOpen(true), 200);
+      setSidebarCollapsed(false);
+      setTimeout(() => setIsOpen(true), 200);
     } else {
-        setIsOpen(!isOpen);
+      setIsOpen(!isOpen);
     }
   };
 
@@ -113,38 +109,35 @@ const DropdownMenu = ({ title, icon: Icon, children, collapsed, setSidebarCollap
     <div className="space-y-1">
       <button
         onClick={handleToggle}
-        className={`w-full flex items-center justify-between py-3.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 group overflow-hidden ${
-          isOpen || hasActiveChild
+        className={`w-full flex items-center justify-between py-3.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 group overflow-hidden ${isOpen || hasActiveChild
             ? "bg-white border border-gray-100 shadow-sm text-gray-900"
             : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
-        }`}
+          }`}
       >
         <div className="flex items-center gap-4">
           {Icon && (
-            <Icon className={`w-5 h-5 flex-shrink-0 ${
-                isOpen || hasActiveChild ? "text-gray-900" : "text-gray-400 group-hover:text-gray-900"
+            <Icon className={`w-5 h-5 flex-shrink-0 ${isOpen || hasActiveChild ? "text-gray-900" : "text-gray-400 group-hover:text-gray-900"
               }`}
             />
           )}
           <AnimatePresence>
             {!collapsed && (
-                <motion.span
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: "auto" }}
-                    exit={{ opacity: 0, width: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="whitespace-nowrap overflow-hidden"
-                >
-                    {title}
-                </motion.span>
+              <motion.span
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: "auto" }}
+                exit={{ opacity: 0, width: 0 }}
+                transition={{ duration: 0.2 }}
+                className="whitespace-nowrap overflow-hidden"
+              >
+                {title}
+              </motion.span>
             )}
           </AnimatePresence>
         </div>
         {!collapsed && (
-            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${
-                isOpen ? "rotate-180 text-gray-900" : ""
+          <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${isOpen ? "rotate-180 text-gray-900" : ""
             }`}
-            />
+          />
         )}
       </button>
 
@@ -191,28 +184,28 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
   }, []);
 
   useEffect(() => {
-  const fetchDashboard = async () => {
-    try {
-      const res = await axios.get(
-        "http://localhost:5000/api/users/dashboard",
-        { withCredentials: true }
-      );
+    const fetchDashboard = async () => {
+      try {
+        const res = await axios.get(
+          "/api/users/dashboard",
+          { withCredentials: true }
+        );
 
-      setLearningCount(res.data.stats.inProgressCourses);
-    } catch (err) {
-      console.error("Failed to fetch dashboard stats", err);
-    }
-  };
+        setLearningCount(res.data.stats.inProgressCourses);
+      } catch (err) {
+        console.error("Failed to fetch dashboard stats", err);
+      }
+    };
 
-  fetchDashboard();
-}, []);
+    fetchDashboard();
+  }, []);
 
   // Fetch notification status
   useEffect(() => {
     const fetchNotificationStatus = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:5000/api/notifications/unread-count",
+          "/api/notifications/unread-count",
           { withCredentials: true }
         );
         setHasNewNotifications(res.data.count > 0);
@@ -303,12 +296,12 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
           <SidebarLink icon={Settings} label="Account" to="/dashboard/setting" collapsed={isCollapsed} />
           <SidebarLink icon={Bell} label="Notifications" to="/dashboard/notifications" showDot={hasNewNotifications} collapsed={isCollapsed} />
           <SidebarLink
-  icon={BookOpen}
-  label="Learning"
-  to="/dashboard/learning"
-  badge={learningCount > 0 ? learningCount : null}
-  collapsed={isCollapsed}
-/>
+            icon={BookOpen}
+            label="Learning"
+            to="/dashboard/learning"
+            badge={learningCount > 0 ? learningCount : null}
+            collapsed={isCollapsed}
+          />
 
 
           <DropdownMenu title="Saved Courses" icon={Bookmark} collapsed={isCollapsed} setSidebarCollapsed={setIsCollapsed}>

@@ -18,6 +18,9 @@ import {
   TrendingUp
 } from 'lucide-react';
 
+import { useAuthStore } from '../store/authstore';
+import UpgradeModal from '../components/UpgradeModal';
+
 // --- HELPER FUNCTIONS ---
 const formatDate = (dateString) => {
   const date = new Date(dateString);
@@ -219,6 +222,8 @@ const InterviewAnalysisPage = () => {
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const { user } = useAuthStore();
   const navigate = useNavigate();
 
 
@@ -228,7 +233,7 @@ const InterviewAnalysisPage = () => {
       try {
         setLoading(true);
         const res = await fetch(
-          "http://localhost:5000/api/interview-session/my",
+          "/api/interview-session/my",
           { credentials: 'include' }
         );
         const data = await res.json();
@@ -250,6 +255,16 @@ const InterviewAnalysisPage = () => {
   const handlePreview = (interview) => {
     if (!interview) {
       alert("Interview data missing");
+      return;
+    }
+
+    // ✅ Gating Logic: Block only if on Basic Plan AND no promo code used AND not on Free Plan
+    const isBasicPlan = user?.subscription?.planId === 'monthly';
+    const isFreePlan = user?.subscription?.planId === 'free';
+    const hasUsedPromo = user?.payments?.some(p => p.promoCode && p.status === 'success');
+
+    if (isBasicPlan && !hasUsedPromo && !isFreePlan) {
+      setShowUpgradeModal(true);
       return;
     }
 
@@ -289,7 +304,7 @@ const InterviewAnalysisPage = () => {
       setDeleting(true);
 
       await fetch(
-        `http://localhost:5000/api/interview-session/${deleteTarget}`,
+        `/api/interview-session/${deleteTarget}`,
         { 
           method: 'DELETE',
           credentials: 'include'
@@ -551,6 +566,12 @@ const InterviewAnalysisPage = () => {
         )}
       </AnimatePresence>
 
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        featureName="Interview Replay"
+      />
+
     </div>
   );
 };
@@ -780,7 +801,7 @@ export default InterviewAnalysisPage;
 //       try {
 //         setLoading(true);
 //         const res = await fetch(
-//           "http://localhost:5000/api/interview-session/my",
+//           "/api/interview-session/my",
 //           { credentials: 'include' }
 //         );
 //         const data = await res.json();
@@ -841,7 +862,7 @@ export default InterviewAnalysisPage;
 //       setDeleting(true);
 
 //       await fetch(
-//         `http://localhost:5000/api/interview-session/${deleteTarget}`,
+//         `/api/interview-session/${deleteTarget}`,
 //         { 
 //           method: 'DELETE',
 //           credentials: 'include'

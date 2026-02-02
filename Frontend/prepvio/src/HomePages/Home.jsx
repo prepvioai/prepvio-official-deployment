@@ -23,7 +23,8 @@ import {
   Check,
   Zap,
   Crown,
-  Rocket
+  Rocket,
+  X
 } from "lucide-react";
 
 // ✅ Import Existing Functional Components
@@ -369,10 +370,11 @@ const plans = [
     color: 'bg-blue-50 text-blue-600',
     description: "Essential tools for casual learners.",
     features: [
-      '4 AI Interviews',
-      'Standard support',
-      'Course certificates',
-      'Mobile app access'
+      { text: '4 AI Interviews', included: true },
+      { text: 'Access to analyzed feedback (pdf)', included: true },
+      { text: 'Access to Interview Replay', included: false },
+      { text: 'Access to Code Editor', included: false },
+      { text: 'Access to highlighted clips', included: false }
     ]
   },
   {
@@ -387,11 +389,11 @@ const plans = [
     color: 'bg-[#D4F478] text-black',
     description: "Best for serious students & job seekers.",
     features: [
-      '9 AI Interviews',
-      'Priority 24/7 support',
-      'Offline downloads',
-      'Exclusive webinars',
-      'Interview prep module'
+      { text: '9 AI Interviews', included: true },
+      { text: 'Access to analyzed feedback (pdf)', included: true },
+      { text: 'Access to Interview Replay', included: true },
+      { text: 'Access to Code Editor', included: true },
+      { text: 'Access to highlighted clips', included: false }
     ]
   },
   {
@@ -406,11 +408,11 @@ const plans = [
     color: 'bg-orange-50 text-orange-600',
     description: "Best value for dedicated learners.",
     features: [
-      '25 AI Interviews',
-      '1-on-1 Mentorship',
-      'Live doubt sessions',
-      'Job placement assistance',
-      'Custom learning path'
+      { text: '25 AI Interviews', included: true },
+      { text: 'Access to analyzed feedback (pdf)', included: true },
+      { text: 'Access to Interview Replay', included: true },
+      { text: 'Access to Code Editor', included: true },
+      { text: 'Access to highlighted clips', included: true }
     ]
   }
 ];
@@ -434,7 +436,7 @@ const PricingSection = () => {
 
       try {
         const res = await axios.get(
-          "http://localhost:5000/api/payment/interview-status",
+          "/api/payment/interview-status",
           { withCredentials: true }
         );
 
@@ -459,7 +461,7 @@ const PricingSection = () => {
     setIsValidating(true);
     try {
       const { data } = await axios.post(
-        "http://localhost:5000/api/promo/validate",
+        "/api/promo/validate",
         { code: promoCode, planId }
       );
 
@@ -504,7 +506,7 @@ const PricingSection = () => {
       }
 
       const { data } = await axios.post(
-        "http://localhost:5000/api/payment/create-order",
+        "/api/payment/create-order",
         requestData
       );
 
@@ -518,7 +520,7 @@ const PricingSection = () => {
         handler: async function (response) {
           try {
             const verifyRes = await axios.post(
-              "http://localhost:5000/api/payment/verify",
+              "/api/payment/verify",
               response
             );
 
@@ -526,7 +528,7 @@ const PricingSection = () => {
               await refreshUser();
 
               const res = await axios.get(
-                "http://localhost:5000/api/payment/interview-status",
+                "/api/payment/interview-status",
                 { withCredentials: true }
               );
 
@@ -685,10 +687,22 @@ const PricingSection = () => {
                 <ul className="space-y-4 mb-8 flex-1">
                   {plan.features.map((feature, idx) => (
                     <li key={idx} className="flex items-start gap-3">
-                      <div className={`mt-0.5 rounded-full p-0.5 ${isDark ? 'bg-[#D4F478] text-black' : 'bg-green-100 text-green-600'}`}>
-                        <Check className="w-3 h-3" strokeWidth={4} />
+                      <div className={`mt-0.5 rounded-full p-0.5 ${feature.included
+                        ? (isDark ? 'bg-[#D4F478] text-black' : 'bg-green-100 text-green-600')
+                        : 'bg-red-50 text-red-400'
+                        }`}>
+                        {feature.included ? (
+                          <Check className="w-3 h-3" strokeWidth={4} />
+                        ) : (
+                          <X className="w-3 h-3" strokeWidth={4} />
+                        )}
                       </div>
-                      <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{feature}</span>
+                      <span className={`text-sm font-medium ${feature.included
+                        ? (isDark ? 'text-gray-300' : 'text-gray-600')
+                        : 'text-gray-400 line-through decoration-gray-300'
+                        }`}>
+                        {feature.text}
+                      </span>
                     </li>
                   ))}
                 </ul>

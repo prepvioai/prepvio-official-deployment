@@ -201,8 +201,8 @@ router.post("/verify", verifyToken, async (req, res) => {
           "subscription.endDate": endDate,
         },
         $inc: {
-          "subscription.interviewsTotal": plan.interviews,
-          "subscription.interviewsRemaining": plan.interviews,
+          "subscription.interviewsTotal": payment.promoCode === 'PREP29' ? 2 : plan.interviews,
+          "subscription.interviewsRemaining": payment.promoCode === 'PREP29' ? 2 : plan.interviews,
         },
       }
     );

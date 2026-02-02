@@ -6,11 +6,11 @@ import { useNavigate } from "react-router-dom";
 
 
 
-import { 
-  MessageSquare, 
-  Star, 
-  Send, 
-  Zap, 
+import {
+  MessageSquare,
+  Star,
+  Send,
+  Zap,
   Heart,
   Smile,
   CheckCircle2,
@@ -45,17 +45,17 @@ export default function Feedback() {
 
 
 
-const courseId = searchParams.get("courseId");
-const channelId = searchParams.get("channelId");
+  const courseId = searchParams.get("courseId");
+  const channelId = searchParams.get("channelId");
 
-// contextual mode
-const isCourseFeedback = Boolean(courseId && channelId);
+  // contextual mode
+  const isCourseFeedback = Boolean(courseId && channelId);
 
-useEffect(() => {
-  if (isCourseFeedback) {
-    setCategory("content");
-  }
-}, [isCourseFeedback]);
+  useEffect(() => {
+    if (isCourseFeedback) {
+      setCategory("content");
+    }
+  }, [isCourseFeedback]);
 
 
 
@@ -67,32 +67,32 @@ useEffect(() => {
   ];
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    await axios.post(
-      "http://localhost:5000/api/users/feedback",
-      {
-        courseId,
-        channelId,
-        category,
-        rating,
-        message: feedbackText,
-      },
-      { withCredentials: true }
-    );
+    try {
+      await axios.post(
+        "/api/users/feedback",
+        {
+          courseId,
+          channelId,
+          category,
+          rating,
+          message: feedbackText,
+        },
+        { withCredentials: true }
+      );
 
-    setIsSubmitted(true);
-  } catch (err) {
-    console.error("Feedback submission failed", err);
-  }
-};
+      setIsSubmitted(true);
+    } catch (err) {
+      console.error("Feedback submission failed", err);
+    }
+  };
 
 
   if (isSubmitted) {
     return (
       <div className="min-h-screen bg-[#FDFBF9] flex items-center justify-center p-6">
-        <motion.div 
+        <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="bg-white p-12 rounded-[3.5rem] shadow-2xl border border-gray-100 text-center max-w-md w-full relative overflow-hidden"
@@ -105,7 +105,7 @@ useEffect(() => {
           <p className="text-gray-500 font-medium mb-10 text-lg leading-relaxed">
             Your feedback is the fuel that helps us build the extraordinary. We appreciate you!
           </p>
-          <button 
+          <button
             onClick={() => {
               navigate('/')
             }}
@@ -124,7 +124,7 @@ useEffect(() => {
       <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-[#D4F478]/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-blue-100/30 rounded-full blur-[120px] pointer-events-none" />
 
-      <motion.div 
+      <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -162,11 +162,10 @@ useEffect(() => {
                       key={cat.id}
                       type="button"
                       onClick={() => setCategory(cat.id)}
-                      className={`flex items-center justify-between p-5 rounded-2xl border-2 transition-all group ${
-                        isActive 
-                          ? "bg-black border-black text-white shadow-xl shadow-black/10 translate-x-2" 
+                      className={`flex items-center justify-between p-5 rounded-2xl border-2 transition-all group ${isActive
+                          ? "bg-black border-black text-white shadow-xl shadow-black/10 translate-x-2"
                           : "bg-white/50 border-gray-100 text-gray-600 hover:border-gray-200"
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-4">
                         <div className={`p-2 rounded-xl ${isActive ? "bg-[#D4F478] text-black" : "bg-gray-100 text-gray-400 group-hover:bg-gray-200"}`}>
@@ -197,12 +196,11 @@ useEffect(() => {
                       onClick={() => setRating(star)}
                       className="p-1.5 transition-all duration-300 hover:scale-125"
                     >
-                      <Star 
-                        className={`w-9 h-9 transition-all duration-300 ${
-                          (hoverRating || rating) >= star 
-                            ? "fill-[#D4F478] text-[#D4F478] drop-shadow-[0_0_8px_rgba(212,244,120,0.5)]" 
+                      <Star
+                        className={`w-9 h-9 transition-all duration-300 ${(hoverRating || rating) >= star
+                            ? "fill-[#D4F478] text-[#D4F478] drop-shadow-[0_0_8px_rgba(212,244,120,0.5)]"
                             : "text-gray-100"
-                        }`} 
+                          }`}
                       />
                     </button>
                   ))}
@@ -210,7 +208,7 @@ useEffect(() => {
                 <div className="h-6">
                   <AnimatePresence mode="wait">
                     {rating > 0 && (
-                      <motion.span 
+                      <motion.span
                         initial={{ opacity: 0, y: 5 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -5 }}
@@ -233,31 +231,31 @@ useEffect(() => {
                   Detailed Thoughts
                 </label>
                 <textarea
-  required
-  rows={8}
-  value={feedbackText}
-  onChange={(e) => setFeedbackText(e.target.value)}
-  placeholder={
-    isCourseFeedback
-      ? "What did you like or dislike about this course? What can be improved?"
-      : `Tell us about your experience with ${category}...`
-  }
-  className="w-full bg-gray-50/50 border-none focus:ring-0 rounded-2xl p-6 outline-none transition-all font-medium text-lg text-gray-800 resize-none min-h-[300px]"
-/>
+                  required
+                  rows={8}
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value)}
+                  placeholder={
+                    isCourseFeedback
+                      ? "What did you like or dislike about this course? What can be improved?"
+                      : `Tell us about your experience with ${category}...`
+                  }
+                  className="w-full bg-gray-50/50 border-none focus:ring-0 rounded-2xl p-6 outline-none transition-all font-medium text-lg text-gray-800 resize-none min-h-[300px]"
+                />
 
               </div>
-              
+
               <div className="px-8 pb-8 mt-auto">
-                 <div className="flex items-center gap-4 p-4 bg-gray-50/80 rounded-2xl border border-gray-100 group cursor-pointer transition-colors hover:border-gray-200">
-                    <input 
-                      type="checkbox" 
-                      id="follow-up" 
-                      className="w-5 h-5 rounded-lg border-2 border-gray-200 text-black focus:ring-black accent-black cursor-pointer"
-                    />
-                    <label htmlFor="follow-up" className="text-sm font-bold text-gray-500 cursor-pointer select-none group-hover:text-gray-900 transition-colors">
-                      Get updates on this feedback
-                    </label>
-                 </div>
+                <div className="flex items-center gap-4 p-4 bg-gray-50/80 rounded-2xl border border-gray-100 group cursor-pointer transition-colors hover:border-gray-200">
+                  <input
+                    type="checkbox"
+                    id="follow-up"
+                    className="w-5 h-5 rounded-lg border-2 border-gray-200 text-black focus:ring-black accent-black cursor-pointer"
+                  />
+                  <label htmlFor="follow-up" className="text-sm font-bold text-gray-500 cursor-pointer select-none group-hover:text-gray-900 transition-colors">
+                    Get updates on this feedback
+                  </label>
+                </div>
               </div>
             </motion.div>
 
@@ -282,15 +280,15 @@ useEffect(() => {
 
         <footer className="mt-16 text-center border-t border-gray-100 pt-8 flex flex-col items-center gap-4">
           <div className="flex gap-8">
-             <div className="flex items-center gap-2 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">
-                <Zap className="w-3 h-3" /> Real-time
-             </div>
-             <div className="flex items-center gap-2 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">
-                <Smile className="w-3 h-3" /> Anonymous
-             </div>
-             <div className="flex items-center gap-2 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">
-                <Heart className="w-3 h-3" /> Human-led
-             </div>
+            <div className="flex items-center gap-2 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">
+              <Zap className="w-3 h-3" /> Real-time
+            </div>
+            <div className="flex items-center gap-2 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">
+              <Smile className="w-3 h-3" /> Anonymous
+            </div>
+            <div className="flex items-center gap-2 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">
+              <Heart className="w-3 h-3" /> Human-led
+            </div>
           </div>
         </footer>
       </motion.div>

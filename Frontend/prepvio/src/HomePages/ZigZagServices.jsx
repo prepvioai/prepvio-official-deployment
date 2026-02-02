@@ -23,7 +23,7 @@ const ZigZagServices = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const res = await axios.get("http://localhost:8000/api/services");
+        const res = await axios.get("/api/services");
         setServices(res.data);
         const initialIndexes = {};
         res.data.forEach((service, idx) => {
@@ -97,14 +97,14 @@ const ZigZagServices = () => {
   return (
     <>
       {/* ✅ ADD AUTH MODAL */}
-      <AuthModal 
-        isOpen={showAuthModal} 
-        onClose={() => setShowAuthModal(false)} 
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
         type={modalType}
       />
 
       <section id="services" className="py-20 relative bg-[#FDFBF9] overflow-hidden font-sans">
-        
+
         {/* Background Decor */}
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-50/40 rounded-full blur-[100px] -z-10 pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-50/40 rounded-full blur-[100px] -z-10 pointer-events-none" />
@@ -115,7 +115,7 @@ const ZigZagServices = () => {
             Our Capabilities
           </div>
           <h2 className="text-5xl md:text-6xl font-black text-[#1A1A1A] tracking-tighter leading-[0.9] mb-4">
-            Master Your <br/>
+            Master Your <br />
             <span className="text-gray-400">Digital Presence</span>
           </h2>
         </div>
@@ -132,15 +132,13 @@ const ZigZagServices = () => {
                 key={service._id}
                 id={`service-${index}`}
                 ref={(el) => (serviceRefs.current[index] = el)}
-                className={`flex flex-col md:flex-row items-center gap-10 md:gap-16 ${
-                  isReverse ? "md:flex-row-reverse" : ""
-                } transition-all duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] transform-gpu ${
-                  isIntersecting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-24"
-                }`}
+                className={`flex flex-col md:flex-row items-center gap-10 md:gap-16 ${isReverse ? "md:flex-row-reverse" : ""
+                  } transition-all duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] transform-gpu ${isIntersecting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-24"
+                  }`}
               >
-                
+
                 {/* --- IMAGE SIDE (Compact Height: h-72) --- */}
-                <div 
+                <div
                   onClick={() => handleNavigate(service.slug)}
                   className="w-full md:w-1/2 relative group cursor-pointer perspective-1000"
                 >
@@ -148,40 +146,39 @@ const ZigZagServices = () => {
                   <div className={`absolute -top-6 ${isReverse ? '-left-6' : '-right-6'} w-24 h-24 bg-[#D4F478]/40 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700`} />
 
                   <div className="relative h-64 md:h-72 lg:h-80 w-full rounded-[2.5rem] overflow-hidden border border-white/50 shadow-2xl shadow-gray-200/50 bg-white transform transition-transform duration-500 group-hover:scale-[1.02] group-hover:-translate-y-2">
-                     {/* Images */}
-                     {service.images && service.images.length > 0 ? (
-                        service.images.map((img, imgIdx) => (
-                          <img
-                            key={imgIdx}
-                            src={img}
-                            alt={service.title}
-                            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
-                              imgIdx === currentImageIndex ? "opacity-100" : "opacity-0"
+                    {/* Images */}
+                    {service.images && service.images.length > 0 ? (
+                      service.images.map((img, imgIdx) => (
+                        <img
+                          key={imgIdx}
+                          src={img}
+                          alt={service.title}
+                          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${imgIdx === currentImageIndex ? "opacity-100" : "opacity-0"
                             }`}
-                          />
-                        ))
-                     ) : service.image ? (
-                       <img src={service.image} alt={service.title} className="w-full h-full object-cover" />
-                     ) : (
-                       <div className="flex items-center justify-center h-full bg-[#EAE6F5] text-gray-400">
-                         <Activity size={40} />
-                       </div>
-                     )}
-                     
-                     {/* Gradient Overlay */}
-                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                     
-                     {/* "App" Badge */}
-                     <div className="absolute top-5 right-5 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl shadow-sm border border-white flex items-center gap-2">
-                        <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                        <span className="text-[10px] font-bold text-gray-800 uppercase tracking-wider">Live</span>
-                     </div>
+                        />
+                      ))
+                    ) : service.image ? (
+                      <img src={service.image} alt={service.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="flex items-center justify-center h-full bg-[#EAE6F5] text-gray-400">
+                        <Activity size={40} />
+                      </div>
+                    )}
+
+                    {/* Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                    {/* "App" Badge */}
+                    <div className="absolute top-5 right-5 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl shadow-sm border border-white flex items-center gap-2">
+                      <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                      <span className="text-[10px] font-bold text-gray-800 uppercase tracking-wider">Live</span>
+                    </div>
                   </div>
                 </div>
 
                 {/* --- TEXT SIDE (Rich Typography) --- */}
                 <div className="w-full md:w-1/2 text-center md:text-left">
-                  
+
                   {/* Styled Number Box (From New UI) */}
                   <div className="flex justify-center md:justify-start mb-6">
                     <div className="w-12 h-12 bg-[#1A1A1A] rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg transform group-hover:rotate-12 transition-transform duration-300">
@@ -201,7 +198,7 @@ const ZigZagServices = () => {
 
                   {/* The "Split Pill" Button (From New UI) */}
                   <div className="flex justify-center md:justify-start">
-                    <button 
+                    <button
                       onClick={() => handleNavigate(service.slug)}
                       className="flex items-center gap-0 group cursor-pointer"
                     >

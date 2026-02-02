@@ -27,22 +27,22 @@ const SignUpPage = () => {
 
   const { signup, error, isLoading, user } = useAuthStore();
   const handleGoogleSignup = () => {
-  window.location.href = "http://localhost:5000/api/auth/google";
-};
+    window.location.href = "/api/auth/google";
+  };
 
 
   // ✅ FIX: Add 'await' and proper error handling
-const handleSignUp = async (e) => {
-  e.preventDefault();
+  const handleSignUp = async (e) => {
+    e.preventDefault();
 
-  try {
-    await signup(email, password, name);
-    toast.success("Account created! Check your email for verification code.");
-    navigate("/verify-email"); // ✅ DIRECT REDIRECT
-  } catch (error) {
-    toast.error(error.response?.data?.message || "Signup failed");
-  }
-};
+    try {
+      await signup(email, password, name);
+      toast.success("Account created! Check your email for verification code.");
+      navigate("/verify-email"); // ✅ DIRECT REDIRECT
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Signup failed");
+    }
+  };
 
 
   return (
@@ -87,10 +87,10 @@ const handleSignUp = async (e) => {
         <div className="space-y-4">
           <div className="space-y-2">
             <SocialButton
-  icon={Globe}
-  label="Continue with Google"
-  onClick={handleGoogleSignup}
-/>
+              icon={Globe}
+              label="Continue with Google"
+              onClick={handleGoogleSignup}
+            />
 
             {/* <SocialButton icon={Linkedin} label="Continue with LinkedIn" /> */}
           </div>

@@ -46,7 +46,7 @@ ChartJS.register(
   Legend
 );
 
-const USER_API = "http://localhost:5000/api";
+const USER_API = "/api";
 
 // --- ASSETS & CONFIGURATION ---
 const ASSETS = {
@@ -65,14 +65,14 @@ const containerVariants = {
 
 const itemUpVariants = {
   hidden: { y: 20, opacity: 0 },
-  visible: { 
-    y: 0, 
-    opacity: 1, 
-    transition: { 
-      type: "spring", 
-      stiffness: 100, 
-      damping: 20 
-    } 
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      damping: 20
+    }
   },
 };
 
@@ -93,33 +93,33 @@ const motivationalQuotes = [
 ];
 
 const serviceConfigs = [
-  { 
-    key: 'checkYourAbility', 
-    name: 'Check Your Ability', 
-    icon: MonitorCheck, 
-    color: 'text-indigo-600', 
-    bg: 'bg-indigo-50' 
+  {
+    key: 'checkYourAbility',
+    name: 'Check Your Ability',
+    icon: MonitorCheck,
+    color: 'text-indigo-600',
+    bg: 'bg-indigo-50'
   },
-  { 
-    key: 'jobPortal', 
-    name: 'Job Portal Access', 
-    icon: Globe, 
-    color: 'text-green-600', 
-    bg: 'bg-green-50' 
+  {
+    key: 'jobPortal',
+    name: 'Job Portal Access',
+    icon: Globe,
+    color: 'text-green-600',
+    bg: 'bg-green-50'
   },
-  { 
-    key: 'aiSystem', 
-    name: 'AI System Tools', 
-    icon: Sparkles, 
-    color: 'text-yellow-600', 
-    bg: 'bg-yellow-50' 
+  {
+    key: 'aiSystem',
+    name: 'AI System Tools',
+    icon: Sparkles,
+    color: 'text-yellow-600',
+    bg: 'bg-yellow-50'
   },
-  { 
-    key: 'resumeAnalyzer', 
-    name: 'Resume Analyzer', 
-    icon: FileText, 
-    color: 'text-red-600', 
-    bg: 'bg-red-50' 
+  {
+    key: 'resumeAnalyzer',
+    name: 'Resume Analyzer',
+    icon: FileText,
+    color: 'text-red-600',
+    bg: 'bg-red-50'
   },
 ];
 
@@ -127,24 +127,24 @@ const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   scales: {
-    x: { 
-      grid: { display: false }, 
-      ticks: { 
-        color: "#9ca3af", 
-        font: { weight: 'bold' } 
-      } 
+    x: {
+      grid: { display: false },
+      ticks: {
+        color: "#9ca3af",
+        font: { weight: 'bold' }
+      }
     },
-    y: { 
-      grid: { color: "#f3f4f6" }, 
+    y: {
+      grid: { color: "#f3f4f6" },
       ticks: { color: "#9ca3af" },
       beginAtZero: true
     },
   },
   plugins: {
-    legend: { 
-      display: false 
+    legend: {
+      display: false
     },
-    tooltip: { 
+    tooltip: {
       backgroundColor: "#1A1A1A",
       padding: 12,
       cornerRadius: 8,
@@ -158,29 +158,28 @@ const chartOptions = {
 
 // 1. StatCard
 const StatCard = ({ label, value, trend, icon: Icon, iconStyle, trendStyle, trendIcon: TrendIcon }) => (
-  <motion.div 
+  <motion.div
     variants={itemUpVariants}
     whileHover={hoverCardEffect}
     className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col justify-between h-44 relative overflow-hidden group"
   >
-    <div className={`absolute -top-6 -right-6 w-32 h-32 rounded-full opacity-5 pointer-events-none ${
-      iconStyle.includes('text-blue') ? 'bg-blue-500' : 
-      iconStyle.includes('text-purple') ? 'bg-purple-500' : 
-      iconStyle.includes('text-green') ? 'bg-green-500' :
-      iconStyle.includes('text-orange') ? 'bg-orange-500' :
-      iconStyle.includes('text-red') ? 'bg-red-500' : 'bg-gray-500'
-    }`} />
-    
+    <div className={`absolute -top-6 -right-6 w-32 h-32 rounded-full opacity-5 pointer-events-none ${iconStyle.includes('text-blue') ? 'bg-blue-500' :
+      iconStyle.includes('text-purple') ? 'bg-purple-500' :
+        iconStyle.includes('text-green') ? 'bg-green-500' :
+          iconStyle.includes('text-orange') ? 'bg-orange-500' :
+            iconStyle.includes('text-red') ? 'bg-red-500' : 'bg-gray-500'
+      }`} />
+
     <div className="flex justify-between items-start z-10">
       <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm ${iconStyle}`}>
         <Icon className="w-7 h-7" />
       </div>
       <div className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 ${trendStyle}`}>
-        {TrendIcon && <TrendIcon className="w-3 h-3" />} 
+        {TrendIcon && <TrendIcon className="w-3 h-3" />}
         {trend}
       </div>
     </div>
-    
+
     <div className="z-10 mt-auto pt-4">
       <div className="text-4xl font-black text-gray-900 mb-1 tracking-tight leading-none">{value}</div>
       <div className="text-sm font-bold text-gray-400">{label}</div>
@@ -190,30 +189,30 @@ const StatCard = ({ label, value, trend, icon: Icon, iconStyle, trendStyle, tren
 
 // 2. Recommended Session Card (Responsive)
 const RecommendedSessionCard = ({ onContinue, hasResume }) => (
-  <motion.div 
+  <motion.div
     variants={itemUpVariants}
     className="bg-[#1A1A1A] rounded-[2.5rem] p-6 md:p-12 relative overflow-hidden shadow-2xl shadow-gray-900/20 text-white flex flex-col justify-center min-h-[300px] md:min-h-[340px] group cursor-pointer"
   >
     <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full blur-[80px] opacity-40 group-hover:opacity-60 transition-opacity" />
-    <div className="absolute bottom-0 left-0 w-full h-full opacity-10" style={{backgroundImage: "radial-gradient(#fff 1px, transparent 1px)", backgroundSize: "20px 20px"}} />
-    
+    <div className="absolute bottom-0 left-0 w-full h-full opacity-10" style={{ backgroundImage: "radial-gradient(#fff 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
+
     <div className="relative z-10 max-w-lg">
       <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold mb-6 border border-white/10 text-[#D4F478]">
-        <Zap className="w-3 h-3 fill-current" /> 
+        <Zap className="w-3 h-3 fill-current" />
         RECOMMENDED FOR YOU
       </div>
       <h2 className="text-3xl md:text-5xl font-black mb-4 leading-tight">
-        {hasResume ? "Continue Your Journey" : "Product Strategy"}<br/>
+        {hasResume ? "Continue Your Journey" : "Product Strategy"}<br />
         {hasResume ? "" : "Deep Dive"}
       </h2>
       <p className="text-gray-400 mb-8 max-w-md text-sm md:text-lg leading-relaxed">
-        {hasResume 
-          ? "Pick up right where you left off and keep learning!" 
+        {hasResume
+          ? "Pick up right where you left off and keep learning!"
           : "Master the \"Circle Framework\" and improve your strategic thinking score."}
       </p>
-      
+
       {hasResume && (
-        <button 
+        <button
           onClick={onContinue}
           className="bg-[#D4F478] text-black px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold flex items-center gap-3 hover:bg-white hover:scale-105 transition-all shadow-lg shadow-[#D4F478]/20 w-fit text-sm md:text-base"
         >
@@ -223,20 +222,20 @@ const RecommendedSessionCard = ({ onContinue, hasResume }) => (
       )}
     </div>
 
-    <motion.img 
+    <motion.img
       initial={{ scale: 0.9, opacity: 0 }}
       animate={{ scale: 1, opacity: 0.5 }}
       transition={{ delay: 0.2 }}
-      src={ASSETS.maleChar} 
-      className="absolute -bottom-10 -right-10 w-56 h-64 md:w-72 md:h-80 object-cover rounded-full grayscale group-hover:grayscale-0 transition-all duration-700 hidden md:block" 
-      alt="Mentor" 
+      src={ASSETS.maleChar}
+      className="absolute -bottom-10 -right-10 w-56 h-64 md:w-72 md:h-80 object-cover rounded-full grayscale group-hover:grayscale-0 transition-all duration-700 hidden md:block"
+      alt="Mentor"
     />
   </motion.div>
 );
 
 // 3. Service Card
 const ServiceCard = ({ icon: Icon, name, color, bg, onClick }) => (
-  <motion.div 
+  <motion.div
     whileHover={hoverCardEffect}
     onClick={onClick}
     className="p-5 rounded-[1.5rem] border bg-white border-gray-100 transition-all duration-300 flex items-center gap-4 cursor-pointer shadow-sm hover:shadow-md"
@@ -258,22 +257,22 @@ const ServiceCard = ({ icon: Icon, name, color, bg, onClick }) => (
 
 // 4. Course Row
 const CourseRow = ({ course, onClick }) => {
-  const progress = course.totalSeconds > 0 
-    ? Math.round((course.watchedSeconds / course.totalSeconds) * 100) 
+  const progress = course.totalSeconds > 0
+    ? Math.round((course.watchedSeconds / course.totalSeconds) * 100)
     : 0;
-  
+
   const status = course.completed ? "Completed" : "Ongoing";
   const color = course.completed ? "green" : "yellow";
 
   return (
-    <div 
+    <div
       onClick={onClick}
       className="flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-gray-50 rounded-2xl transition-colors cursor-pointer group border border-transparent hover:border-gray-100 gap-4 sm:gap-0"
     >
       <div className="flex items-center gap-4">
         {course.channelThumbnail ? (
-          <img 
-            src={course.channelThumbnail} 
+          <img
+            src={course.channelThumbnail}
             alt={course.channelName}
             className="w-12 h-12 rounded-2xl object-cover"
             onError={(e) => {
@@ -282,9 +281,8 @@ const CourseRow = ({ course, onClick }) => {
             }}
           />
         ) : (
-          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors font-bold text-lg ${
-            color === 'green' ? 'bg-[#D4F478] text-black' : 'bg-yellow-100 text-yellow-700'
-          }`}>
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors font-bold text-lg ${color === 'green' ? 'bg-[#D4F478] text-black' : 'bg-yellow-100 text-yellow-700'
+            }`}>
             {course.courseTitle?.charAt(0) || 'C'}
           </div>
         )}
@@ -298,14 +296,13 @@ const CourseRow = ({ course, onClick }) => {
         </div>
       </div>
       <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 sm:gap-1 w-full sm:w-auto">
-        <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${
-          status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-        }`}>
+        <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+          }`}>
           {status}
         </span>
         <div className="w-full sm:w-20 bg-gray-100 rounded-full h-1.5 mt-0 sm:mt-1">
-          <div 
-            className={`h-1.5 rounded-full ${color === 'green' ? 'bg-green-500' : 'bg-yellow-500'}`} 
+          <div
+            className={`h-1.5 rounded-full ${color === 'green' ? 'bg-green-500' : 'bg-yellow-500'}`}
             style={{ width: `${Math.min(progress, 100)}%` }}
           ></div>
         </div>
@@ -320,8 +317,8 @@ export const DashboardModal = ({ onClose }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleEsc = (e) => { 
-      if (e.key === "Escape") onClose(); 
+    const handleEsc = (e) => {
+      if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", handleEsc);
     return () => window.removeEventListener("keydown", handleEsc);
@@ -360,8 +357,8 @@ export const DashboardModal = ({ onClose }) => {
           onClick={(e) => e.stopPropagation()}
           className="max-w-md w-full p-6 md:p-8 bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 relative"
         >
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="absolute top-6 right-6 p-2 rounded-full hover:bg-gray-100 transition-colors"
           >
             <X className="w-5 h-5 text-gray-500" />
@@ -390,18 +387,18 @@ export const DashboardModal = ({ onClose }) => {
           </div>
 
           <div className="mt-8 space-y-3">
-            <motion.button 
-              whileHover={{ scale: 1.02 }} 
-              whileTap={{ scale: 0.98 }} 
-              onClick={handleManageAccount} 
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleManageAccount}
               className="w-full py-3.5 px-4 bg-[#1A1A1A] text-white font-bold rounded-xl shadow-lg shadow-gray-200 hover:bg-black transition-colors"
             >
               View Full Dashboard
             </motion.button>
-            <motion.button 
-              whileHover={{ scale: 1.02 }} 
-              whileTap={{ scale: 0.98 }} 
-              onClick={handleLogout} 
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleLogout}
               className="w-full py-3.5 px-4 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 hover:text-red-500 hover:border-red-100 transition-colors"
             >
               Log Out
@@ -413,12 +410,79 @@ export const DashboardModal = ({ onClose }) => {
   );
 };
 
+// --- ALL COURSES MODAL ---
+const AllCoursesModal = ({ courses, onClose, onCourseClick }) => {
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleEsc);
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      window.removeEventListener("keydown", handleEsc);
+      document.body.style.overflow = "unset";
+    };
+  }, [onClose]);
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-sm p-4"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          onClick={(e) => e.stopPropagation()}
+          className="max-w-2xl w-full bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 flex flex-col max-h-[80vh]"
+        >
+          <div className="p-6 md:p-8 border-b border-gray-100 flex justify-between items-center shrink-0">
+            <div>
+              <h2 className="text-2xl font-black text-gray-900">All Courses</h2>
+              <p className="text-sm text-gray-500 mt-1 font-medium">Continue where you left off</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-500" />
+            </button>
+          </div>
+
+          <div className="p-6 md:p-8 overflow-y-auto space-y-2">
+            {courses.length > 0 ? (
+              courses.map((course, idx) => (
+                <CourseRow
+                  key={`all-${course.courseId}-${idx}`}
+                  course={course}
+                  onClick={() => {
+                    onCourseClick(course);
+                    onClose();
+                  }}
+                />
+              ))
+            ) : (
+              <p className="text-center text-gray-500 py-8">No courses found.</p>
+            )}
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
 export default function DashboardPage() {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, refreshUser } = useAuthStore();
   const [greeting, setGreeting] = useState("");
   const [quote, setQuote] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showAllCourses, setShowAllCourses] = useState(false);
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -447,7 +511,8 @@ export default function DashboardPage() {
     };
 
     fetchDashboard();
-  }, []);
+    refreshUser();
+  }, [refreshUser]);
 
   const handleContinue = () => {
     if (!dashboard?.resume) {
@@ -457,7 +522,7 @@ export default function DashboardPage() {
     }
 
     const { courseId, channelId, videoId } = dashboard.resume;
-    
+
     if (!courseId || !channelId) {
       console.error("Missing courseId or channelId in resume data");
       return;
@@ -473,13 +538,13 @@ export default function DashboardPage() {
       console.error("Missing course data for navigation");
       return;
     }
-    
+
     navigate(`/course/${course.channelId}/${course.courseId}`);
   };
 
   const handleServiceClick = (serviceKey) => {
     // Navigate to respective service page
-    switch(serviceKey) {
+    switch (serviceKey) {
       case 'checkYourAbility':
         navigate("/ability-check");
         break;
@@ -563,7 +628,7 @@ export default function DashboardPage() {
 
   const displayName = user?.name?.split(' ')[0] || 'User';
   const userAvatar = user?.profilePic || `${ASSETS.avatarPlaceholder}${encodeURIComponent(user?.name || 'User')}`;
-  
+
   // Fixed: Check for service access properly
   const activeServices = serviceConfigs.filter(service => {
     // Check if user has this service enabled
@@ -573,64 +638,64 @@ export default function DashboardPage() {
   });
 
   const staticCards = [
-    { 
-      label: "Total Courses", 
-      value: stats.totalCourses.toString(), 
-      icon: BookOpen, 
-      iconStyle: "bg-blue-50 text-blue-600", 
-      trend: `${stats.totalCourses} enrolled`, 
+    {
+      label: "Total Courses",
+      value: stats.totalCourses.toString(),
+      icon: BookOpen,
+      iconStyle: "bg-blue-50 text-blue-600",
+      trend: `${stats.totalCourses} enrolled`,
       trendStyle: "bg-green-50 text-green-600",
       trendIcon: TrendingUp
     },
-    { 
-      label: "Completed", 
-      value: stats.completedCourses.toString(), 
-      icon: CheckCircle, 
-      iconStyle: "bg-[#D4F478] text-black", 
-      trend: "Great progress!", 
+    {
+      label: "Completed",
+      value: stats.completedCourses.toString(),
+      icon: CheckCircle,
+      iconStyle: "bg-[#D4F478] text-black",
+      trend: "Great progress!",
       trendStyle: "bg-green-50 text-green-600",
       trendIcon: TrendingUp
     },
-    { 
-      label: "In Progress", 
-      value: stats.inProgressCourses.toString(), 
-      icon: Clock, 
-      iconStyle: "bg-purple-50 text-purple-600", 
-      trend: "Keep going!", 
+    {
+      label: "In Progress",
+      value: stats.inProgressCourses.toString(),
+      icon: Clock,
+      iconStyle: "bg-purple-50 text-purple-600",
+      trend: "Keep going!",
       trendStyle: "bg-green-50 text-green-600",
       trendIcon: TrendingUp
     },
-    { 
-      label: "Hours Learned", 
-      value: `${stats.totalWatchedHours}h`, 
-      icon: Target, 
-      iconStyle: "bg-orange-50 text-orange-600", 
-      trend: "Time invested", 
+    {
+      label: "Hours Learned",
+      value: `${stats.totalWatchedHours}h`,
+      icon: Target,
+      iconStyle: "bg-orange-50 text-orange-600",
+      trend: "Time invested",
       trendStyle: "bg-green-50 text-green-600",
-      trendIcon: TrendingUp 
+      trendIcon: TrendingUp
     },
-    { 
-      label: "Interview Credits", 
-      value: (user?.subscription?.interviewsRemaining || 0).toString(), 
-      icon: MonitorCheck, 
-      iconStyle: (user?.subscription?.interviewsRemaining || 0) > 0 
-        ? "bg-green-50 text-green-600" 
-        : "bg-red-50 text-red-600", 
-      trend: (user?.subscription?.interviewsRemaining || 0) > 0 
-        ? "Credits available" 
-        : "No credits left", 
-      trendStyle: (user?.subscription?.interviewsRemaining || 0) > 0 
-        ? "bg-green-50 text-green-600" 
+    {
+      label: "Interview Credits",
+      value: (user?.subscription?.interviewsRemaining || 0).toString(),
+      icon: MonitorCheck,
+      iconStyle: (user?.subscription?.interviewsRemaining || 0) > 0
+        ? "bg-green-50 text-green-600"
         : "bg-red-50 text-red-600",
-      trendIcon: (user?.subscription?.interviewsRemaining || 0) > 0 
-        ? CheckCircle 
+      trend: (user?.subscription?.interviewsRemaining || 0) > 0
+        ? "Credits available"
+        : "No credits left",
+      trendStyle: (user?.subscription?.interviewsRemaining || 0) > 0
+        ? "bg-green-50 text-green-600"
+        : "bg-red-50 text-red-600",
+      trendIcon: (user?.subscription?.interviewsRemaining || 0) > 0
+        ? CheckCircle
         : Clock
     },
   ];
 
   return (
     <div className="min-h-screen bg-[#FDFBF9] font-sans selection:bg-[#D4F478] selection:text-black pb-10">
-      
+
       {/* Navbar - Sticky */}
       <nav className="sticky top-0 z-50 bg-[#FDFBF9]/80 backdrop-blur-md border-b border-gray-100 px-4 md:px-6 py-4">
         <div className="max-w-[1600px] mx-auto flex justify-between items-center">
@@ -646,24 +711,24 @@ export default function DashboardPage() {
           <div className="flex items-center gap-4">
             <div className="relative hidden md:block">
               <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input 
-                type="text" 
-                placeholder="Search courses..." 
-                className="bg-white border border-gray-200 pl-10 pr-4 py-2.5 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-black/5 w-64 shadow-sm" 
+              <input
+                type="text"
+                placeholder="Search courses..."
+                className="bg-white border border-gray-200 pl-10 pr-4 py-2.5 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-black/5 w-64 shadow-sm"
               />
             </div>
             <button className="w-11 h-11 bg-white rounded-xl border border-gray-200 flex items-center justify-center text-gray-500 hover:text-black hover:shadow-md transition-all relative">
               <Bell className="w-5 h-5" />
               <span className="absolute top-3 right-3 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
             </button>
-            <div 
-              onClick={() => setShowModal(true)} 
+            <div
+              onClick={() => setShowModal(true)}
               className="flex items-center gap-3 bg-white pl-2 pr-4 py-1.5 rounded-full border border-gray-200 shadow-sm cursor-pointer hover:shadow-md transition-all"
             >
-              <img 
-                src={userAvatar} 
-                alt="Profile" 
-                className="w-8 h-8 rounded-full object-cover bg-gray-100" 
+              <img
+                src={userAvatar}
+                alt="Profile"
+                className="w-8 h-8 rounded-full object-cover bg-gray-100"
               />
               <span className="text-sm font-bold text-gray-700 hidden sm:block">
                 {displayName}
@@ -675,13 +740,14 @@ export default function DashboardPage() {
       </nav>
 
       {showModal && <DashboardModal onClose={() => setShowModal(false)} />}
+      {showAllCourses && <AllCoursesModal courses={courses} onClose={() => setShowAllCourses(false)} onCourseClick={handleCourseClick} />}
 
       <main className="max-w-[1600px] mx-auto p-4 md:p-8 space-y-8">
-        
+
         {/* Header */}
-        <motion.div 
-          initial="hidden" 
-          animate="visible" 
+        <motion.div
+          initial="hidden"
+          animate="visible"
           variants={containerVariants}
           className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6"
         >
@@ -696,10 +762,10 @@ export default function DashboardPage() {
         </motion.div>
 
         {/* Stats Grid */}
-        <motion.div 
-          initial="hidden" 
-          animate="visible" 
-          variants={containerVariants} 
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6"
         >
           {staticCards.map((card, idx) => (
@@ -708,25 +774,25 @@ export default function DashboardPage() {
         </motion.div>
 
         {/* Main Bento Grid */}
-        <motion.div 
-          initial="hidden" 
-          animate="visible" 
-          variants={containerVariants} 
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
           className="grid grid-cols-1 lg:grid-cols-12 gap-8"
         >
-          
+
           {/* Left Column (Main Content) */}
           <div className="lg:col-span-8 space-y-8">
-             
+
             {/* Recommended Session Card */}
-            <RecommendedSessionCard 
+            <RecommendedSessionCard
               onContinue={handleContinue}
               hasResume={!!dashboard.resume}
             />
 
             {/* Chart Section */}
-            <motion.div 
-              variants={itemUpVariants} 
+            <motion.div
+              variants={itemUpVariants}
               className="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-gray-100"
             >
               <div className="flex items-center justify-between mb-6">
@@ -753,7 +819,7 @@ export default function DashboardPage() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {activeServices.map(service => (
-                    <ServiceCard 
+                    <ServiceCard
                       key={service.key}
                       {...service}
                       onClick={() => handleServiceClick(service.key)}
@@ -766,10 +832,10 @@ export default function DashboardPage() {
 
           {/* Right Column (Sidebar Content) */}
           <div className="lg:col-span-4 space-y-8">
-             
+
             {/* Achievements */}
-            <motion.div 
-              variants={itemUpVariants} 
+            <motion.div
+              variants={itemUpVariants}
               className="bg-[#1A1A1A] p-8 rounded-[2.5rem] shadow-xl shadow-gray-200 text-white relative overflow-hidden"
             >
               <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full blur-[60px] opacity-40" />
@@ -803,7 +869,7 @@ export default function DashboardPage() {
                     </p>
                   )}
                 </div>
-                <button 
+                <button
                   onClick={() => navigate("/achievements")}
                   className="w-full mt-6 py-3 bg-[#D4F478] text-black font-bold rounded-xl text-sm hover:bg-white transition-colors"
                 >
@@ -813,19 +879,22 @@ export default function DashboardPage() {
             </motion.div>
 
             {/* Course List */}
-            <motion.div 
-              variants={itemUpVariants} 
+            <motion.div
+              variants={itemUpVariants}
               className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-100"
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-lg text-gray-900">Your Courses</h3>
-                <MoreHorizontal className="text-gray-400 w-5 h-5 cursor-pointer" />
+                <MoreHorizontal
+                  className="text-gray-400 w-5 h-5 cursor-pointer hover:text-black transition-colors"
+                  onClick={() => setShowAllCourses(true)}
+                />
               </div>
               <div className="space-y-2">
                 {courses.length > 0 ? (
-                  courses.map((course, idx) => (
-                    <CourseRow 
-                      key={`${course.courseId}-${idx}`} 
+                  courses.slice(0, 3).map((course, idx) => (
+                    <CourseRow
+                      key={`${course.courseId}-${idx}`}
                       course={course}
                       onClick={() => handleCourseClick(course)}
                     />
