@@ -132,8 +132,14 @@ function Learning() {
     navigate(url);
   };
 
-  const handleRemoveCourse = (id) => {
-    setCourses(courses.filter(course => course.id !== id));
+  const handleRemoveCourse = async (course) => {
+    try {
+      await axios.delete(`/api/users/course-progress/${course.courseId}/${course.channelId}`, { withCredentials: true });
+      setCourses(courses.filter(c => c.id !== course.id));
+    } catch (err) {
+      console.error("Failed to remove course", err);
+      alert("Failed to remove course. Please try again.");
+    }
   };
 
   const handleRestartCourse = (course) => {
@@ -241,7 +247,7 @@ function Learning() {
 
                       <div className="flex gap-2">
                         <button
-                          onClick={() => handleRemoveCourse(course.id)}
+                          onClick={() => handleRemoveCourse(course)}
                           className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -304,7 +310,7 @@ function Learning() {
                             handleRestartCourse(course); // Revise
                           }
                         }}
-                        className="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 bg-[#1A1A1A] text-white hover:bg-black shadow-lg"
+                        className="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 bg-[#1A1A1A] text-white hover:bg-black shadow-lg cursor-pointer"
                       >
                         {course.completed ? (
                           course.hasFeedback ? (

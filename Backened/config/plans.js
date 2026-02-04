@@ -13,7 +13,7 @@ export const PLANS = {
     interviews: 4,
   },
   premium: {
-    name: "Premium Plan",
+    name: "Pro Access",
     amount: 179,
     duration: "monthly",
     interviews: 9,

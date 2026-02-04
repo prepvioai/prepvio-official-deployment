@@ -475,8 +475,8 @@ function AccountView({ onNavigate }) {
           <h2 className="text-3xl md:text-4xl font-black text-white mb-2">{formData.firstName} {formData.lastName}</h2>
           <p className="text-gray-400 max-w-md text-lg leading-relaxed mb-6">{formData.bio || "Passionate about coding and building modern web apps. Ready to tackle the next big challenge."}</p>
           <div className="flex flex-wrap justify-center md:justify-start gap-4">
-            <button className="bg-white/10 backdrop-blur-md border border-white/10 text-white font-bold px-6 py-3 rounded-xl hover:bg-white hover:text-black transition-all duration-300 flex items-center gap-2"><Settings className="w-4 h-4" /> Preferences</button>
-            <button onClick={onNavigate} className="bg-[#D4F478] text-black font-bold px-6 py-3 rounded-xl hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(212,244,120,0.3)] flex items-center gap-2"><ExternalLink className="w-4 h-4" /> View Portfolio</button>
+            <button className="bg-white/10 backdrop-blur-md border border-white/10 text-white font-bold px-6 py-3 rounded-xl hover:bg-white hover:text-black transition-all duration-300 flex items-center gap-2 cursor-pointer"><Settings className="w-4 h-4" /> Preferences</button>
+            <button onClick={onNavigate} className="bg-[#D4F478] text-black font-bold px-6 py-3 rounded-xl hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(212,244,120,0.3)] flex items-center gap-2 cursor-pointer"><ExternalLink className="w-4 h-4" /> View Portfolio</button>
           </div>
         </div>
       </motion.div>
@@ -505,7 +505,7 @@ function AccountView({ onNavigate }) {
             <button
               type="submit"
               disabled={saving}
-              className={`bg-[#1A1A1A] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-all shadow-xl shadow-gray-200 ${saving
+              className={`bg-[#1A1A1A] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-all shadow-xl shadow-gray-200 cursor-pointer ${saving
                 ? 'opacity-50 cursor-not-allowed'
                 : 'hover:bg-black hover:scale-105'
                 }`}

@@ -1,19 +1,23 @@
 import React, { useState } from 'react';
-import { 
-  Home, 
-  ChevronRight, 
-  LayoutGrid, 
-  List, 
-  MessageSquare, 
-  Heart, 
-  Eye, 
-  Trash2, 
-  UserCheck, 
-  CalendarDays, 
+import {
+  Home,
+  ChevronRight,
+  LayoutGrid,
+  List,
+  MessageSquare,
+  Heart,
+  Eye,
+  Trash2,
+  UserCheck,
+  CalendarDays,
   Ticket,
   Bell,
   Settings
 } from 'lucide-react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
+const API_BASE = "http://localhost:5000/api";
 
 // --- Mock Data ---
 // This would normally come from your MERN backend API
@@ -86,19 +90,21 @@ const Breadcrumbs = () => (
   </nav>
 );
 
-const TicketCard = ({ ticket }) => (
-  <GlassCard className="flex flex-col md:flex-row gap-6">
+const TicketCard = ({ conversation, onClick }) => (
+  <GlassCard className="flex flex-col md:flex-row gap-6 cursor-pointer hover:bg-white/40 transition-all" onClick={onClick}>
     {/* Left Info Bar */}
     <div className="flex flex-col items-center p-4 rounded-lg w-full md:w-32 flex-shrink-0">
-      <img src={ticket.user.avatar} alt={ticket.user.name} className="w-16 h-16 rounded-full border-2 border-white/50 shadow-md" />
+      {conversation.userId?.avatar ? (
+        <img src={conversation.userId.avatar} alt={conversation.userId.name} className="w-16 h-16 rounded-full border-2 border-white/50 shadow-md object-cover" />
+      ) : (
+        <div className="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-2xl border-2 border-white/50 shadow-md">
+          {conversation.userId?.name?.charAt(0) || 'U'}
+        </div>
+      )}
       <div className="text-center mt-4 text-gray-800">
         <div className="flex items-center justify-center gap-2">
-          <Ticket className="w-5 h-5 text-indigo-700" />
-          <span className="font-semibold">{ticket.user.tickets} Ticket</span>
-        </div>
-        <div className="flex items-center justify-center gap-2 mt-2">
-          <Heart className="w-5 h-5 text-red-500" />
-          <span className="font-semibold">{ticket.user.likes}</span>
+          <MessageSquare className="w-5 h-5 text-indigo-700" />
+          <span className="font-semibold">{conversation.unreadCount > 0 ? `${conversation.unreadCount} New` : 'Read'}</span>
         </div>
       </div>
     </div>
@@ -107,36 +113,24 @@ const TicketCard = ({ ticket }) => (
     <div className="flex-grow">
       {/* Ticket Header */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-700">
-        <h3 className="text-xl font-bold text-gray-900">{ticket.user.name}</h3>
-        <span className="px-3 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">
-          {ticket.status}
+        <h3 className="text-xl font-bold text-gray-900">{conversation.userId?.name || 'Unknown User'}</h3>
+        <span className={`px-3 py-1 text-xs font-medium rounded-full ${conversation.unreadCount > 0 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+          {conversation.unreadCount > 0 ? 'Action Required' : 'Replied'}
         </span>
         <div className="flex items-center gap-1">
-          <UserCheck className="w-4 h-4 text-gray-500" />
-          <span>Assigned to <span className="font-semibold text-gray-800">{ticket.assignedTo}</span></span>
-        </div>
-        <div className="flex items-center gap-1">
           <CalendarDays className="w-4 h-4 text-gray-500" />
-          <span>Updated {ticket.updated}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <MessageSquare className="w-4 h-4 text-gray-500" />
-          <span className="font-semibold text-gray-800">{ticket.comments}</span>
+          <span>Last active {new Date(conversation.lastMessageTime).toLocaleString()}</span>
         </div>
       </div>
 
       {/* Ticket Body */}
       <div className="mt-4">
-        <h4 className="text-lg font-semibold text-gray-900 mb-3">{ticket.title}</h4>
-        
-        {/* Last Comment */}
-        <div className="bg-white/50 rounded-lg p-4 border border-white/30">
-          <div className="flex items-center gap-2 mb-2">
-            <img src={ticket.lastComment.avatar} alt={ticket.lastComment.user} className="w-8 h-8 rounded-full" />
-            <span className="font-semibold text-gray-800">Last comment from {ticket.lastComment.user}:</span>
-          </div>
-          <p className="text-gray-700 whitespace-pre-line text-sm">
-            {ticket.lastComment.text}
+        <h4 className="text-lg font-semibold text-gray-900 mb-2">Support Conversation</h4>
+
+        {/* Last Message Preview */}
+        <div className="bg-white/50 rounded-lg p-4 border border-white/30 truncate">
+          <p className="text-gray-700 text-sm">
+            <span className="font-bold">Last message:</span> {conversation.lastMessage}
           </p>
         </div>
       </div>
@@ -145,11 +139,7 @@ const TicketCard = ({ ticket }) => (
       <div className="flex items-center gap-4 mt-6">
         <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition-all duration-300">
           <Eye className="w-5 h-5" />
-          <span>View Ticket</span>
-        </button>
-        <button className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition-all duration-300">
-          <Trash2 className="w-5 h-5" />
-          <span>Delete</span>
+          <span>View Conversation</span>
         </button>
       </div>
     </div>
@@ -158,23 +148,42 @@ const TicketCard = ({ ticket }) => (
 
 const MainContent = () => {
   const [viewMode, setViewMode] = useState('list');
+  const [conversations, setConversations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchConversations = async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/chat/admin/conversations`, { withCredentials: true });
+        if (res.data.success) {
+          setConversations(res.data.conversations);
+        }
+      } catch (err) {
+        console.error("Failed to fetch conversations", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchConversations();
+  }, []);
 
   return (
     <main className="flex-1 p-6 overflow-y-auto">
       <Breadcrumbs />
-      <h1 className="text-4xl font-bold text-white mb-6">Ticket list</h1>
+      <h1 className="text-4xl font-bold text-white mb-6">Conversation List</h1>
 
       {/* Ticket List Header */}
       <GlassCard className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-semibold text-gray-900">Ticket List</h2>
+        <h2 className="text-2xl font-semibold text-gray-900">User Messages</h2>
         <div className="flex items-center gap-2">
-          <button 
+          <button
             onClick={() => setViewMode('grid')}
             className={`p-2 rounded-lg ${viewMode === 'grid' ? 'bg-indigo-600 text-white' : 'bg-white/50 text-gray-700 hover:bg-white/80'}`}
           >
             <LayoutGrid className="w-5 h-5" />
           </button>
-          <button 
+          <button
             onClick={() => setViewMode('list')}
             className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-indigo-600 text-white' : 'bg-white/50 text-gray-700 hover:bg-white/80'}`}
           >
@@ -183,9 +192,22 @@ const MainContent = () => {
         </div>
       </GlassCard>
 
-      {/* Ticket Card */}
-      <TicketCard ticket={mockTicket} />
-      {/* You would .map() over an array of tickets here */}
+      {/* Conversations */}
+      <div className="space-y-6">
+        {loading ? (
+          <div className="text-white text-center py-10">Loading conversations...</div>
+        ) : conversations.length === 0 ? (
+          <div className="text-white text-center py-10">No conversations found.</div>
+        ) : (
+          conversations.map((conv) => (
+            <TicketCard
+              key={conv._id}
+              conversation={conv}
+              onClick={() => conv.userId?._id && navigate(`/help-desk/ticket/details?userId=${conv.userId._id}`)}
+            />
+          ))
+        )}
+      </div>
     </main>
   );
 };
@@ -264,10 +286,10 @@ export default function App() {
         <MainContent />
         <Sidebar />
       </div>
-      
+
       {/* Placeholder for the purple button in the corner */}
       <button className="fixed bottom-6 right-6 bg-indigo-600 text-white p-4 rounded-full shadow-lg hover:bg-indigo-700 transition-all">
-          <MessageSquare className="w-6 h-6" />
+        <MessageSquare className="w-6 h-6" />
       </button>
     </div>
   );

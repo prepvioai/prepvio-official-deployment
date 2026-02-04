@@ -15,7 +15,7 @@ const decodeToken = (token) => {
   }
 };
 
-const socket = io("/", {
+const socket = io("http://localhost:5000", {
   transports: ["websocket"],
   autoConnect: false,
   withCredentials: true, // Important for cookies

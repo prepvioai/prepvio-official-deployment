@@ -372,6 +372,7 @@ const plans = [
     features: [
       { text: '4 AI Interviews', included: true },
       { text: 'Access to analyzed feedback (pdf)', included: true },
+      { text: 'Access to Project Map After Course Completion', included: true },
       { text: 'Access to Interview Replay', included: false },
       { text: 'Access to Code Editor', included: false },
       { text: 'Access to highlighted clips', included: false }
@@ -391,6 +392,7 @@ const plans = [
     features: [
       { text: '9 AI Interviews', included: true },
       { text: 'Access to analyzed feedback (pdf)', included: true },
+      { text: 'Direct Access to Project Map', included: true },
       { text: 'Access to Interview Replay', included: true },
       { text: 'Access to Code Editor', included: true },
       { text: 'Access to highlighted clips', included: false }
@@ -410,6 +412,7 @@ const plans = [
     features: [
       { text: '25 AI Interviews', included: true },
       { text: 'Access to analyzed feedback (pdf)', included: true },
+      { text: 'Direct Access to Project Map', included: true },
       { text: 'Access to Interview Replay', included: true },
       { text: 'Access to Code Editor', included: true },
       { text: 'Access to highlighted clips', included: true }
@@ -426,7 +429,10 @@ const PricingSection = () => {
   const [promoCode, setPromoCode] = useState("");
   const [promoValidation, setPromoValidation] = useState(null);
   const [isValidating, setIsValidating] = useState(false);
+
   const [showPromoInput, setShowPromoInput] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentData, setPaymentData] = useState(null);
   const { refreshUser, isAuthenticated, user } = useAuthStore();
 
   // ✅ Fetch current subscription
@@ -536,7 +542,11 @@ const PricingSection = () => {
                 setCurrentPlan(res.data.subscription);
               }
 
-              alert(`Payment successful! ${verifyRes.data.interviews.remaining} interviews added.`);
+              setPaymentData({
+                planName: verifyRes.data.subscription.planName,
+                interviews: verifyRes.data.interviews.remaining,
+              });
+              setPaymentSuccess(true);
             }
           } catch (err) {
             console.error("Verification error:", err);
@@ -718,8 +728,8 @@ const PricingSection = () => {
                       : isProcessing && selectedPlan === plan.id
                         ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                         : isDark
-                          ? 'bg-[#D4F478] text-black hover:bg-white hover:scale-[1.02]'
-                          : 'bg-[#1A1A1A] text-white hover:bg-gray-800'
+                          ? 'bg-[#D4F478] text-black hover:bg-white hover:scale-[1.02] cursor-pointer'
+                          : 'bg-[#1A1A1A] text-white hover:bg-gray-800 cursor-pointer'
                     }
                 `}
                 >
@@ -884,6 +894,68 @@ const PricingSection = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* PAYMENT SUCCESS POPUP */}
+      <AnimatePresence>
+        {paymentSuccess && paymentData && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", duration: 0.5 }}
+              className="bg-white rounded-3xl p-8 md:p-12 max-w-md w-full shadow-2xl text-center"
+            >
+              {/* Success Icon */}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6"
+              >
+                <CheckCircle2 className="w-12 h-12 text-green-600" />
+              </motion.div>
+
+              {/* Success Message */}
+              <motion.h2
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-3xl font-black text-gray-900 mb-3"
+              >
+                Payment Successful!
+              </motion.h2>
+
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="text-gray-600 mb-8"
+              >
+                Welcome to <span className="font-bold text-gray-900">{paymentData.planName}</span>
+                <br />
+                You have <span className="font-bold text-green-600">{paymentData.interviews} interviews</span> ready to use!
+              </motion.p>
+
+              {/* CTA Button */}
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                onClick={() => window.location.href = "/services/check-your-ability/interview"}
+                className="w-full bg-[#1A1A1A] text-white font-bold py-4 px-6 rounded-2xl hover:bg-black transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center justify-center gap-2 cursor-pointer"
+              >
+                Start Practicing Now
+                <ArrowRight className="w-5 h-5" />
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };
@@ -941,7 +1013,9 @@ const Home = () => {
           <AboutUs />
         </div>
 
-        <PricingSection />
+        <div id="pricing" className="scroll-mt-24">
+          <PricingSection />
+        </div>
 
         <div id="faqs" className="scroll-mt-24">
           <FAQSection />

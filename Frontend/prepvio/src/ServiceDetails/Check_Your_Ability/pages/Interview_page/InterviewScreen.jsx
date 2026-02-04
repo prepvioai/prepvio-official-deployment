@@ -485,6 +485,139 @@ const SolvedProblemsModal = ({ isOpen, onClose, problems }) => {
   );
 };
 
+// --- End Interview Report Modal ---
+const EndInterviewReportModal = ({ isOpen, onClose, isUploading, uploadStatus }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden bg-gradient-to-br from-[#1A1A1A] to-gray-900 text-white relative border border-gray-800"
+      >
+        {/* Header */}
+        <div className="bg-gradient-to-r from-gray-900 to-black border-b border-gray-800 px-8 py-6">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#D4F478] to-emerald-500 flex items-center justify-center">
+              <Activity className="w-6 h-6 text-black" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-[#D4F478] tracking-tight">
+                Interview Analysis
+              </h2>
+              <p className="text-sm text-gray-400 mt-1">
+                Processing your interview session...
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-8">
+          {isUploading ? (
+            <div className="space-y-6">
+              {/* Loading Animation */}
+              <div className="flex flex-col items-center justify-center py-8">
+                <div className="relative">
+                  <div className="w-20 h-20 border-4 border-gray-700 border-t-[#D4F478] rounded-full animate-spin"></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-12 h-12 bg-gradient-to-br from-[#D4F478]/20 to-emerald-500/20 rounded-full animate-pulse"></div>
+                  </div>
+                </div>
+                <p className="text-lg font-medium text-gray-300 mt-6">
+                  {uploadStatus || "Processing interview data..."}
+                </p>
+              </div>
+
+              {/* Progress Steps */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 bg-gradient-to-r from-gray-800/50 to-gray-900/30 border border-gray-700 rounded-xl px-4 py-3">
+                  <div className="w-6 h-6 rounded-full bg-[#D4F478] flex items-center justify-center animate-pulse">
+                    <CheckCircle2 className="w-4 h-4 text-black" />
+                  </div>
+                  <span className="text-sm text-gray-300">Analyzing conversation history</span>
+                </div>
+
+                <div className="flex items-center gap-3 bg-gradient-to-r from-gray-800/50 to-gray-900/30 border border-gray-700 rounded-xl px-4 py-3">
+                  <div className="w-6 h-6 rounded-full bg-[#D4F478] flex items-center justify-center animate-pulse">
+                    <CheckCircle2 className="w-4 h-4 text-black" />
+                  </div>
+                  <span className="text-sm text-gray-300">Evaluating coding solutions</span>
+                </div>
+
+                <div className="flex items-center gap-3 bg-gradient-to-r from-gray-800/50 to-gray-900/30 border border-gray-700 rounded-xl px-4 py-3">
+                  <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-[#D4F478] rounded-full animate-pulse"></div>
+                  </div>
+                  <span className="text-sm text-gray-400">Generating performance report</span>
+                </div>
+
+                <div className="flex items-center gap-3 bg-gradient-to-r from-gray-800/50 to-gray-900/30 border border-gray-700 rounded-xl px-4 py-3">
+                  <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                  </div>
+                  <span className="text-sm text-gray-500">Preparing summary page</span>
+                </div>
+              </div>
+
+              <p className="text-xs text-gray-500 text-center mt-4">
+                This may take a few moments. Please don't close this window.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Success State */}
+              <div className="flex flex-col items-center justify-center py-8">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#D4F478] to-emerald-500 flex items-center justify-center mb-4">
+                  <CheckCircle2 className="w-10 h-10 text-black" />
+                </div>
+                <h3 className="text-2xl font-bold text-[#D4F478] mb-2">
+                  Analysis Complete!
+                </h3>
+                <p className="text-gray-400 text-center">
+                  Your interview report has been generated successfully.
+                </p>
+              </div>
+
+              <div className="bg-gradient-to-r from-gray-800/50 to-gray-900/30 border border-gray-700 rounded-xl p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-blue-500/30 flex items-center justify-center flex-shrink-0">
+                    <TrendingUp className="w-5 h-5 text-blue-400" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white mb-2">What's Next?</h4>
+                    <p className="text-sm text-gray-400 leading-relaxed">
+                      You'll be redirected to your detailed interview summary in a moment.
+                      The report includes your responses, AI feedback, coding solutions, and personalized recommendations.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-xs text-gray-500 text-center">
+                Redirecting you to the summary page...
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Footer - Only show close button when not uploading */}
+        {!isUploading && (
+          <div className="bg-gradient-to-r from-gray-900 to-black border-t border-gray-800 px-8 py-4">
+            <button
+              onClick={onClose}
+              className="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-[#D4F478] to-emerald-500 hover:from-[#c5e668] hover:to-emerald-400 text-black font-bold transition-all hover:scale-[1.02]"
+            >
+              View Report Now
+            </button>
+          </div>
+        )}
+      </motion.div>
+    </div>
+  );
+};
+
 // --- Enhanced Model Component with Dynamic Speech ---
 function DynamicModel({ speechText, onSpeechEnd, ...props }) {
   const { nodes, materials } = useGLTF('/final_prepvio_model.glb');
@@ -725,6 +858,8 @@ const InterviewScreen = ({
   const speechBufferRef = useRef("");
   const location = useLocation();
   const highlightBufferRef = useRef([]);
+  const [showEndInterviewModal, setShowEndInterviewModal] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState("");
 
   const isPreview = location.state?.isPreview === true;
   const previewSession = location.state?.previewSession;
@@ -1769,6 +1904,10 @@ In the meantime, if you have any follow-up questions, please don't hesitate to r
   const handleEndInterview = useCallback(async () => {
     if (isLoadingAI || isSpeaking) return;
 
+    // Show the modal immediately
+    setShowEndInterviewModal(true);
+    setUploadStatus("Analyzing the Interview...");
+
     if (window.speechSynthesis.speaking) {
       window.speechSynthesis.cancel();
     }
@@ -1783,11 +1922,12 @@ In the meantime, if you have any follow-up questions, please don't hesitate to r
     const filename = `${sanitizedRole}_Report_${timestamp}.pdf`;
 
     setIsLoadingAI(true);
-    setError("Analyzing the Interview");
 
     const sessionId = location.state?.sessionId;
 
     try {
+      setUploadStatus("Generating your performance report...");
+
       const response = await fetch(BACKEND_UPLOAD_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1797,7 +1937,7 @@ In the meantime, if you have any follow-up questions, please don't hesitate to r
           role,
           companyType,
           solvedProblems,
-          sessionId, // ✅ Added sessionId
+          sessionId,
         }),
       });
 
@@ -1809,7 +1949,7 @@ In the meantime, if you have any follow-up questions, please don't hesitate to r
 
       console.log("✅ Uploaded Report URL:", data.publicUrl);
 
-      // Use the sessionId captured at the start of handleEndInterview
+      setUploadStatus("Saving your interview session...");
 
       if (sessionId) {
         await fetch(
@@ -1842,17 +1982,23 @@ In the meantime, if you have any follow-up questions, please don't hesitate to r
         })
       );
 
-      setError("✅ Report saved! Redirecting to summary page...");
+      setUploadStatus("✅ Report saved! Preparing summary...");
 
+      // Wait a bit to show success state
       setTimeout(() => {
-        setError(null);
-        navigate("/after-interview", { replace: true });
+        setIsLoadingAI(false);
+        setShowEndInterviewModal(false);
+        navigate("/dashboard/interview-analysis", { replace: true });
       }, 2500);
     } catch (err) {
       console.error("❌ Interview completion failed:", err);
-      setError(`❌ Report upload failed: ${err.message}`);
-    } finally {
+      setUploadStatus(`❌ Report upload failed: ${err.message}`);
       setIsLoadingAI(false);
+
+      // Keep modal open on error so user can see what went wrong
+      setTimeout(() => {
+        setShowEndInterviewModal(false);
+      }, 3000);
     }
   }, [
     chatMessages,
@@ -2357,6 +2503,15 @@ Key points:
             setInterviewStage("final");
           }
         }}
+      />
+      <EndInterviewReportModal
+        isOpen={showEndInterviewModal}
+        onClose={() => {
+          setShowEndInterviewModal(false);
+          navigate("/dashboard/interview-analysis", { replace: true });
+        }}
+        isUploading={isLoadingAI}
+        uploadStatus={uploadStatus}
       />
     </div>
   );

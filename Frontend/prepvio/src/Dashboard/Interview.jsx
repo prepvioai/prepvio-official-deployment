@@ -49,6 +49,17 @@ const formatTime = (dateString) => {
   });
 };
 
+// Helper to get plan display name and color
+const getPlanInfo = (planId) => {
+  const plans = {
+    'free': { name: 'Free', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+    'monthly': { name: 'Basic', color: 'bg-purple-50 text-purple-700 border-purple-200' },
+    'premium': { name: 'Pro Access', color: 'bg-green-50 text-green-700 border-green-200' },
+    'yearly': { name: 'Premium Plan', color: 'bg-orange-50 text-orange-700 border-orange-200' }
+  };
+  return plans[planId] || plans['free']; // Default to Free for old interviews without planId
+};
+
 // --- ANIMATION VARIANTS ---
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -258,16 +269,20 @@ const InterviewAnalysisPage = () => {
       return;
     }
 
-    // ✅ Gating Logic: Block only if on Basic Plan AND no promo code used AND not on Free Plan
-    const isBasicPlan = user?.subscription?.planId === 'monthly';
-    const isFreePlan = user?.subscription?.planId === 'free';
-    const hasUsedPromo = user?.payments?.some(p => p.promoCode && p.status === 'success');
+    // ✅ Use the interview's session plan, not the user's current plan
+    const sessionPlanId = interview.planId || 'free';
+    
+    // ✅ Free plan gets FULL ACCESS, Basic plan is BLOCKED from replay
+    const isBasicPlan = sessionPlanId === 'monthly';
+    const isFreePlan = sessionPlanId === 'free';
 
-    if (isBasicPlan && !hasUsedPromo && !isFreePlan) {
+    // Block Basic plan from accessing interview replay (they only get PDF)
+    if (isBasicPlan) {
       setShowUpgradeModal(true);
       return;
     }
 
+    // Free plan and paid plans (premium, yearly) can access replay
     localStorage.setItem(
       "interviewPreviewData",
       JSON.stringify({
@@ -453,9 +468,14 @@ const InterviewAnalysisPage = () => {
                       <div className="w-14 h-14 bg-[#D4F478]/20 text-[#1A1A1A] rounded-2xl flex items-center justify-center border-2 border-[#D4F478]/30">
                         <FileText className="w-7 h-7" strokeWidth={2.5} />
                       </div>
-                      <span className="text-xs font-bold bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full border border-gray-200">
-                        {formatDate(interview.startedAt)}
-                      </span>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className={`text-xs font-bold px-3 py-1.5 rounded-full border ${getPlanInfo(interview.planId).color}`}>
+                          {getPlanInfo(interview.planId).name} Plan
+                        </span>
+                        <span className="text-xs font-bold bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full border border-gray-200">
+                          {formatDate(interview.startedAt)}
+                        </span>
+                      </div>
                     </div>
                     
                     <h3 className="text-xl font-black text-gray-900 mb-2 group-hover:text-[#1A1A1A] transition-colors relative z-10">
@@ -515,10 +535,15 @@ const InterviewAnalysisPage = () => {
                       >
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3">
                           <h3 className="text-lg font-black text-gray-900">{interview.role}</h3>
-                          <span className="text-xs font-bold text-gray-500">
-                            {formatDateTime(interview.startedAt)} 
-                            {interview.completedAt && ` • ${formatTime(interview.completedAt)}`}
-                          </span>
+                          <div className="flex flex-col md:flex-row items-start md:items-center gap-2">
+                            <span className={`text-xs font-bold px-3 py-1 rounded-full border ${getPlanInfo(interview.planId).color}`}>
+                              {getPlanInfo(interview.planId).name}
+                            </span>
+                            <span className="text-xs font-bold text-gray-500">
+                              {formatDateTime(interview.startedAt)} 
+                              {interview.completedAt && ` • ${formatTime(interview.completedAt)}`}
+                            </span>
+                          </div>
                         </div>
                         <p className="text-sm text-gray-600 font-bold mb-4">
                           {interview.companyType}

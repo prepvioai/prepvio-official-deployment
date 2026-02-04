@@ -124,8 +124,19 @@ export const useNotificationStore = create((set) => ({
   // Add new notification from socket (real-time)
   addNotification: (notification) =>
     set((state) => {
-      // ⛔ Prevent duplicates
+      // ⛔ Prevent duplicates by ID
       if (state.notifications.some(n => n._id === notification._id)) {
+        return state;
+      }
+
+      // ⛔ Prevent duplicates by Content (type, message, title)
+      const isDuplicateContent = state.notifications.some(n =>
+        n.type === notification.type &&
+        n.title === notification.title &&
+        n.message === notification.message
+      );
+
+      if (isDuplicateContent) {
         return state;
       }
 

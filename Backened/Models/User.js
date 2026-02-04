@@ -240,7 +240,7 @@ const subscriptionSchema = new mongoose.Schema(
     },
     planId: {
       type: String,
-      enum: ["free", "monthly", "yearly", "lifetime"],
+      enum: ["free", "monthly", "premium", "yearly", "lifetime"],
       default: "free",
     },
     planName: {
@@ -453,6 +453,11 @@ const userSchema = new mongoose.Schema(
 
     avatarUrl: String,
     profilePic: String,
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
   },
   {
     timestamps: true,

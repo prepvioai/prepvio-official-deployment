@@ -12,7 +12,8 @@ import {
   sendPasswordResetEmail,
   sendResetSuccessEmail,
 } from "../mailtrap/emailsent.js";
-import { sendWelcomeNotification } from "../Utils/notificationHelper.js";
+import { sendWelcomeNotification, sendFreeInterviewCreditNotification } from "../Utils/notificationHelper.js";
+import { deduplicateCourseProgress } from "../Utils/courseHelper.js";
 
 export const checkAuth = async (req, res) => {
   try {
@@ -96,9 +97,14 @@ export const verifyEmail = async (req, res) => {
     const token = generateTokenAndSetCookie(res, user._id);
 
     await sendWelcomeEmail(user.email, user.name);
-    
+
     // ✅ SEND WELCOME NOTIFICATION
     await sendWelcomeNotification(user._id, user.name);
+
+    // ✅ SEND FREE INTERVIEW CREDIT NOTIFICATION (with delay)
+    setTimeout(async () => {
+      await sendFreeInterviewCreditNotification(user._id, user.name);
+    }, 2000);
 
     res.status(200).json({
       success: true,
@@ -125,7 +131,7 @@ export const login = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid credentials" });
     }
 
-     if (user.authProvider === "google") {
+    if (user.authProvider === "google") {
       return res.status(400).json({
         success: false,
         message: "This account uses Google sign-in",
@@ -138,8 +144,22 @@ export const login = async (req, res) => {
     }
 
     const token = generateTokenAndSetCookie(res, user._id);
+
+    // ✅ CHECK IF THIS IS FIRST LOGIN
+    const isFirstLogin = !user.lastLogin;
+
     user.lastLogin = new Date();
     await user.save();
+
+    // ✅ SEND WELCOME NOTIFICATION FOR NEW USERS
+    if (isFirstLogin) {
+      await sendWelcomeNotification(user._id, user.name);
+
+      // ✅ SEND FREE INTERVIEW CREDIT NOTIFICATION (with delay)
+      setTimeout(async () => {
+        await sendFreeInterviewCreditNotification(user._id, user.name);
+      }, 2000);
+    }
 
     res.status(200).json({
       success: true,
@@ -217,10 +237,23 @@ export const googleAuthCallback = async (req, res) => {
     // Issue SAME JWT as normal users
     generateTokenAndSetCookie(res, user._id);
 
+    // Check if this is a new user (from passport) or first login
+    const isFirstLogin = user.isNewUser || !user.lastLogin;
+
     user.lastLogin = new Date();
     await user.save();
 
-    res.redirect(`${process.env.CLIENT_URL}/dashboard`);
+    // ✅ SEND WELCOME NOTIFICATION FOR NEW GOOGLE USERS
+    if (isFirstLogin) {
+      await sendWelcomeNotification(user._id, user.name);
+
+      // ✅ SEND FREE INTERVIEW CREDIT NOTIFICATION (with delay)
+      setTimeout(async () => {
+        await sendFreeInterviewCreditNotification(user._id, user.name);
+      }, 2000);
+    }
+
+    res.redirect(`${process.env.CLIENT_URL}/`);
   } catch (error) {
     console.error("Google auth error:", error);
     res.redirect(`${process.env.CLIENT_URL}/login?error=oauth_failed`);
@@ -245,7 +278,7 @@ export const getPortfolioData = async (req, res) => {
         avatarUrl: user.avatarUrl,
         location: user.location,
       },
-      skills: user.courseProgress || [], 
+      skills: deduplicateCourseProgress(user.courseProgress || []),
       interviews: user.interviewAttempts || [],
       aptitude: user.aptitudeAttempts || [],
       projects: projects || []

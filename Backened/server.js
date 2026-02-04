@@ -27,6 +27,9 @@ import notificationRoutes from "./Routes/notificationRoutes.js";
 import verifyPayment from "./Routes/paymentRoute.js";
 import promoCodeRoutes from "./Routes/promoCodeRoute.js";
 
+import chatRoutes from "./Routes/chatRoutes.js";
+import aiRoutes from "./Routes/aiRoutes.js";
+
 const nervousCaptures = new Map();
 import fs from "fs";
 
@@ -50,8 +53,14 @@ app.use(cookieParser());
 app.use("/api/interview-session", interviewSessionRoutes);
 app.use(passport.initialize());
 app.use("/api/payment", verifyPayment);
+app.use("/api/chat", chatRoutes);
+app.use("/api/ai", aiRoutes);
 
-
+// Attach socket.io to request object
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
 
 // --- 3. MongoDB Connection ---
 mongoose
@@ -615,9 +624,10 @@ io.on("connection", (socket) => {
   let userId = socket.handshake.auth?.userId;
 
   if (userId) {
-    // Join user to their own room for notifications
+    // Join user to their own room for notifications and chat
     socket.join(userId.toString());
-    console.log("🔌 User joined room:", userId);
+    socket.join(`conv_${userId}`);
+    console.log("🔌 User joined rooms:", userId, `conv_${userId}`);
   } else {
     // Try to verify token if userId wasn't provided
     const token = socket.handshake.auth?.token;
@@ -637,6 +647,14 @@ io.on("connection", (socket) => {
       console.log("⚠️ Socket connected without authentication (allowed for now)");
     }
   }
+
+  // --- Support Conversation Joining ---
+  socket.on("join_conversation", ({ userId }) => {
+    if (userId) {
+      socket.join(`conv_${userId}`);
+      console.log(`🔌 Socket ${socket.id} joined conversation room: conv_${userId}`);
+    }
+  });
 
   socket.on("disconnect", () => {
     console.log("🔴 Socket disconnected:", socket.id);

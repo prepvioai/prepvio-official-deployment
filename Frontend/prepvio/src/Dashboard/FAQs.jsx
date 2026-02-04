@@ -12,6 +12,7 @@ import {
   Minus, 
   LifeBuoy
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 // --- DATA ---
 const faqCategories = [

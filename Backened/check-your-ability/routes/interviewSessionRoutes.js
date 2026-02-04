@@ -237,7 +237,7 @@ import express from "express";
 import { InterviewSession } from "../models/InterviewSession.js";
 import { verifyToken } from "../../middleware/verifytoken.js";
 import { User } from "../../models/User.js"; // ✅ ADD THIS
-import { sendInterviewCompletedNotification } from "../../Utils/notificationHelper.js";
+import { sendInterviewCompletedNotification, sendCreditsExhaustedNotification } from "../../Utils/notificationHelper.js";
 
 const router = express.Router();
 
@@ -261,31 +261,35 @@ router.post("/start", verifyToken, async (req, res) => {
     }
 
     console.log("📊 User subscription:", user.subscription);
+    console.log("🔍 Plan ID from subscription:", user.subscription?.planId);
 
     // Check if subscription exists
     if (!user.subscription || !user.subscription.active) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         message: "No active subscription. Please purchase a plan.",
-        requiresPayment: true 
+        requiresPayment: true
       });
     }
 
     // Check if subscription expired
     if (user.subscription.endDate && new Date() > new Date(user.subscription.endDate)) {
       await User.findByIdAndUpdate(userId, { "subscription.active": false });
-      return res.status(403).json({ 
+      return res.status(403).json({
         message: "Your subscription has expired.",
-        requiresPayment: true 
+        requiresPayment: true
       });
     }
 
     // Check if user has remaining interviews
     if (user.subscription.interviewsRemaining <= 0) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         message: "No interview credits remaining.",
-        needsUpgrade: true 
+        needsUpgrade: true
       });
     }
+
+    // ✅ CHECK IF THIS IS THE LAST CREDIT
+    const isLastCredit = user.subscription.interviewsRemaining === 1;
 
     // ✅ CONSUME 1 CREDIT
     await User.findByIdAndUpdate(userId, {
@@ -297,6 +301,13 @@ router.post("/start", verifyToken, async (req, res) => {
 
     console.log("✅ Credit consumed. Remaining:", user.subscription.interviewsRemaining - 1);
 
+    // ✅ SEND NOTIFICATION IF ALL CREDITS ARE USED
+    if (isLastCredit) {
+      setTimeout(async () => {
+        await sendCreditsExhaustedNotification(userId, user.name);
+      }, 3000); // Send after 3 seconds
+    }
+
     // ✅ CREATE SESSION
     const session = await InterviewSession.create({
       userId: userId,
@@ -306,6 +317,7 @@ router.post("/start", verifyToken, async (req, res) => {
       startedAt: new Date(),
       messages: [],
       solvedProblems: [],
+      planId: user.subscription?.planId || 'free'  // ✅ STORE PLAN ID
     });
 
     res.status(201).json({
@@ -317,7 +329,7 @@ router.post("/start", verifyToken, async (req, res) => {
   } catch (err) {
     console.error("❌ Start interview error:", err);
     console.error("❌ Error stack:", err.stack);
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Failed to start interview session",
       error: err.message,
       stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
@@ -376,7 +388,7 @@ router.get("/my", verifyToken, async (req, res) => {
     })
       .sort({ startedAt: -1 })
       .select(
-        "role companyType startedAt completedAt reportUrl messages solvedProblems highlightClips status"
+        "role companyType startedAt completedAt reportUrl messages solvedProblems highlightClips status planId"
       );
 
     res.json({
@@ -440,7 +452,7 @@ router.get("/admin/user/:userId", async (req, res) => {
     })
       .sort({ startedAt: -1 })
       .select(
-        "companyType role status startedAt completedAt reportUrl messages solvedProblems highlightClips"
+        "companyType role status startedAt completedAt reportUrl messages solvedProblems highlightClips planId"
       )
       .lean();
 
@@ -502,7 +514,7 @@ router.post("/claim-free-session", verifyToken, async (req, res) => {
 
     // Find the user
     const user = await User.findById(userId);
-    
+
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -538,7 +550,7 @@ router.post("/claim-free-session", verifyToken, async (req, res) => {
       user.subscription.interviewsRemaining = (user.subscription.interviewsRemaining || 0) + 1;
       user.subscription.interviewsTotal = (user.subscription.interviewsTotal || 0) + 1;
       user.subscription.active = true;
-      
+
       // Extend end date if expired
       if (!user.subscription.endDate || new Date(user.subscription.endDate) < new Date()) {
         user.subscription.endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);

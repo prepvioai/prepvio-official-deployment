@@ -11,6 +11,20 @@ import { io } from "../server.js";
  */
 export const sendNotification = async (userId, title, message, type = "general", metadata = {}) => {
   try {
+    // ✅ PREVENT RAPID-FIRE DUPLICATES: Check for existing recent notifications with same content
+    const existing = await Notification.findOne({
+      userId,
+      title,
+      message,
+      type,
+      createdAt: { $gt: new Date(Date.now() - 5 * 60 * 1000) } // Within last 5 minutes
+    });
+
+    if (existing) {
+      // console.log("Blocked duplicate notification:", title);
+      return existing;
+    }
+
     // Create notification in database
     const notification = new Notification({
       userId,
@@ -25,6 +39,7 @@ export const sendNotification = async (userId, title, message, type = "general",
 
     // Emit socket event to send real-time notification
     if (io) {
+      // ✅ USE CORRECT ROOM NAME (toString)
       io.to(userId.toString()).emit("NEW_NOTIFICATION", notification);
     }
 
@@ -36,15 +51,61 @@ export const sendNotification = async (userId, title, message, type = "general",
 };
 
 /**
- * Welcome notification when user signs up
+ * Deduplicates a list of notifications based on type and metadata/content.
+ * This is useful for cleaning up existing duplicates on the fly.
  */
+export const deduplicateNotifications = (notifications) => {
+  if (!notifications || !Array.isArray(notifications)) return [];
+
+  const seen = new Set();
+  return notifications.filter(n => {
+    // Generate a key for deduplication
+    // We use type, message, and bits of metadata if available
+    const metadataKey = n.metadata ? JSON.stringify(n.metadata) : '';
+    const key = `${n.type}-${n.title}-${n.message}-${metadataKey}`;
+
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+};
+
 export const sendWelcomeNotification = async (userId, userName) => {
+  const firstName = userName?.split(" ")[0] || "there";
   return sendNotification(
     userId,
-    "🎉 Welcome to Prepvio!",
-    `Hey ${userName}, welcome! Start your learning journey with our AI-powered interview prep.`,
+    `🎉 Welcome Aboard, ${firstName}!`,
+    `Your journey to success starts now! 🚀 Explore AI-powered mock interviews, master technical skills with expert courses, and unlock your full potential. We're here to help you land your dream job! 💼✨`,
     "welcome",
     { action: "welcome", userName }
+  );
+};
+
+/**
+ * Free interview credit notification for new users
+ */
+export const sendFreeInterviewCreditNotification = async (userId, userName) => {
+  const firstName = userName?.split(" ")[0] || "there";
+  return sendNotification(
+    userId,
+    `🎁 Free Interview Credit, ${firstName}!`,
+    `Great news! You've been credited with 1 FREE interview with full features. 🌟 Practice with our AI interviewer, get detailed feedback, and boost your confidence. Start your first interview now! 🚀`,
+    "credit",
+    { action: "free_interview_credit", creditAmount: 1 }
+  );
+};
+
+/**
+ * Credits exhausted notification
+ */
+export const sendCreditsExhaustedNotification = async (userId, userName) => {
+  const firstName = userName?.split(" ")[0] || "there";
+  return sendNotification(
+    userId,
+    `⚠️ Interview Credits Used, ${firstName}`,
+    `You've used all your interview credits. 💳 Upgrade your plan to unlock more AI-powered mock interviews and continue your preparation journey! 🚀`,
+    "warning",
+    { action: "credits_exhausted", requiresUpgrade: true }
   );
 };
 

@@ -113,7 +113,7 @@ const ChannelCard = ({ name, imageUrl, selectedVideoId, channelId, courseId }) =
             <span className="text-xs font-bold text-green-700 uppercase tracking-wider">Saved Notes</span>
             <button
               onClick={openSavedNotes}
-              className="text-xs font-bold text-green-600 hover:text-green-800 underline flex items-center gap-1"
+              className="text-xs font-bold text-green-600 hover:text-green-800 underline flex items-center gap-1 cursor-pointer"
             >
               Open Notes <ChevronRight className="w-3 h-3" />
             </button>
@@ -125,7 +125,7 @@ const ChannelCard = ({ name, imageUrl, selectedVideoId, channelId, courseId }) =
       {!showInput ? (
         <button
           onClick={() => setShowInput(true)}
-          className="w-full py-2 px-4 bg-indigo-50 text-indigo-600 rounded-xl text-sm font-bold hover:bg-indigo-100 transition-colors flex items-center justify-center gap-2"
+          className="w-full py-2 px-4 bg-indigo-50 text-indigo-600 rounded-xl text-sm font-bold hover:bg-indigo-100 transition-colors flex items-center justify-center gap-2 cursor-pointer"
         >
           <Layers className="w-4 h-4" />
           {savedNotesLink ? 'Update Notes Link' : 'Save Notes Link'}
@@ -313,7 +313,7 @@ const PlayListPlayer = ({ video, onPlayerReady, onStateChange, onWatchLater, isS
           <button
             onClick={onWatchLater}
             disabled={isSaved || isSaving}
-            className={`px-6 py-3.5 rounded-full font-bold text-sm shadow-lg transition-all hover:-translate-y-0.5 whitespace-nowrap flex items-center gap-2 group active:scale-95
+            className={`px-6 py-3.5 rounded-full font-bold text-sm shadow-lg transition-all hover:-translate-y-0.5 whitespace-nowrap flex items-center gap-2 group active:scale-95 cursor-pointer
                 ${isSaved
                 ? "bg-emerald-50 text-emerald-700 border-2 border-emerald-200 cursor-default"
                 : "bg-[#1A1A1A] hover:bg-black text-white"
@@ -1172,7 +1172,7 @@ export default function VideoPlayer() {
           {/* Back Button */}
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-gray-500 hover:text-black font-bold transition-colors group"
+            className="flex items-center gap-2 text-gray-500 hover:text-black font-bold transition-colors group cursor-pointer"
           >
             <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
               <ArrowLeft className="w-5 h-5" />

@@ -10,6 +10,8 @@ import {
   Phone,
   Video
 } from "lucide-react";
+import axios from "axios";
+import socket from "../socket";
 
 // --- ANIMATION VARIANTS ---
 const messageVariants = {
@@ -23,46 +25,73 @@ const messageVariants = {
 };
 
 function Message() {
-  const [newMessages, setNewMessages] = useState([
-    {
-      id: 1,
-      sender: "Prepvio",
-      text: "Welcome to Prepvio Bhidu, Chal aja baat chit karte hai sab thik!",
-      timestamp: "10:00 AM",
-      avatar: "P"
-    },
-    {
-      id: 2,
-      sender: "CurrentUser",
-      text: "Hi! I have a question about my recent subscription plan.",
-      timestamp: "10:05 AM",
-      avatar: "U"
-    }
-  ]);
+  const [newMessages, setNewMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [newMessageText, setNewMessageText] = useState("");
   const messagesEndRef = useRef(null);
+
+  // Fetch initial messages
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const res = await axios.get("/api/chat/messages", { withCredentials: true });
+        if (res.data.success) {
+          setNewMessages(res.data.messages);
+        }
+      } catch (err) {
+        console.error("Failed to fetch messages", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMessages();
+  }, []);
+
+  // Socket listener for new messages
+  useEffect(() => {
+    // Import helper if needed, but socket.js handles most of it
+    // For now, let's assume connectSocket is needed to pass credentials/auth
+    import("../socket").then(({ connectSocket }) => {
+      connectSocket();
+    });
+
+    socket.on("new_message", (message) => {
+      setNewMessages((prev) => {
+        if (prev.find(m => m.id === message.id)) return prev;
+        return [...prev, message];
+      });
+    });
+
+    return () => {
+      socket.off("new_message");
+    };
+  }, []);
 
   // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [newMessages]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (newMessageText.trim()) {
-      const sender = "CurrentUser";
-      const timestamp = new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      const message = {
-        id: Date.now(), // Better unique ID
-        sender,
-        text: newMessageText,
-        timestamp,
-        avatar: "U"
-      };
-      setNewMessages([...newMessages, message]);
-      setNewMessageText("");
+      const text = newMessageText.trim();
+      setNewMessageText(""); // Clear immediately for UX
+
+      try {
+        const res = await axios.post("/api/chat/send", { text }, { withCredentials: true });
+        if (res.data.success) {
+          // If we want to avoid double-adding if socket emits to sender too:
+          // But usually we add manually for instant feedback and check ID
+          setNewMessages((prev) => {
+            if (prev.find(m => m.id === res.data.message.id)) return prev;
+            return [...prev, res.data.message];
+          });
+        }
+      } catch (err) {
+        console.error("Failed to send message", err);
+        alert("Failed to send message. Please try again.");
+      }
     }
   };
 

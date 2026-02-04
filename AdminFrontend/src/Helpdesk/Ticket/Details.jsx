@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { 
-  Home, 
-  ChevronRight, 
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  Home,
+  ChevronRight,
   MessageSquare,
   ChevronDown,
   Check,
@@ -21,8 +21,14 @@ import {
   Mic,
   Send,
   Link as LinkIcon,
-  Image as ImageIcon
+  Image as ImageIcon,
+  ArrowLeft
 } from 'lucide-react';
+import axios from 'axios';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import socket from '../../socket';
+
+const API_BASE = "http://localhost:5000/api";
 
 // --- Mock Data ---
 const mockTicketDetails = {
@@ -77,13 +83,13 @@ const mockTicketDetails = {
 };
 
 const mockDetailOptions = {
-  status: [ { value: 'open', label: 'Open' }, { value: 'closed', label: 'Closed' } ],
-  assignee: [ { value: 'jack', label: 'Jack P.' }, { value: 'sara', label: 'Sara K.' } ],
-  customer: [ { value: 'john', label: 'John Lui' }, { value: 'jane', label: 'Jane Doe' } ],
-  category: [ { value: 'alpha', label: 'Alpha' }, { value: 'beta', label: 'Beta' } ],
-  assignGroup: [ { value: 'one', label: 'One' }, { value: 'two', label: 'Two' } ],
-  created: [ { value: 'today', label: 'Today' }, { value: 'yesterday', label: 'Yesterday' } ],
-  response: [ { value: 'due', label: 'Due' }, { value: 'overdue', label: 'Overdue' } ],
+  status: [{ value: 'open', label: 'Open' }, { value: 'closed', label: 'Closed' }],
+  assignee: [{ value: 'jack', label: 'Jack P.' }, { value: 'sara', label: 'Sara K.' }],
+  customer: [{ value: 'john', label: 'John Lui' }, { value: 'jane', label: 'Jane Doe' }],
+  category: [{ value: 'alpha', label: 'Alpha' }, { value: 'beta', label: 'Beta' }],
+  assignGroup: [{ value: 'one', label: 'One' }, { value: 'two', label: 'Two' }],
+  created: [{ value: 'today', label: 'Today' }, { value: 'yesterday', label: 'Yesterday' }],
+  response: [{ value: 'due', label: 'Due' }, { value: 'overdue', label: 'Overdue' }],
 };
 
 // --- Glass Card Component ---
@@ -133,7 +139,7 @@ const CustomSelect = ({ label, options, selected, onSelect, icon }) => {
         type="button"
         className="w-full p-2.5 bg-white/50 border border-white/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800 flex justify-between items-center text-left"
         onClick={() => setIsOpen(!isOpen)}
-        onBlur={handleBlur} 
+        onBlur={handleBlur}
       >
         <div className="flex items-center">
           {Icon && <Icon className="w-4 h-4 text-gray-600 mr-2" />}
@@ -163,80 +169,96 @@ const CustomSelect = ({ label, options, selected, onSelect, icon }) => {
 };
 
 // --- Comment Card Component ---
-const CommentCard = ({ comment }) => (
-  <div className="flex gap-4">
-    <img src={comment.user.avatar} alt={comment.user.name} className="w-10 h-10 rounded-full flex-shrink-0 mt-1" />
-    <div className="flex-1">
-      <div className="bg-white/50 border border-white/30 rounded-lg shadow-sm">
-        {/* Comment Header */}
-        <div className="px-4 py-3 border-b border-white/30">
-          <span className="font-semibold text-gray-900">{comment.user.name}</span>
-          <span className="text-xs text-gray-600 ml-2">{comment.time}</span>
+const CommentCard = ({ comment }) => {
+  const isMe = comment.sender === 'Prepvio'; // Based on toClientFormat mapping
+  return (
+    <div className={`flex gap-4 ${isMe ? 'flex-row-reverse' : ''}`}>
+      {comment.avatar ? (
+        <div className={`w-10 h-10 rounded-full flex-shrink-0 mt-1 flex items-center justify-center font-bold border ${isMe ? 'bg-indigo-600 text-white' : 'bg-[#D4F478] text-black'}`}>
+          {comment.avatar}
         </div>
-        {/* Comment Body */}
-        <div className="p-4 space-y-3">
-          {comment.text.map((p, i) => <p key={i} className="text-gray-800 text-sm">{p}</p>)}
-          
-          {/* Code Snippet */}
-          {comment.code && (
-            <pre className="bg-gray-800 text-gray-200 text-xs rounded-lg p-3 overflow-x-auto">
-              <code>{comment.code}</code>
-            </pre>
-          )}
-
-          {/* Image Gallery */}
-          {comment.images && comment.images.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {comment.images.map((imgSrc, i) => (
-                <img 
-                  key={i} 
-                  src={imgSrc} 
-                  alt={`attachment ${i+1}`} 
-                  className="w-24 h-16 object-cover rounded-lg border-2 border-white/50 shadow-sm"
-                  onError={(e) => { e.target.src = 'https://placehold.co/150x100/cccccc/ffffff?text=Error'; }}
-                />
-              ))}
-            </div>
-          )}
+      ) : (
+        <img src={isMe ? "https://placehold.co/40x40/6366f1/ffffff?text=P" : "https://placehold.co/40x40/3b82f6/ffffff?text=U"} alt={comment.sender} className="w-10 h-10 rounded-full flex-shrink-0 mt-1" />
+      )}
+      <div className={`flex-1 max-w-[80%] ${isMe ? 'text-right' : ''}`}>
+        <div className={`border border-white/30 rounded-lg shadow-sm ${isMe ? 'bg-indigo-50/50' : 'bg-white/50'}`}>
+          {/* Comment Header */}
+          <div className="px-4 py-2 border-b border-white/30 flex justify-between items-center">
+            <span className="font-semibold text-gray-900">{comment.sender}</span>
+            <span className="text-[10px] text-gray-600">{comment.timestamp}</span>
+          </div>
+          {/* Comment Body */}
+          <div className="p-4">
+            <p className="text-gray-800 text-sm whitespace-pre-wrap">{comment.text}</p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // --- Reply Box Component ---
-const ReplyBox = () => (
-  <div className="flex gap-4 mt-6">
-    <img src="https://placehold.co/40x40/6366f1/ffffff?text=Me" alt="My Avatar" className="w-10 h-10 rounded-full flex-shrink-0 mt-1" />
-    <div className="flex-1">
-      <GlassCard className="p-0">
-        <textarea 
-          rows="4" 
-          placeholder="Type your message..."
-          className="w-full p-4 bg-transparent focus:outline-none resize-none text-gray-800 placeholder-gray-600"
-        ></textarea>
-        {/* Reply Toolbar */}
-        <div className="p-3 bg-white/30 border-t border-white/40 flex justify-between items-center rounded-b-2xl">
-          <div className="flex items-center gap-3">
-            <button className="text-gray-600 hover:text-indigo-600"><Paperclip className="w-5 h-5" /></button>
-            <button className="text-gray-600 hover:text-indigo-600"><LinkIcon className="w-5 h-5" /></button>
-            <button className="text-gray-600 hover:text-indigo-600"><ImageIcon className="w-5 h-5" /></button>
-            <button className="text-gray-600 hover:text-indigo-600"><Smile className="w-5 h-5" /></button>
-            <button className="text-gray-600 hover:text-indigo-600"><Mic className="w-5 h-5" /></button>
+const ReplyBox = ({ onSend, loading }) => {
+  const [text, setText] = useState("");
+
+  const handleSend = () => {
+    if (text.trim()) {
+      onSend(text);
+      setText("");
+    }
+  };
+
+  return (
+    <div className="flex gap-4 mt-6">
+      <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold flex-shrink-0 mt-1">
+        P
+      </div>
+      <div className="flex-1">
+        <GlassCard className="p-0">
+          <textarea
+            rows="4"
+            placeholder="Type your reply..."
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
+            className="w-full p-4 bg-transparent focus:outline-none resize-none text-gray-800 placeholder-gray-600"
+          ></textarea>
+          {/* Reply Toolbar */}
+          <div className="p-3 bg-white/30 border-t border-white/40 flex justify-between items-center rounded-b-2xl">
+            <div className="flex items-center gap-3">
+              <button className="text-gray-600 hover:text-indigo-600"><Paperclip className="w-5 h-5" /></button>
+            </div>
+            <button
+              onClick={handleSend}
+              disabled={loading || !text.trim()}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition-all duration-300 flex items-center gap-2 disabled:opacity-50"
+            >
+              <Send className="w-4 h-4" />
+              <span>{loading ? 'Sending...' : 'Reply'}</span>
+            </button>
           </div>
-          <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition-all duration-300 flex items-center gap-2">
-            <Send className="w-4 h-4" />
-            <span>Reply</span>
-          </button>
-        </div>
-      </GlassCard>
+        </GlassCard>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 
 // --- Main App Component ---
 export default function TicketDetails() {
+  const [searchParams] = useSearchParams();
+  const userId = searchParams.get('userId');
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [sendLoading, setSendLoading] = useState(false);
+  const navigate = useNavigate();
+  const messagesEndRef = useRef(null);
+
   const appStyle = {
     backgroundImage: "linear-gradient(to right top, #ff6b6b, #ffb347, #ffe780, #ffccb3, #ff8c8c)",
     backgroundSize: 'cover',
@@ -244,105 +266,119 @@ export default function TicketDetails() {
     minHeight: '100vh',
   };
 
-  // State for selections in the sidebar
-  const [status, setStatus] = useState(mockDetailOptions.status[0]);
-  const [assignee, setAssignee] = useState(mockDetailOptions.assignee[0]);
-  const [customer, setCustomer] = useState(mockDetailOptions.customer[0]);
-  const [category, setCategory] = useState(mockDetailOptions.category[0]);
-  const [assignGroup, setAssignGroup] = useState(mockDetailOptions.assignGroup[0]);
-  const [created, setCreated] = useState(mockDetailOptions.created[0]);
-  const [response, setResponse] = useState(mockDetailOptions.response[0]);
+  useEffect(() => {
+    if (!userId) return;
+    const fetchMessages = async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/chat/admin/messages/${userId}`, { withCredentials: true });
+        if (res.data.success) {
+          setMessages(res.data.messages);
+        }
+      } catch (err) {
+        console.error("Failed to fetch messages", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMessages();
+
+    // Join room for real-time updates
+    socket.emit('join_conversation', { userId });
+
+    socket.on("new_message", (message) => {
+      setMessages((prev) => {
+        if (prev.find(m => m.id === message.id)) return prev;
+        return [...prev, message];
+      });
+    });
+
+    return () => {
+      socket.off("new_message");
+    };
+  }, [userId]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleSendReply = async (text) => {
+    setSendLoading(true);
+    try {
+      const res = await axios.post(`${API_BASE}/chat/send`, { text, receiverId: userId }, { withCredentials: true });
+      if (res.data.success) {
+        setMessages([...messages, res.data.message]);
+      }
+    } catch (err) {
+      console.error("Failed to send reply", err);
+      alert("Failed to send reply");
+    } finally {
+      setSendLoading(false);
+    }
+  };
 
   return (
     <div style={appStyle} className="font-inter flex min-h-screen p-6">
       <div className="flex-1 flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto">
-        
+
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto">
           <Breadcrumbs />
-          
+
           {/* Ticket Header */}
           <GlassCard className="mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <Link
+                to="/help-desk/ticket/list"
+                className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span>Back to Tickets</span>
+              </Link>
+            </div>
             <div className="flex justify-between items-center mb-2">
-              <h1 className="text-3xl font-bold text-gray-900">{mockTicketDetails.title}</h1>
-              <span className="text-xs text-gray-600">#TKT-12345</span>
+              <h1 className="text-3xl font-bold text-gray-900">Support Conversation</h1>
+              <span className="text-xs text-gray-600">User ID: {userId}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">{mockTicketDetails.status}</span>
-              <span className="px-3 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">{mockTicketDetails.priority}</span>
-              <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">{mockTicketDetails.customer}</span>
-            </div>
-            <div className="flex items-center gap-4 mt-4">
-              <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition-all">
-                <Printer className="w-4 h-4" /> Print
-              </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition-all">
-                <Trash2 className="w-4 h-4" /> Delete
-              </button>
+              <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">Student</span>
             </div>
           </GlassCard>
 
           {/* Conversation Thread */}
-          <div className="space-y-6">
-            {mockTicketDetails.conversation.map((item, index) => (
-              <CommentCard key={index} comment={item} />
-            ))}
+          <div className="space-y-6 mb-10">
+            {loading ? (
+              <div className="text-white text-center py-10">Loading messages...</div>
+            ) : messages.length === 0 ? (
+              <div className="text-white text-center py-10">No messages yet.</div>
+            ) : (
+              messages.map((msg, index) => (
+                <CommentCard key={msg.id || index} comment={msg} />
+              ))
+            )}
+            <div ref={messagesEndRef} />
           </div>
 
           {/* Reply Box */}
-          <ReplyBox />
+          <ReplyBox onSend={handleSendReply} loading={sendLoading} />
 
         </main>
 
-        {/* Sidebar */}
+        {/* Sidebar (Simplified) */}
         <aside className="w-full lg:w-80 flex-shrink-0">
           <div className="sticky top-6">
             <GlassCard>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Ticket Details</h3>
-              <button className="w-full mb-4 px-4 py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition-all duration-300 font-semibold">
-                Add/Edit Functions
-              </button>
-
-              {/* Detail Selects */}
-              <CustomSelect icon={Flag} options={mockDetailOptions.status} selected={status} onSelect={setStatus} />
-              <CustomSelect icon={AssigneeIcon} label="Assignee" options={mockDetailOptions.assignee} selected={assignee} onSelect={setAssignee} />
-              
-              {/* Simple Info Fields */}
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Quick Info</h3>
               <div className="mb-4">
-                <label className="block text-gray-800 text-sm font-medium mb-1">Customer</label>
+                <label className="block text-gray-800 text-sm font-medium mb-1">Status</label>
                 <div className="flex items-center p-2.5 bg-white/50 border border-white/30 rounded-lg">
-                  <User className="w-4 h-4 text-gray-600 mr-2" />
-                  <span className="text-sm text-gray-800">John Lui</span>
+                  <span className="text-sm text-gray-800">Active Chat</span>
                 </div>
               </div>
-              <div className="mb-4">
-                <div className="flex items-center p-2.5 bg-white/50 border border-white/30 rounded-lg">
-                  <Mail className="w-4 h-4 text-gray-600 mr-2" />
-                  <span className="text-sm text-gray-800">user@gmail.com</span>
-                </div>
-              </div>
-
-              <CustomSelect icon={List} label="Category" options={mockDetailOptions.category} selected={category} onSelect={setCategory} />
-              <CustomSelect icon={Users} label="Assign Group" options={mockDetailOptions.assignGroup} selected={assignGroup} onSelect={setAssignGroup} />
-              <CustomSelect icon={Calendar} label="Created" options={mockDetailOptions.created} selected={created} onSelect={setCreated} />
-              <CustomSelect icon={Clock} label="Response" options={mockDetailOptions.response} selected={response} onSelect={setResponse} />
-              
-              <div className="flex items-center justify-between mt-4">
-                <button className="text-sm text-indigo-600 hover:underline font-medium">Show More</button>
-                <button className="px-5 py-2.5 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600 transition-all">
-                  Update
-                </button>
-              </div>
-
+              <p className="text-xs text-gray-600">Admin responses are sent as 'Prepvio Support' to the student.</p>
             </GlassCard>
           </div>
         </aside>
       </div>
-      
-      {/* Placeholder for the purple button in the corner */}
-      <button className="fixed bottom-6 right-6 bg-indigo-600 text-white p-4 rounded-full shadow-lg hover:bg-indigo-700 transition-all">
-          <MessageSquare className="w-6 h-6" />
-      </button>
     </div>
   );
 }

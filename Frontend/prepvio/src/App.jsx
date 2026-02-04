@@ -273,6 +273,7 @@ import { useNotificationStore } from "./store/notificationStore";
 import Home from "./HomePages/Home.jsx";
 import Layout from "./components/Layout.jsx";
 import Footer from "./HomePages/Footer.jsx";
+import VoiceAssistant from "./components/VoiceAssistant.jsx";
 
 import SignUpPage from "./pages/SignUpPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
@@ -507,6 +508,7 @@ function App() {
 			</Routes>
 
 			<Footer />
+			<VoiceAssistant />
 			<Toaster />
 		</>
 	);

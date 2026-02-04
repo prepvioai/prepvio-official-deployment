@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import {
-  CreditCard,
   Check,
   X,
   Zap,
@@ -15,10 +14,7 @@ import {
   ArrowRight,
   Lock,
   Sparkles,
-  Award,
-  Download,
   Calendar,
-  MessageCircle,
   TrendingUp,
   AlertCircle
 } from "lucide-react";
@@ -43,6 +39,7 @@ const plans = [
     features: [
       { text: '4 AI Interviews', included: true },
       { text: 'Access to analyzed feedback (pdf)', included: true },
+      { text: 'Access to Project Map After Course Completion', included: true },
       { text: 'Access to Interview Replay', included: false },
       { text: 'Access to Code Editor', included: false },
       { text: 'Access to highlighted clips', included: false }
@@ -62,6 +59,7 @@ const plans = [
     features: [
       { text: '9 AI Interviews', included: true },
       { text: 'Access to analyzed feedback (pdf)', included: true },
+      { text: 'Direct Access to Project Map', included: true },
       { text: 'Access to Interview Replay', included: true },
       { text: 'Access to Code Editor', included: true },
       { text: 'Access to highlighted clips', included: false }
@@ -81,6 +79,7 @@ const plans = [
     features: [
       { text: '25 AI Interviews', included: true },
       { text: 'Access to analyzed feedback (pdf)', included: true },
+      { text: 'Direct Access to Project Map', included: true },
       { text: 'Access to Interview Replay', included: true },
       { text: 'Access to Code Editor', included: true },
       { text: 'Access to highlighted clips', included: true }
@@ -101,25 +100,6 @@ const cardVariants = {
     y: 0,
     transition: { type: "spring", stiffness: 100, damping: 20 }
   }
-};
-
-const successVariants = {
-  hidden: { scale: 0.8, opacity: 0 },
-  visible: {
-    scale: 1,
-    opacity: 1,
-    transition: {
-      type: "spring",
-      stiffness: 200,
-      damping: 20,
-      staggerChildren: 0.1
-    }
-  }
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 }
 };
 
 function Payment() {
@@ -223,12 +203,6 @@ function Payment() {
               setPaymentData({
                 planName: verifyRes.data.subscription.planName,
                 interviews: verifyRes.data.interviews.remaining,
-                transactionId: response.razorpay_payment_id,
-                date: new Date().toLocaleDateString('en-IN', {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric'
-                })
               });
               setPaymentSuccess(true);
             }
@@ -280,168 +254,6 @@ function Payment() {
     }
   };
 
-  const handleBackToPlans = () => {
-    setPaymentSuccess(false);
-    setPaymentData(null);
-  };
-
-  // If payment is successful, show success page
-  if (paymentSuccess && paymentData) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#D4F478] via-[#B8E356] to-[#9BCF35] font-sans flex items-center justify-center p-4 relative overflow-hidden">
-
-        {/* Animated background elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <motion.div
-            animate={{
-              scale: [1, 1.2, 1],
-              rotate: [0, 90, 0],
-              opacity: [0.1, 0.2, 0.1]
-            }}
-            transition={{ duration: 20, repeat: Infinity }}
-            className="absolute top-10 left-10 w-64 h-64 bg-white/20 rounded-full blur-3xl"
-          />
-          <motion.div
-            animate={{
-              scale: [1.2, 1, 1.2],
-              rotate: [90, 0, 90],
-              opacity: [0.1, 0.2, 0.1]
-            }}
-            transition={{ duration: 15, repeat: Infinity }}
-            className="absolute bottom-10 right-10 w-80 h-80 bg-black/10 rounded-full blur-3xl"
-          />
-        </div>
-
-        <motion.div
-          variants={successVariants}
-          initial="hidden"
-          animate="visible"
-          className="relative bg-white rounded-[3rem] shadow-2xl max-w-2xl w-full p-8 md:p-12 space-y-8"
-        >
-          {/* Success Icon with Animation */}
-          <motion.div
-            variants={itemVariants}
-            className="flex justify-center"
-          >
-            <motion.div
-              animate={{
-                scale: [1, 1.1, 1],
-                rotate: [0, 5, -5, 0]
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                repeatType: "reverse"
-              }}
-              className="relative"
-            >
-              <div className="w-28 h-28 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center shadow-2xl">
-                <Check className="w-14 h-14 text-white" strokeWidth={3} />
-              </div>
-              <Sparkles className="absolute -top-2 -right-2 w-8 h-8 text-yellow-400 animate-pulse" />
-              <Sparkles className="absolute -bottom-2 -left-2 w-6 h-6 text-yellow-400 animate-pulse" style={{ animationDelay: '75ms' }} />
-            </motion.div>
-          </motion.div>
-
-          {/* Success Message */}
-          <motion.div variants={itemVariants} className="text-center space-y-3">
-            <h1 className="text-4xl md:text-5xl font-black text-gray-900">
-              Payment Successful! 🎉
-            </h1>
-            <p className="text-lg text-gray-600 font-medium">
-              Welcome to <span className="text-black font-bold">{paymentData.planName}</span>
-            </p>
-          </motion.div>
-
-          {/* Payment Details Card */}
-          <motion.div
-            variants={itemVariants}
-            className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl p-6 space-y-4 border border-gray-200"
-          >
-            <div className="flex items-center justify-between pb-4 border-b border-gray-300">
-              <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Payment Details</span>
-              <Award className="w-5 h-5 text-[#D4F478]" />
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 font-medium">Plan</span>
-                <span className="text-gray-900 font-bold">{paymentData.planName}</span>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 font-medium">Interviews Added</span>
-                <span className="text-green-600 font-bold text-lg">🎤 {paymentData.interviews}</span>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 font-medium">Transaction ID</span>
-                <span className="text-gray-900 font-mono text-xs bg-gray-200 px-3 py-1 rounded-lg">
-                  {paymentData.transactionId.slice(0, 16)}...
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 font-medium">Date</span>
-                <span className="text-gray-900 font-semibold flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  {paymentData.date}
-                </span>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Quick Actions */}
-          <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-blue-50 hover:bg-blue-100 transition-colors">
-              <Download className="w-6 h-6 text-blue-600 transition-transform hover:scale-110" />
-              <span className="text-sm font-bold text-blue-900">Download Receipt</span>
-            </button>
-
-            <button className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-green-50 hover:bg-green-100 transition-colors">
-              <MessageCircle className="w-6 h-6 text-green-600 transition-transform hover:scale-110" />
-              <span className="text-sm font-bold text-green-900">Contact Support</span>
-            </button>
-
-            <button
-              onClick={() => window.location.href = "/dashboard"}
-              className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-purple-50 hover:bg-purple-100 transition-colors"
-            >
-              <Rocket className="w-6 h-6 text-purple-600 transition-transform hover:scale-110" />
-              <span className="text-sm font-bold text-purple-900">Go to Dashboard</span>
-            </button>
-          </motion.div>
-
-          {/* CTA Buttons */}
-          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 pt-4">
-            <button
-              onClick={() => window.location.href = "/services/check-your-ability/interview"}
-              className="flex-1 bg-[#1A1A1A] text-white font-black py-4 px-6 rounded-2xl hover:bg-black transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center justify-center gap-2"
-            >
-              <span>Start Your First Interview</span>
-              <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-            </button>
-
-            <button
-              onClick={handleBackToPlans}
-              className="sm:w-auto px-6 py-4 rounded-2xl border-2 border-gray-200 hover:border-gray-300 font-bold text-gray-700 hover:bg-gray-50 transition-all"
-            >
-              View All Plans
-            </button>
-          </motion.div>
-
-          {/* Footer Note */}
-          <motion.p
-            variants={itemVariants}
-            className="text-center text-sm text-gray-500 pt-4"
-          >
-            A confirmation email has been sent to your registered email address.
-          </motion.p>
-        </motion.div>
-      </div>
-    );
-  }
-
   // Original pricing page
   return (
     <div className="min-h-screen bg-[#FDFBF9] font-sans selection:bg-[#D4F478] selection:text-black relative overflow-hidden">
@@ -483,7 +295,7 @@ function Payment() {
           <div className="inline-flex gap-4 bg-white rounded-2xl p-1.5 border border-gray-200 shadow-md">
             <button
               onClick={() => setActiveTab('pricing')}
-              className={`px-6 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'pricing'
+              className={`px-6 py-3 rounded-xl font-bold text-sm transition-all cursor-pointer ${activeTab === 'pricing'
                 ? 'bg-[#D4F478] text-black shadow-lg'
                 : 'text-gray-600 hover:text-gray-900'
                 }`}
@@ -493,7 +305,7 @@ function Payment() {
             {currentPlan?.active && (
               <button
                 onClick={() => setActiveTab('current-plan')}
-                className={`px-6 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'current-plan'
+                className={`px-6 py-3 rounded-xl font-bold text-sm transition-all cursor-pointer ${activeTab === 'current-plan'
                   ? 'bg-[#D4F478] text-black shadow-lg'
                   : 'text-gray-600 hover:text-gray-900'
                   }`}
@@ -524,7 +336,7 @@ function Payment() {
           </h1>
           <p className="text-gray-500 text-lg md:text-xl font-medium max-w-xl mx-auto">
             {activeTab === 'pricing'
-              ? 'Unlock unlimited access to AI-powered interview prep and career-boosting tools.'
+              ? 'Unlock access to AI-powered interview prep and career-boosting tools.'
               : 'Manage your subscription and track your remaining credits.'}
           </p>
         </motion.div>
@@ -718,7 +530,7 @@ function Payment() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start"
+            className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start justify-center"
           >
             {plans.map((plan) => {
               const Icon = plan.icon;
@@ -804,8 +616,8 @@ function Payment() {
                         : isProcessing && selectedPlan === plan.id
                           ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                           : isDark
-                            ? 'bg-[#D4F478] text-black hover:bg-white hover:scale-[1.02]'
-                            : 'bg-[#1A1A1A] text-white hover:bg-gray-800'
+                            ? 'bg-[#D4F478] text-black hover:bg-white hover:scale-[1.02] cursor-pointer'
+                            : 'bg-[#1A1A1A] text-white hover:bg-gray-800 cursor-pointer'
                       }
                     `}
                   >
@@ -839,6 +651,68 @@ function Payment() {
         )}
 
       </div>
+
+      {/* PAYMENT SUCCESS POPUP */}
+      <AnimatePresence>
+        {paymentSuccess && paymentData && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", duration: 0.5 }}
+              className="bg-white rounded-3xl p-8 md:p-12 max-w-md w-full shadow-2xl text-center"
+            >
+              {/* Success Icon */}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6"
+              >
+                <CheckCircle2 className="w-12 h-12 text-green-600" />
+              </motion.div>
+
+              {/* Success Message */}
+              <motion.h2
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-3xl font-black text-gray-900 mb-3"
+              >
+                Payment Successful!
+              </motion.h2>
+
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="text-gray-600 mb-8"
+              >
+                Welcome to <span className="font-bold text-gray-900">{paymentData.planName}</span>
+                <br />
+                You have <span className="font-bold text-green-600">{paymentData.interviews} interviews</span> ready to use!
+              </motion.p>
+
+              {/* CTA Button */}
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                onClick={() => window.location.href = "/services/check-your-ability/interview"}
+                className="w-full bg-[#1A1A1A] text-white font-bold py-4 px-6 rounded-2xl hover:bg-black transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center justify-center gap-2 cursor-pointer"
+              >
+                Start Practicing Now
+                <ArrowRight className="w-5 h-5" />
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* PROMO CODE MODAL */}
       <AnimatePresence>
@@ -974,12 +848,6 @@ function Payment() {
                         Cancel
                       </button>
                     </div>
-
-                    {/* Sample Codes */}
-                    {/* <div className="mt-4 p-3 bg-yellow-50 rounded-xl border border-yellow-200">
-                      <p className="text-xs font-bold text-yellow-800 mb-1">PREP29 applied successfully</p>
-                      <p className="text-xs text-yellow-700">This plan includes all features enabled and 2 interviews.</p>
-                    </div> */}
                   </>
                 );
               })()}

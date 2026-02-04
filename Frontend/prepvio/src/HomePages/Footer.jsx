@@ -116,7 +116,7 @@ function Footer() {
                 </li>
                 <li>
                   <a href="#pricing" className="text-gray-600 hover:text-black transition-colors font-medium text-sm flex items-center gap-2 group">
-                    <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 -ml-6 group-hover:ml-0 transition-all" />
+                    <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 -ml-6 group-hover:ml-0 transition-all cursor-pointer" />
                     Pricing
                   </a>
                 </li>
@@ -205,12 +205,12 @@ function Footer() {
               <h5 className="text-white font-bold text-xs uppercase tracking-wider mb-4">Company</h5>
               <ul className="space-y-2">
                 <li>
-                  <a href="#about" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">
+                  <a href="/#about" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">
                     About Us
                   </a>
                 </li>
                 <li>
-                  <a href="#pricing" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">
+                  <a href="/#pricing" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">
                     Pricing
                   </a>
                 </li>

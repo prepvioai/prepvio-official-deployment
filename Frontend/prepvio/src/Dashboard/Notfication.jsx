@@ -1,14 +1,14 @@
 import React, { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Bell, 
-  Check, 
-  X, 
-  Trash2, 
-  CheckCheck, 
-  Info, 
-  AlertTriangle, 
-  PartyPopper, 
+import {
+  Bell,
+  Check,
+  X,
+  Trash2,
+  CheckCheck,
+  Info,
+  AlertTriangle,
+  PartyPopper,
   Zap,
   Mail
 } from "lucide-react";
@@ -34,32 +34,32 @@ const itemVariants = {
 const getNotificationStyle = (type) => {
   switch (type) {
     case "success":
-      return { 
-        icon: PartyPopper, 
-        bg: "bg-green-100", 
-        text: "text-green-700", 
-        border: "border-green-500" 
+      return {
+        icon: PartyPopper,
+        bg: "bg-green-100",
+        text: "text-green-700",
+        border: "border-green-500"
       };
     case "warning":
-      return { 
-        icon: AlertTriangle, 
-        bg: "bg-orange-100", 
-        text: "text-orange-700", 
-        border: "border-orange-500" 
+      return {
+        icon: AlertTriangle,
+        bg: "bg-orange-100",
+        text: "text-orange-700",
+        border: "border-orange-500"
       };
     case "error":
-      return { 
-        icon: Zap, 
-        bg: "bg-red-100", 
-        text: "text-red-700", 
-        border: "border-red-500" 
+      return {
+        icon: Zap,
+        bg: "bg-red-100",
+        text: "text-red-700",
+        border: "border-red-500"
       };
     default: // info or system
-      return { 
-        icon: Mail, 
-        bg: "bg-blue-100", 
-        text: "text-blue-700", 
-        border: "border-blue-500" 
+      return {
+        icon: Mail,
+        bg: "bg-blue-100",
+        text: "text-blue-700",
+        border: "border-blue-500"
       };
   }
 };
@@ -113,27 +113,27 @@ function Notifications() {
 
   return (
     <div className="min-h-screen bg-[#FDFBF9] font-sans selection:bg-[#D4F478] selection:text-black p-4 md:p-8">
-      
+
       <div className="max-w-4xl mx-auto space-y-8">
-        
+
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-             <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-               Notifications
-               {/* ✅ SIMPLE DOT INDICATOR */}
-               {unreadCount > 0 && (
-                 <span className="w-3 h-3 bg-[#D4F478] rounded-full shadow-sm animate-pulse" />
-               )}
-             </h1>
-             <p className="text-gray-500 font-medium mt-1">Stay updated with your latest alerts.</p>
+            <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+              Notifications
+              {/* ✅ SIMPLE DOT INDICATOR */}
+              {unreadCount > 0 && (
+                <span className="w-3 h-3 bg-[#D4F478] rounded-full shadow-sm animate-pulse" />
+              )}
+            </h1>
+            <p className="text-gray-500 font-medium mt-1">Stay updated with your latest alerts.</p>
           </div>
 
           <div className="flex gap-3">
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllAsRead}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm cursor-pointer"
               >
                 <CheckCheck className="w-4 h-4" />
                 <span className="hidden sm:inline">Mark all read</span>
@@ -142,7 +142,7 @@ function Notifications() {
             {notifications.length > 0 && (
               <button
                 onClick={handleClearAll}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-gray-200 text-sm font-bold text-red-600 hover:bg-red-50 hover:border-red-200 transition-all shadow-sm"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-gray-200 text-sm font-bold text-red-600 hover:bg-red-50 hover:border-red-200 transition-all shadow-sm cursor-pointer"
               >
                 <Trash2 className="w-4 h-4" />
                 <span className="hidden sm:inline">Clear all</span>
@@ -156,13 +156,13 @@ function Notifications() {
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-96 text-center px-4">
               <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                 <Bell className="w-10 h-10 text-gray-300" />
+                <Bell className="w-10 h-10 text-gray-300" />
               </div>
               <h3 className="text-xl font-bold text-gray-900">All caught up!</h3>
               <p className="text-gray-500 mt-1">You have no new notifications at the moment.</p>
             </div>
           ) : (
-            <motion.div 
+            <motion.div
               variants={containerVariants}
               initial="hidden"
               animate="visible"
@@ -170,10 +170,10 @@ function Notifications() {
             >
               <AnimatePresence mode="popLayout">
                 {notifications.map((notif) => {
-                   const style = getNotificationStyle(notif.type);
-                   const Icon = style.icon;
+                  const style = getNotificationStyle(notif.type);
+                  const Icon = style.icon;
 
-                   return (
+                  return (
                     <motion.div
                       key={notif._id}
                       layout
@@ -183,9 +183,9 @@ function Notifications() {
                       exit="exit"
                       className={`
                         group relative flex items-start gap-4 p-5 rounded-2xl border transition-all duration-200
-                        ${!notif.isRead 
-                           ? "bg-white border-l-4 border-l-[#1A1A1A] border-y-gray-100 border-r-gray-100 shadow-md" 
-                           : "bg-gray-50/50 border-transparent hover:bg-white hover:shadow-sm"
+                        ${!notif.isRead
+                          ? "bg-white border-l-4 border-l-[#1A1A1A] border-y-gray-100 border-r-gray-100 shadow-md"
+                          : "bg-gray-50/50 border-transparent hover:bg-white hover:shadow-sm"
                         }
                       `}
                     >
@@ -198,7 +198,7 @@ function Notifications() {
                       <div className="flex-1 min-w-0 pt-0.5">
                         <div className="flex items-center justify-between gap-2 mb-1">
                           <h4 className={`text-base font-bold truncate ${notif.isRead ? 'text-gray-600' : 'text-gray-900'}`}>
-                            {notif.type ? notif.type.charAt(0).toUpperCase() + notif.type.slice(1) : 'Notification'}
+                            {notif.title || (notif.type ? notif.type.charAt(0).toUpperCase() + notif.type.slice(1) : 'Notification')}
                           </h4>
                           <span className="text-xs font-medium text-gray-400 whitespace-nowrap">
                             {new Date(notif.createdAt).toLocaleString('en-US', {
@@ -219,7 +219,7 @@ function Notifications() {
                         {!notif.isRead && (
                           <button
                             onClick={() => handleMarkAsRead(notif._id)}
-                            className="p-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-[#D4F478] hover:text-black transition-colors"
+                            className="p-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-[#D4F478] hover:text-black transition-colors cursor-pointer"
                             title="Mark as read"
                           >
                             <Check className="w-4 h-4" />
@@ -227,7 +227,7 @@ function Notifications() {
                         )}
                         <button
                           onClick={() => handleDelete(notif._id)}
-                          className="p-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-red-100 hover:text-red-600 transition-colors"
+                          className="p-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-red-100 hover:text-red-600 transition-colors cursor-pointer"
                           title="Delete"
                         >
                           <X className="w-4 h-4" />
@@ -239,7 +239,7 @@ function Notifications() {
                         <div className="absolute top-5 right-5 w-2 h-2 rounded-full bg-indigo-500 md:hidden" />
                       )}
                     </motion.div>
-                   );
+                  );
                 })}
               </AnimatePresence>
             </motion.div>

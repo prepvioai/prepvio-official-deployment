@@ -272,23 +272,27 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
         </button>
 
         {/* Branding Header */}
-        <div className={`p-6 flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} transition-all duration-300`}>
-          {/* <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-black/20 shrink-0">
-            D
-          </div> */}
-          <AnimatePresence>
-            {!isCollapsed && (
-              <motion.h1
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: "auto" }}
-                exit={{ opacity: 0, width: 0 }}
-                className="text-xl font-bold tracking-tight text-gray-900 whitespace-nowrap overflow-hidden"
-              >
-                DASHBOARD
-              </motion.h1>
-            )}
-          </AnimatePresence>
-        </div>
+<div className={`p-6 flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} transition-all duration-300`}>
+  <Link to="/">
+    <div className="w-9 h-9 bg-black rounded-lg flex items-center justify-center overflow-hidden shadow-lg shadow-black/10">
+      <img src="/newuilogo1.png" alt="Icon" className="w-full h-full object-cover" />
+    </div>
+  </Link>
+  <AnimatePresence>
+    {!isCollapsed && (
+      <motion.h1
+        initial={{ opacity: 0, width: 0 }}
+        animate={{ opacity: 1, width: "auto" }}
+        exit={{ opacity: 0, width: 0 }}
+        className="text-xl font-bold tracking-tight text-gray-900 whitespace-nowrap overflow-hidden"
+      >
+        <Link to="/">
+          <img src="/prepvio (1).png" alt="PrepVio" className="h-9 w-auto object-contain" />
+        </Link>
+      </motion.h1>
+    )}
+  </AnimatePresence>
+</div>
 
         {/* Menu Items */}
         <div className="px-3 space-y-2 flex-1 overflow-y-auto custom-scrollbar overflow-x-hidden">
@@ -304,7 +308,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
           />
 
 
-          <DropdownMenu title="Saved Courses" icon={Bookmark} collapsed={isCollapsed} setSidebarCollapsed={setIsCollapsed}>
+          <DropdownMenu title="Saved Courses" icon={Bookmark} collapsed={isCollapsed} setSidebarCollapsed={setIsCollapsed} >
             <SidebarLink icon={Bookmark} label="My Courses" to="/dashboard/saved-courses" collapsed={isCollapsed} />
           </DropdownMenu>
 

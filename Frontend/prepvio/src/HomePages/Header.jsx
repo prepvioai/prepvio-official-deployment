@@ -380,9 +380,16 @@ const Header = () => {
                               }`}
                           >
                             <div className="flex items-start justify-between gap-2">
-                              <p className={`flex-1 text-sm ${n.isRead ? "text-gray-600" : "font-bold text-gray-900"}`}>
-                                {n.message}
-                              </p>
+                              <div className="flex-1">
+                                {n.title && (
+                                  <p className={`text-sm font-bold mb-0.5 ${n.isRead ? "text-gray-700" : "text-gray-900"}`}>
+                                    {n.title}
+                                  </p>
+                                )}
+                                <p className={`text-sm ${n.isRead ? "text-gray-600" : "text-gray-700"}`}>
+                                  {n.message}
+                                </p>
+                              </div>
                               {!n.isRead && (
                                 <span className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></span>
                               )}

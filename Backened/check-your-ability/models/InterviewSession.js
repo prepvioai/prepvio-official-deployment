@@ -122,17 +122,21 @@ const interviewSessionSchema = new mongoose.Schema(
       },
     ],
     highlightClips: [
-  {
-    questionIndex: Number,
-    questionText: String,
-    timestamp: String,
-    nervousScore: Number,
-    confidence: Number,
-    imageUrl: String,   // later you can change to imageUrl
-    capturedAt: Date,
-  },
-],
-
+      {
+        questionIndex: Number,
+        questionText: String,
+        timestamp: String,
+        nervousScore: Number,
+        confidence: Number,
+        imageUrl: String,   // later you can change to imageUrl
+        capturedAt: Date,
+      },
+    ],
+    planId: {
+      type: String,
+      required: true,
+      default: 'free',
+    },
     status: {
       type: String,
       enum: ["in-progress", "completed"],

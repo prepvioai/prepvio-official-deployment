@@ -656,6 +656,7 @@ import express from "express";
 import { User } from "../models/User.js";
 import { verifyToken } from "../middleware/verifytoken.js";
 import { sendCourseStartedNotification, sendCourseCompletedNotification } from "../Utils/notificationHelper.js";
+import { deduplicateCourseProgress } from "../Utils/courseHelper.js";
 
 const router = express.Router();
 
@@ -674,10 +675,10 @@ router.get("/portfolio", verifyToken, async (req, res) => {
     const projects = user.projects || []; // ✅ Now reading from user.projects
 
     // Calculate Interview Metrics from actual interview data
-    
+
     // 1. Logic Accuracy - From CODING rounds in interviews
-    const codingInterviews = interviews.filter(i => 
-      i.role?.toLowerCase().includes('coding') || 
+    const codingInterviews = interviews.filter(i =>
+      i.role?.toLowerCase().includes('coding') ||
       i.role?.toLowerCase().includes('programming') ||
       i.role?.toLowerCase().includes('algorithm') ||
       i.role?.toLowerCase().includes('dsa') ||
@@ -688,7 +689,7 @@ router.get("/portfolio", verifyToken, async (req, res) => {
       : 0;
 
     // 2. Communication Skills - Based on feedback quality and soft skills assessment
-    const communicationInterviews = interviews.filter(i => 
+    const communicationInterviews = interviews.filter(i =>
       i.role?.toLowerCase().includes('hr') ||
       i.role?.toLowerCase().includes('behavioral') ||
       i.role?.toLowerCase().includes('communication') ||
@@ -699,7 +700,7 @@ router.get("/portfolio", verifyToken, async (req, res) => {
       : (interviews.length > 0 ? Math.round(interviews.reduce((sum, i) => sum + (i.score || 0), 0) / interviews.length) : 0);
 
     // 3. System Design - ALL technical interviews
-    const systemDesignInterviews = interviews.filter(i => 
+    const systemDesignInterviews = interviews.filter(i =>
       !i.role?.toLowerCase().includes('hr') &&
       !i.role?.toLowerCase().includes('behavioral')
     );
@@ -708,7 +709,7 @@ router.get("/portfolio", verifyToken, async (req, res) => {
       : 0;
 
     // 4. Culture Fit - Based on HR rounds + positive feedback
-    const cultureFitInterviews = interviews.filter(i => 
+    const cultureFitInterviews = interviews.filter(i =>
       i.role?.toLowerCase().includes('hr') ||
       i.role?.toLowerCase().includes('cultural') ||
       i.role?.toLowerCase().includes('behavioral') ||
@@ -761,9 +762,9 @@ router.post("/projects", verifyToken, async (req, res) => {
 
     // Validation
     if (!title || !description) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Title and description are required" 
+      return res.status(400).json({
+        success: false,
+        message: "Title and description are required"
       });
     }
 
@@ -921,9 +922,9 @@ router.get("/me", verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.userId).select("-password").lean();
     if (!user) return res.status(404).json({ message: "User not found" });
-    
-    res.json({ 
-      success: true, 
+
+    res.json({
+      success: true,
       user
     });
   } catch (err) {
@@ -946,10 +947,10 @@ router.put("/me", verifyToken, async (req, res) => {
     if (location) user.location = location;
 
     await user.save();
-    
-    res.json({ 
-      success: true, 
-      message: "Profile updated successfully", 
+
+    res.json({
+      success: true,
+      message: "Profile updated successfully",
       user: {
         ...user.toObject(),
         password: undefined
@@ -1017,7 +1018,7 @@ router.post("/start-learning", verifyToken, async (req, res) => {
   // ✅ REMOVE ANY DUPLICATES WITH 0 PROGRESS (KEEP THE ONE WITH PROGRESS)
   const courseIdStr = String(courseId);
   const channelIdStr = String(channelId);
-  
+
   const existingEntries = user.courseProgress.filter(
     (c) => String(c.courseId) === courseIdStr && String(c.channelId) === channelIdStr
   );
@@ -1123,16 +1124,16 @@ router.post("/video-progress", verifyToken, async (req, res) => {
   );
 
   // ✅ CHECK IF COURSE IS COMPLETED (90% of all videos watched)
-  const isCourseCompleted = course.totalSeconds > 0 && 
+  const isCourseCompleted = course.totalSeconds > 0 &&
     course.watchedSeconds >= course.totalSeconds * 0.9;
-  
+
   const wasCourseAlreadyCompleted = course.completed;
   course.completed = isCourseCompleted;
 
   course.lastAccessed = new Date();
 
   await user.save();
-  
+
   // ✅ SEND COURSE COMPLETION NOTIFICATION (ONLY ONCE)
   if (isCourseCompleted && !wasCourseAlreadyCompleted) {
     await sendCourseCompletedNotification(req.userId, course.courseTitle, course.channelName);
@@ -1176,19 +1177,7 @@ router.get("/my-learning", verifyToken, async (req, res) => {
   let courses = user.courseProgress || [];
   const feedbacks = user.feedbacks || [];
 
-  // ✅ DEDUPLICATE: Keep entry with most progress, remove zero-progress duplicates
-  const courseMap = new Map();
-  
-  courses.forEach((course) => {
-    const key = `${course.courseId}-${course.channelId}`;
-    const existing = courseMap.get(key);
-    
-    if (!existing || (course.watchedSeconds || 0) > (existing.watchedSeconds || 0)) {
-      courseMap.set(key, course);
-    }
-  });
-
-  courses = Array.from(courseMap.values());
+  courses = deduplicateCourseProgress(courses);
 
   const data = courses.map((course) => {
     let lastVideoId = null;
@@ -1283,6 +1272,20 @@ router.get("/watch-later", verifyToken, async (req, res) => {
   res.json({ success: true, data: user.savedVideos || [] });
 });
 
+router.delete("/watch-later/:videoId", verifyToken, async (req, res) => {
+  const { videoId } = req.params;
+
+  const user = await User.findById(req.userId);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  user.savedVideos = (user.savedVideos || []).filter(
+    (v) => v.videoId !== videoId
+  );
+
+  await user.save();
+  res.json({ success: true });
+});
+
 /* =========================================================
    UPDATE COURSE TOTAL
 ========================================================= */
@@ -1324,7 +1327,15 @@ router.get("/dashboard", verifyToken, async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const courses = (user.courseProgress || []).map((c) => {
+    // ✅ DEDUPLICATE AND SAVE: Permanently clean up duplicates in DB
+    const originalCount = (user.courseProgress || []).length;
+    const deduplicatedProgress = deduplicateCourseProgress(user.courseProgress || []);
+
+    if (deduplicatedProgress.length < originalCount) {
+      await User.findByIdAndUpdate(req.userId, { courseProgress: deduplicatedProgress });
+    }
+
+    const courses = deduplicatedProgress.map((c) => {
       const completed =
         c.totalSeconds > 0 && c.watchedSeconds >= c.totalSeconds * 0.9;
 
@@ -1373,7 +1384,7 @@ router.get("/dashboard", verifyToken, async (req, res) => {
       "This Week": 0,
     };
 
-    (user.courseProgress || []).forEach(course => {
+    deduplicatedProgress.forEach(course => {
       if (course.lastAccessed && course.watchedSeconds > 0) {
         const bucket = getWeekBucket(course.lastAccessed);
         weeklyActivity[bucket] += course.watchedSeconds;
@@ -1395,10 +1406,10 @@ router.get("/dashboard", verifyToken, async (req, res) => {
       courses,
       resume: resumeCourse
         ? {
-            courseId: resumeCourse.courseId,
-            channelId: resumeCourse.channelId,
-            videoId: null,
-          }
+          courseId: resumeCourse.courseId,
+          channelId: resumeCourse.channelId,
+          videoId: null,
+        }
         : null,
       weeklyActivity,
     });
@@ -1449,7 +1460,7 @@ router.get("/admin/user/:userId", async (req, res) => {
       watchedSeconds: course.watchedSeconds,
       totalSeconds: course.totalSeconds,
       completed: course.totalSeconds > 0 &&
-                 course.watchedSeconds >= course.totalSeconds,
+        course.watchedSeconds >= course.totalSeconds,
       videos: (course.videos || []).map(video => ({
         videoId: video.videoId,
         watchedSeconds: video.watchedSeconds,
@@ -1548,8 +1559,8 @@ router.post("/aptitude/submit", verifyToken, async (req, res) => {
       question: String(a.question || ""),
       options: Array.isArray(a.options)
         ? a.options.map((o) => ({
-            text: typeof o === "string" ? o : o.text,
-          }))
+          text: typeof o === "string" ? o : o.text,
+        }))
         : [],
       explanation: a.explanation || "",
       difficulty: a.difficulty || "medium",

@@ -1,284 +1,335 @@
-import React from 'react';
-import { 
-  Home, 
-  ChevronRight, 
-  BookOpen, 
-  SquareDot, 
-  Clock, 
-  CheckCircle, 
-  AlertCircle, 
-  ShoppingCart,
-  MessageSquare
-} from 'lucide-react';
-import { Doughnut } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import {
+  TrendingUp, TrendingDown, Users, MessageSquare,
+  ChevronRight, Home, Clock, CheckCircle, AlertCircle,
+  Eye, Gift, User, ArrowUp, ArrowDown, Activity,
+  BarChart3, LifeBuoy
+} from "lucide-react";
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import {
+  AreaChart, Area, BarChart, Bar, LineChart, Line,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell
+} from "recharts";
+import { Link } from 'react-router-dom';
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+const API_BASE = "http://localhost:5000/api";
 
-// --- Mock Data ---
-const mockDashboardData = {
-  supportRequests: {
-    total: 350,
-    description: "Total number of support requests that come in.",
-    open: 10,
-    running: 5,
-    solved: 3,
-    chartData: [10, 5, 3], // Simplified for example, actual chart would be more dynamic
-    color: "bg-gradient-to-r from-blue-400 to-blue-600"
-  },
-  agentResponse: {
-    total: 500,
-    description: "Total number of support requests that come in.",
-    open: 50,
-    running: 75,
-    solved: 30,
-    chartData: [50, 75, 30],
-    color: "bg-gradient-to-r from-green-400 to-green-600"
-  },
-  supportResolved: {
-    total: 800,
-    description: "Total number of support requests that come in.",
-    open: 80,
-    running: 60,
-    solved: 90,
-    chartData: [80, 60, 90],
-    color: "bg-gradient-to-r from-teal-400 to-teal-600"
-  },
-  customerSatisfaction: {
-    data: {
-      labels: ['Very Poor', 'Satisfied', 'Poor', 'Excellent'],
-      datasets: [
-        {
-          data: [12.5, 37.5, 25.0, 25.0], // Percentages
-          backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#10b981'], // Red, Orange, Blue, Green
-          hoverOffset: 4,
-          borderWidth: 0,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          position: 'right',
-          labels: {
-            color: 'rgb(55, 65, 81)'
-          }
-        },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              let label = context.label || '';
-              if (label) {
-                label += ': ';
-              }
-              if (context.parsed !== null) {
-                label += context.parsed + '%';
-              }
-              return label;
-            }
-          }
-        }
-      }
-    }
-  },
-  latestActivity: [
-    { type: 'pending', text: 'You have 3 pending tasks.', time: 'Just Now', icon: <AlertCircle className="w-4 h-4 text-orange-500" /> },
-    { type: 'newOrder', text: 'New order received', time: 'Just Now', icon: <ShoppingCart className="w-4 h-4 text-blue-500" /> },
-    { type: 'pending', text: 'You have 3 pending tasks.', time: 'Just Now', icon: <AlertCircle className="w-4 h-4 text-orange-500" /> },
-    { type: 'newOrder', text: 'New order received', time: 'Just Now', icon: <ShoppingCart className="w-4 h-4 text-blue-500" /> },
-    { type: 'pending', text: 'You have 3 pending tasks.', time: 'Just Now', icon: <AlertCircle className="w-4 h-4 text-orange-500" /> },
-    { type: 'newOrder', text: 'New order received', time: 'Just Now', icon: <ShoppingCart className="w-4 h-4 text-blue-500" /> },
-  ],
-  facebookSource: { pageProfile: 70, favorite: 85, likeStory: 50 },
-  twitterSource: { wallProfile: 60, favorite: 90, likeTweets: 45 },
-};
-
-// --- Glass Card Component ---
-const GlassCard = ({ children, className = "" }) => (
-  <div className={`bg-white/30 backdrop-blur-lg rounded-2xl shadow-lg border border-white/20 p-6 ${className}`}>
+// --- Glass Components ---
+const GlassCard = ({ title, children, info, className = "" }) => (
+  <div className={`bg-white/40 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/50 hover:shadow-2xl transition-all duration-300 ${className}`}>
+    {(title || info) && (
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-xl font-bold text-slate-800">{title}</h3>
+        {info && <span className="text-sm text-slate-600 font-medium px-3 py-1 bg-white/50 rounded-full">{info}</span>}
+      </div>
+    )}
     {children}
   </div>
 );
 
-// --- Breadcrumbs Component ---
+const StatCard = ({ title, value, change, trend, icon: Icon, color }) => (
+  <div className="bg-white/40 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/50 hover:shadow-2xl transition-all duration-300 group">
+    <div className="flex items-center justify-between mb-4">
+      <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${color} flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-300`}>
+        <Icon className="w-7 h-7 text-white" />
+      </div>
+      <div className={`flex items-center px-2.5 py-1 rounded-full text-sm font-bold ${trend === 'up' ? 'bg-emerald-100/50 text-emerald-700' : 'bg-rose-100/50 text-rose-700'}`}>
+        {trend === 'up' ? <ArrowUp className="w-4 h-4 mr-1" /> : <ArrowDown className="w-4 h-4 mr-1" />}
+        {change}
+      </div>
+    </div>
+    <div className="space-y-1">
+      <h3 className="text-3xl font-black text-slate-800 tracking-tight">{value}</h3>
+      <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">{title}</p>
+    </div>
+  </div>
+);
+
 const Breadcrumbs = () => (
-  <nav className="flex items-center text-sm text-gray-100 mb-6" aria-label="Breadcrumb">
+  <nav className="flex items-center text-sm mb-6" aria-label="Breadcrumb">
     <ol className="inline-flex items-center space-x-1 md:space-x-2">
-      <li className="inline-flex items-center">
-        <a href="#" className="inline-flex items-center text-gray-100 hover:text-white">
-          <Home className="w-4 h-4 mr-2" />
-          Home
-        </a>
+      <li className="inline-flex items-center text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer">
+        <Home className="w-4 h-4 mr-2" />
+        Home
       </li>
-      <li>
-        <div className="flex items-center">
-          <ChevronRight className="w-4 h-4" />
-          <a href="#" className="ml-1 text-gray-100 hover:text-white md:ml-2">Helpdesk</a>
-        </div>
+      <li className="flex items-center text-slate-400">
+        <ChevronRight className="w-4 h-4 mx-1" />
+        <span className="hover:text-indigo-600 transition-colors cursor-pointer">Helpdesk</span>
       </li>
-      <li aria-current="page">
-        <div className="flex items-center">
-          <ChevronRight className="w-4 h-4" />
-          <span className="ml-1 text-gray-300 md:ml-2">Dashboard</span>
-        </div>
+      <li className="flex items-center text-indigo-600 font-bold">
+        <ChevronRight className="w-4 h-4 mx-1" />
+        <span>Dashboard</span>
       </li>
     </ol>
   </nav>
 );
 
-// --- Stat Card Component ---
-const StatCard = ({ total, description, open, running, solved, color }) => (
-  <GlassCard className="col-span-1 flex flex-col justify-between">
-    <div>
-      <h2 className="text-3xl font-bold text-gray-900">{total}</h2>
-      <p className="text-gray-700 text-sm mt-1">{description}</p>
-    </div>
-    
-    {/* Placeholder for the chart wave */}
-    <div className={`w-full h-20 rounded-lg mt-4 ${color} flex items-end justify-around p-2 text-white text-xs font-semibold`}>
-      <div className="flex flex-col items-center">
-        <span>{open}</span>
-        <span>Open</span>
-      </div>
-      <div className="flex flex-col items-center">
-        <span>{running}</span>
-        <span>Running</span>
-      </div>
-      <div className="flex flex-col items-center">
-        <span>{solved}</span>
-        <span>Solved</span>
-      </div>
-    </div>
-  </GlassCard>
-);
-
-// --- Progress Bar Component ---
-const ProgressBar = ({ label, value, color }) => (
-  <div className="mb-4">
-    <p className="text-sm font-medium text-gray-800 mb-1">{label}</p>
-    <div className="w-full bg-gray-200 rounded-full h-2.5">
-      <div className={`${color} h-2.5 rounded-full`} style={{ width: `${value}%` }}></div>
-    </div>
-  </div>
-);
-
-// --- Main App Component ---
 export default function HDashboard() {
+  const [stats, setStats] = useState({
+    total: 0,
+    active: 0,
+    pending: 0,
+    closed: 0,
+    messagesToday: 0
+  });
+  const [latestActivity, setLatestActivity] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/chat/admin/stats`, { withCredentials: true });
+        if (res.data.success) {
+          setStats(res.data.stats);
+          setLatestActivity(res.data.latestConversations.map(conv => ({
+            id: conv.id,
+            userId: conv.userId, // Store the actual user ID
+            userName: conv.userName,
+            text: `Replied with: "${conv.lastMessage || '...'}"`,
+            time: new Date(conv.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            icon: <MessageSquare className="w-4 h-4 text-white" />,
+            color: "bg-blue-500"
+          })));
+        }
+      } catch (err) {
+        console.error("Failed to fetch dashboard stats", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  // Synthetic trend data for charts
+  const chatVolumeData = [
+    { name: 'Mon', volume: 45, resolved: 32 },
+    { name: 'Tue', volume: 52, resolved: 41 },
+    { name: 'Wed', volume: 38, resolved: 35 },
+    { name: 'Thu', volume: 65, resolved: 58 },
+    { name: 'Fri', volume: 48, resolved: 42 },
+    { name: 'Sat', volume: 24, resolved: 20 },
+    { name: 'Sun', volume: 30, resolved: 28 },
+  ];
+
+  const resolutionData = [
+    { name: 'Active', value: stats.active || 0, color: '#3b82f6' },
+    { name: 'Pending', value: stats.pending || 0, color: '#f59e0b' },
+    { name: 'Closed', value: stats.closed || 0, color: '#10b981' },
+  ];
+
+  const COLORS = ['#3b82f6', '#f59e0b', '#10b981'];
+
   const appStyle = {
     backgroundImage: "linear-gradient(to right top, #ff6b6b, #ffb347, #ffe780, #ffccb3, #ff8c8c)",
     backgroundSize: 'cover',
     backgroundPosition: 'center',
+    backgroundAttachment: 'fixed',
     minHeight: '100vh',
   };
 
   return (
-    <div style={appStyle} className="font-inter flex min-h-screen p-6">
-      <div className="flex-1 max-w-7xl mx-auto">
+    <div style={appStyle} className="font-inter flex flex-col min-h-screen p-8">
+      <div className="max-w-7xl mx-auto w-full">
         <Breadcrumbs />
-        <h1 className="text-4xl font-bold text-white mb-8">Dashboard</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-4xl font-black text-slate-800 drop-shadow-sm">Helpdesk Analytics</h1>
+          <div className="flex gap-3">
+            <button className="px-6 py-2.5 bg-white/60 backdrop-blur-md rounded-xl font-bold text-slate-700 shadow-md border border-white hover:bg-white transition-all">Refresh</button>
+            <button className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:scale-105 transition-all">Download Report</button>
+          </div>
+        </div>
 
-        {/* Top Stat Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <StatCard 
-            total={mockDashboardData.supportRequests.total}
-            description={mockDashboardData.supportRequests.description}
-            open={mockDashboardData.supportRequests.open}
-            running={mockDashboardData.supportRequests.running}
-            solved={mockDashboardData.supportRequests.solved}
-            color="bg-blue-500/80" // Using a solid color for the wave placeholder
+        {/* --- Top Metrics Grid --- */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatCard
+            title="Total Conversations"
+            value={stats.total}
+            change="+12.5%"
+            trend="up"
+            icon={Activity}
+            color="from-blue-500 to-indigo-600"
           />
-          <StatCard 
-            total={mockDashboardData.agentResponse.total}
-            description={mockDashboardData.agentResponse.description}
-            open={mockDashboardData.agentResponse.open}
-            running={mockDashboardData.agentResponse.running}
-            solved={mockDashboardData.agentResponse.solved}
-            color="bg-green-500/80"
+          <StatCard
+            title="Messages Today"
+            value={stats.messagesToday}
+            change="+18.2%"
+            trend="up"
+            icon={MessageSquare}
+            color="from-emerald-500 to-teal-600"
           />
-          <StatCard 
-            total={mockDashboardData.supportResolved.total}
-            description={mockDashboardData.supportResolved.description}
-            open={mockDashboardData.supportResolved.open}
-            running={mockDashboardData.supportResolved.running}
-            solved={mockDashboardData.supportResolved.solved}
-            color="bg-teal-500/80"
+          <StatCard
+            title="Active Chats"
+            value={stats.active}
+            change="-4.1%"
+            trend="down"
+            icon={User}
+            color="from-orange-500 to-rose-600"
+          />
+          <StatCard
+            title="Resolved Tickets"
+            value={stats.closed}
+            change="+23.5%"
+            trend="up"
+            icon={CheckCircle}
+            color="from-purple-500 to-pink-600"
           />
         </div>
 
-        {/* Mid Section: Customer Satisfaction & Latest Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <GlassCard className="col-span-1">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">Customer Satisfaction</h3>
-            <p className="text-sm text-gray-700 mb-4">
-              It takes continuous effort to maintain high customer satisfaction levels. Internal and external quality measures are often tied together. as the opinion... 
-              <a href="#" className="text-indigo-600 hover:underline ml-1">Learn more.</a>
-            </p>
-            <div className="flex flex-col md:flex-row items-center gap-6">
-              <div className="w-48 h-48 flex-shrink-0">
-                <Doughnut data={mockDashboardData.customerSatisfaction.data} options={mockDashboardData.customerSatisfaction.options} />
-              </div>
-              {/* Manual legend to match the screenshot style more closely */}
-              <div className="space-y-2 text-sm text-gray-700">
-                <div className="flex items-center"><span className="w-3 h-3 rounded-full bg-red-500 mr-2"></span>Very Poor (12.5%)</div>
-                <div className="flex items-center"><span className="w-3 h-3 rounded-full bg-orange-500 mr-2"></span>Satisfied (37.5%)</div>
-                <div className="flex items-center"><span className="w-3 h-3 rounded-full bg-blue-500 mr-2"></span>Poor (25.0%)</div>
-                <div className="flex items-center"><span className="w-3 h-3 rounded-full bg-green-500 mr-2"></span>Excellent (25.0%)</div>
-              </div>
+        {/* --- Main Analytics Section --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+          {/* Chat Volume Chart */}
+          <GlassCard title="Chat Volume vs Resolution" info="Last 7 Days" className="lg:col-span-2">
+            <div className="h-[350px] w-full mt-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chatVolumeData}>
+                  <defs>
+                    <linearGradient id="colorVol" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="colorRes" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#CBD5E1" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                  <Tooltip
+                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                  />
+                  <Area type="monotone" dataKey="volume" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorVol)" />
+                  <Area type="monotone" dataKey="resolved" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorRes)" />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           </GlassCard>
 
-          <GlassCard className="col-span-1">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold text-gray-900">Latest Activity</h3>
-              {/* <MoreVertical className="w-5 h-5 text-gray-500" /> */} {/* More icon, if needed */}
+          {/* Resolution Status Distribution */}
+          <GlassCard title="Status Distribution" info="Real-time">
+            <div className="h-[300px] w-full relative flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={resolutionData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={70}
+                    outerRadius={100}
+                    paddingAngle={8}
+                    dataKey="value"
+                  >
+                    {resolutionData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute flex flex-col items-center">
+                <span className="text-4xl font-black text-slate-800">{stats.total}</span>
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-tighter">Total</span>
+              </div>
             </div>
-            <div className="space-y-4">
-              {mockDashboardData.latestActivity.map((activity, index) => (
-                <div key={index} className="flex items-center justify-between text-gray-700">
+            <div className="space-y-3 mt-4">
+              {resolutionData.map((item) => (
+                <div key={item.name} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    {activity.icon}
-                    <span>{activity.text}</span>
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
+                    <span className="text-sm font-bold text-slate-600">{item.name}</span>
                   </div>
-                  <span className="text-xs text-gray-500">{activity.time}</span>
+                  <span className="text-sm font-black text-slate-800">{item.value}</span>
                 </div>
               ))}
             </div>
-            <button className="mt-6 w-full py-2 rounded-lg text-indigo-600 font-semibold bg-white/50 hover:bg-white/80 transition-all duration-300">
-              View all Feeds
-            </button>
           </GlassCard>
         </div>
 
-        {/* Bottom Section: Social Media Sources */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <GlassCard>
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">Facebook Source</h3>
-            <ProgressBar label="Page Profile" value={mockDashboardData.facebookSource.pageProfile} color="bg-blue-500" />
-            <ProgressBar label="Favorite" value={mockDashboardData.facebookSource.favorite} color="bg-red-500" />
-            <ProgressBar label="Like Story" value={mockDashboardData.facebookSource.likeStory} color="bg-orange-500" />
+        {/* --- Bottom Section: Activity & Quick Actions --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Activity Feed */}
+          <GlassCard title="Latest Conversations" info="Live Feed">
+            <div className="space-y-6">
+              {loading ? (
+                <div className="flex flex-col items-center justify-center py-10 gap-3">
+                  <Activity className="w-8 h-8 text-indigo-600 animate-spin" />
+                  <p className="text-slate-500 font-medium">Fetching live updates...</p>
+                </div>
+              ) : latestActivity.length === 0 ? (
+                <p className="text-slate-500 text-center py-10 font-medium italic">No recent messages.</p>
+              ) : (
+                latestActivity.map((activity, index) => (
+                  <div
+                    key={index}
+                    className="flex gap-4 group cursor-pointer hover:translate-x-1 transition-transform"
+                    onClick={() => activity.userId && navigate(`/help-desk/ticket/details?userId=${activity.userId}`)}
+                  >
+                    <div className={`w-12 h-12 rounded-2xl ${activity.color} flex items-center justify-center shadow-lg shrink-0`}>
+                      {activity.icon}
+                    </div>
+                    <div className="flex-1 border-b border-slate-200 pb-4">
+                      <div className="flex justify-between items-start mb-1">
+                        <h4 className="font-bold text-slate-800">{activity.userName}</h4>
+                        <span className="text-xs font-semibold text-slate-400">{activity.time}</span>
+                      </div>
+                      <p className="text-sm text-slate-600 line-clamp-1">{activity.text}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            <Link
+              to="/help-desk/ticket/list"
+              className="mt-8 w-full py-4 bg-white/50 backdrop-blur-md rounded-2xl text-indigo-600 font-black uppercase text-sm tracking-widest hover:bg-white hover:text-indigo-700 transition-all border border-white flex justify-center items-center"
+            >
+              Manage All Tickets
+            </Link>
           </GlassCard>
 
-          <GlassCard>
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">Twitter Source</h3>
-            <ProgressBar label="Wall Profile" value={mockDashboardData.twitterSource.wallProfile} color="bg-blue-500" />
-            <ProgressBar label="Favorite" value={mockDashboardData.twitterSource.favorite} color="bg-red-500" />
-            <ProgressBar label="Like Tweets" value={mockDashboardData.twitterSource.likeTweets} color="bg-orange-500" />
-          </GlassCard>
-
-          {/* Bottom right card: Tickets Answered */}
-          <GlassCard className="flex flex-col items-start justify-center p-6">
-            <BookOpen className="w-12 h-12 text-indigo-600 mb-4" />
-            <h3 className="text-4xl font-bold text-gray-900">379</h3>
-            <p className="text-gray-700 mt-1">Tickets Answered</p>
-          </GlassCard>
+          {/* Quick Stats Grid */}
+          <div className="flex flex-col gap-6">
+            <div className="grid grid-cols-2 gap-6 flex-1">
+              <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[2rem] p-8 text-white shadow-2xl relative overflow-hidden group">
+                <div className="absolute -right-4 -bottom-4 w-32 h-32 bg-white/10 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
+                <LifeBuoy className="w-12 h-12 mb-6 opacity-80" />
+                <h3 className="text-5xl font-black mb-1">{stats.closed}</h3>
+                <p className="text-sm font-bold opacity-80 uppercase tracking-widest">Total Resolved</p>
+              </div>
+              <div className="bg-gradient-to-br from-orange-400 to-rose-500 rounded-[2rem] p-8 text-white shadow-2xl relative overflow-hidden group">
+                <div className="absolute -right-4 -bottom-4 w-32 h-32 bg-white/10 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
+                <BarChart3 className="w-12 h-12 mb-6 opacity-80" />
+                <h3 className="text-5xl font-black mb-1">92%</h3>
+                <p className="text-sm font-bold opacity-80 uppercase tracking-widest">Efficiency Rate</p>
+              </div>
+            </div>
+            <GlassCard title="System Wellness" className="flex-1">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm font-bold text-slate-700">
+                    <span>API Uptime</span>
+                    <span>99.9%</span>
+                  </div>
+                  <div className="w-full bg-slate-200 h-3 rounded-full overflow-hidden">
+                    <div className="bg-indigo-500 h-full w-[99.9%] rounded-full shadow-sm"></div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm font-bold text-slate-700">
+                    <span>Avg Response Time</span>
+                    <span>2.4m</span>
+                  </div>
+                  <div className="w-full bg-slate-200 h-3 rounded-full overflow-hidden">
+                    <div className="bg-emerald-500 h-full w-[85%] rounded-full shadow-sm"></div>
+                  </div>
+                </div>
+              </div>
+            </GlassCard>
+          </div>
         </div>
       </div>
-      
-      {/* Placeholder for the purple button in the corner */}
-      <button className="fixed bottom-6 right-6 bg-indigo-600 text-white p-4 rounded-full shadow-lg hover:bg-indigo-700 transition-all">
-          <MessageSquare className="w-6 h-6" />
-      </button>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import express from "express";
 import Notification from "../Models/Notification.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 import { io } from "../server.js";
+import { deduplicateNotifications } from "../Utils/notificationHelper.js";
 
 const router = express.Router();
 
@@ -14,8 +15,9 @@ router.get("/recent", verifyToken, async (req, res) => {
   try {
     const notifications = await Notification.find({ userId: req.userId })
       .sort({ createdAt: -1 })
-      .limit(2); // Only 2 most recent
-    res.json(notifications);
+      .limit(10); // Fetch more to allow for deduplication
+
+    res.json(deduplicateNotifications(notifications).slice(0, 2));
   } catch (error) {
     console.error("Error fetching recent notifications:", error);
     res.status(500).json({ message: "Error fetching recent notifications" });
@@ -30,8 +32,9 @@ router.get("/", verifyToken, async (req, res) => {
   try {
     const notifications = await Notification.find({ userId: req.userId })
       .sort({ createdAt: -1 })
-      .limit(50); // Increased limit for dashboard
-    res.json(notifications);
+      .limit(100); // Fetch more to allow for deduplication
+
+    res.json(deduplicateNotifications(notifications).slice(0, 50));
   } catch (error) {
     console.error("Error fetching notifications:", error);
     res.status(500).json({ message: "Error fetching notifications" });
@@ -44,11 +47,13 @@ router.get("/", verifyToken, async (req, res) => {
  */
 router.get("/unread-count", verifyToken, async (req, res) => {
   try {
-    const count = await Notification.countDocuments({
+    const unreadNotifications = await Notification.find({
       userId: req.userId,
       isRead: false,
     });
-    res.json({ count });
+
+    const deduplicated = deduplicateNotifications(unreadNotifications);
+    res.json({ count: deduplicated.length });
   } catch (error) {
     console.error("Error fetching unread count:", error);
     res.status(500).json({ message: "Error fetching unread count" });
@@ -65,9 +70,9 @@ router.post("/send", verifyToken, async (req, res) => {
     const { userId, title, message, type } = req.body;
 
     if (!userId || !title || !message) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "userId, title, and message are required" 
+      return res.status(400).json({
+        success: false,
+        message: "userId, title, and message are required"
       });
     }
 
@@ -79,17 +84,17 @@ router.post("/send", verifyToken, async (req, res) => {
       isRead: false,
     });
 
-    io.to(`user_${userId}`).emit("NEW_NOTIFICATION", notification);
+    io.to(userId.toString()).emit("NEW_NOTIFICATION", notification);
 
-    res.status(201).json({ 
-      success: true, 
-      notification 
+    res.status(201).json({
+      success: true,
+      notification
     });
   } catch (error) {
     console.error("Error sending notification:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Error sending notification" 
+    res.status(500).json({
+      success: false,
+      message: "Error sending notification"
     });
   }
 });
@@ -101,28 +106,28 @@ router.post("/send", verifyToken, async (req, res) => {
 router.patch("/:id/read", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const notification = await Notification.findOne({
       _id: id,
       userId: req.userId
     });
-    
+
     if (!notification) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "Notification not found" 
+      return res.status(404).json({
+        success: false,
+        message: "Notification not found"
       });
     }
-    
+
     notification.isRead = true;
     await notification.save();
-    
+
     res.json({ success: true });
   } catch (error) {
     console.error("Error marking notification as read:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Error updating notification" 
+    res.status(500).json({
+      success: false,
+      message: "Error updating notification"
     });
   }
 });
@@ -140,9 +145,9 @@ router.patch("/read-all", verifyToken, async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error("Error marking all as read:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Error updating notifications" 
+    res.status(500).json({
+      success: false,
+      message: "Error updating notifications"
     });
   }
 });
@@ -154,25 +159,25 @@ router.patch("/read-all", verifyToken, async (req, res) => {
 router.delete("/:id", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const notification = await Notification.findOneAndDelete({
       _id: id,
       userId: req.userId
     });
-    
+
     if (!notification) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "Notification not found" 
+      return res.status(404).json({
+        success: false,
+        message: "Notification not found"
       });
     }
-    
+
     res.json({ success: true });
   } catch (error) {
     console.error("Error deleting notification:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Error deleting notification" 
+    res.status(500).json({
+      success: false,
+      message: "Error deleting notification"
     });
   }
 });

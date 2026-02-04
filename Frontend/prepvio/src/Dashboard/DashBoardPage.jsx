@@ -476,6 +476,192 @@ const AllCoursesModal = ({ courses, onClose, onCourseClick }) => {
   );
 };
 
+// --- ACHIEVEMENTS MODAL ---
+const AchievementsModal = ({ courses, onClose }) => {
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleEsc);
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      window.removeEventListener("keydown", handleEsc);
+      document.body.style.overflow = "unset";
+    };
+  }, [onClose]);
+
+  // Generate all achievements from courses (REVERSED - most recent first)
+  const allAchievements = courses
+    .filter(course => course.watchedSeconds > 0)
+    .map(course => {
+      const progress = course.totalSeconds > 0
+        ? Math.round((course.watchedSeconds / course.totalSeconds) * 100)
+        : 0;
+
+      if (course.completed) {
+        return {
+          title: `Completed ${course.courseTitle || 'Course'}`,
+          desc: `by ${course.channelName || 'Unknown'}`,
+          icon: CheckCircle,
+          color: 'bg-green-50',
+          iconColor: 'text-green-600',
+          date: new Date().toLocaleDateString(),
+        };
+      }
+
+      return {
+        title: `Started ${course.courseTitle || 'Course'}`,
+        desc: `${progress}% complete • ${course.channelName || 'Unknown'}`,
+        icon: BookOpen,
+        color: 'bg-blue-50',
+        iconColor: 'text-blue-600',
+        date: new Date().toLocaleDateString(),
+      };
+    })
+    .reverse();
+
+  // Add milestone achievements
+  const completedCount = courses.filter(c => c.completed).length;
+  const milestones = [];
+  
+  if (completedCount >= 10) {
+    milestones.push({
+      title: 'Master Learner',
+      desc: 'Completed 10 courses',
+      icon: Award,
+      color: 'bg-indigo-50',
+      iconColor: 'text-indigo-600',
+      date: 'Achievement unlocked',
+    });
+  }
+  
+  if (completedCount >= 5) {
+    milestones.push({
+      title: 'Learning Enthusiast',
+      desc: 'Completed 5 courses',
+      icon: Award,
+      color: 'bg-purple-50',
+      iconColor: 'text-purple-600',
+      date: 'Achievement unlocked',
+    });
+  }
+  
+  if (completedCount >= 1) {
+    milestones.push({
+      title: 'First Course Completed',
+      desc: 'Started your learning journey',
+      icon: Award,
+      color: 'bg-[#D4F478]',
+      iconColor: 'text-black',
+      date: 'Achievement unlocked',
+    });
+  }
+
+  const allTrophies = [...milestones, ...allAchievements];
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-sm p-4"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          onClick={(e) => e.stopPropagation()}
+          className="max-w-2xl w-full bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 flex flex-col max-h-[85vh] overflow-hidden"
+        >
+          {/* Header */}
+          <div className="p-6 md:p-8 border-b border-gray-100 flex justify-between items-center shrink-0">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-[#D4F478] rounded-2xl flex items-center justify-center shadow-sm">
+                <Award className="w-7 h-7 text-black" />
+              </div>
+              <div>
+                <h2 className="text-2xl md:text-3xl font-black text-gray-900">Your Achievements</h2>
+                <p className="text-sm text-gray-500 font-medium mt-1">
+                  {allTrophies.length} achievement{allTrophies.length !== 1 ? 's' : ''} unlocked
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-500" />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 md:p-8 overflow-y-auto">
+            {allTrophies.length > 0 ? (
+              <div className="space-y-3">
+                {allTrophies.map((achievement, idx) => {
+                  const Icon = achievement.icon;
+                  return (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      whileHover={{ scale: 1.01, x: 4 }}
+                      className="bg-white p-5 rounded-2xl border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`w-14 h-14 ${achievement.color} rounded-2xl flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform`}>
+                          <Icon className={`w-7 h-7 ${achievement.iconColor}`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-gray-900 text-base mb-1 group-hover:text-black transition-colors">
+                            {achievement.title}
+                          </h4>
+                          <p className="text-sm text-gray-500 font-medium">
+                            {achievement.desc}
+                          </p>
+                        </div>
+                        <span className="text-xs text-gray-400 font-bold uppercase tracking-wide shrink-0">
+                          {achievement.date}
+                        </span>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Award className="w-10 h-10 text-gray-300" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">No Achievements Yet</h3>
+                <p className="text-gray-500 text-sm font-medium">
+                  Start learning to unlock achievements! 🚀
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="p-6 md:p-8 pt-0 shrink-0">
+            <div className="bg-[#FDFBF9] p-4 rounded-2xl border border-gray-100 flex items-center gap-3">
+              <div className="w-10 h-10 bg-[#D4F478] rounded-xl flex items-center justify-center shrink-0">
+                <Sparkles className="w-5 h-5 text-black" />
+              </div>
+              <p className="text-xs text-gray-600 font-medium">
+                Keep learning to unlock more achievements and build your collection!
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user, refreshUser } = useAuthStore();
@@ -483,6 +669,7 @@ export default function DashboardPage() {
   const [quote, setQuote] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [showAllCourses, setShowAllCourses] = useState(false);
+  const [showAchievements, setShowAchievements] = useState(false);
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -709,18 +896,6 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="relative hidden md:block">
-              <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search courses..."
-                className="bg-white border border-gray-200 pl-10 pr-4 py-2.5 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-black/5 w-64 shadow-sm"
-              />
-            </div>
-            <button className="w-11 h-11 bg-white rounded-xl border border-gray-200 flex items-center justify-center text-gray-500 hover:text-black hover:shadow-md transition-all relative">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-3 right-3 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
             <div
               onClick={() => setShowModal(true)}
               className="flex items-center gap-3 bg-white pl-2 pr-4 py-1.5 rounded-full border border-gray-200 shadow-sm cursor-pointer hover:shadow-md transition-all"
@@ -741,6 +916,7 @@ export default function DashboardPage() {
 
       {showModal && <DashboardModal onClose={() => setShowModal(false)} />}
       {showAllCourses && <AllCoursesModal courses={courses} onClose={() => setShowAllCourses(false)} onCourseClick={handleCourseClick} />}
+      {showAchievements && <AchievementsModal courses={courses} onClose={() => setShowAchievements(false)} />}
 
       <main className="max-w-[1600px] mx-auto p-4 md:p-8 space-y-8">
 
@@ -870,11 +1046,11 @@ export default function DashboardPage() {
                   )}
                 </div>
                 <button
-                  onClick={() => navigate("/achievements")}
-                  className="w-full mt-6 py-3 bg-[#D4F478] text-black font-bold rounded-xl text-sm hover:bg-white transition-colors"
-                >
-                  View All Trophies
-                </button>
+  onClick={() => setShowAchievements(true)}
+  className="w-full mt-6 py-3 bg-[#D4F478] text-black font-bold rounded-xl text-sm hover:bg-white transition-colors"
+>
+  View All Achievements
+</button>
               </div>
             </motion.div>
 

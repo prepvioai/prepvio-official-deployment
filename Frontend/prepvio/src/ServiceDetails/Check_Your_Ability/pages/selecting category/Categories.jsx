@@ -360,7 +360,7 @@ const Categories = () => {
                 <div className="pt-4 border-t border-gray-200">
                   <p className="text-xs text-gray-400 font-medium">
                     {isFreePlan 
-                      ? "✨ Unlock unlimited mock interviews & detailed feedback"
+                      ? "✨ Unlock mock interviews & detailed feedback"
                       : "💳 Get more credits to continue practicing"
                     }
                   </p>

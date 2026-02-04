@@ -648,14 +648,17 @@ const InterviewPreview = () => {
                                             whileHover={{ scale: 1.02 }}
                                             whileTap={{ scale: 0.98 }}
                                             onClick={() => {
-                                                // ✅ Gating Logic: Block if (Basic OR Pro Access) AND no promo code used AND not on Free Plan
-                                                const isBasicOrPro = user?.subscription?.planId === 'monthly' || user?.subscription?.planId === 'premium';
-                                                const isFreePlan = user?.subscription?.planId === 'free';
-                                                const hasUsedPromo = user?.payments?.some(p => p.promoCode && p.status === 'success');
-
-                                                if (isBasicOrPro && !hasUsedPromo && !isFreePlan) {
+                                                // ✅ Use the plan from the interview session, not current user plan
+                                                const sessionPlanId = interviewData.planId || 'free';
+                                                
+                                                // ✅ Free plan gets FULL ACCESS, Basic plan is BLOCKED
+                                                const isBasicPlan = sessionPlanId === 'monthly';
+                                                
+                                                // Block Basic plan from highlights (they only get PDF)
+                                                if (isBasicPlan) {
                                                     setShowUpgradeModal(true);
                                                 } else {
+                                                    // Free, Pro Access, and Premium Plan can access highlights
                                                     setConversationTab("highlights");
                                                 }
                                             }}

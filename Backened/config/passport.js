@@ -25,6 +25,7 @@ passport.use(
             googleId: profile.id,
             password: crypto.randomBytes(32).toString("hex"), // dummy
           });
+          user.isNewUser = true; // ✅ Mark as new user for welcome notification
         }
 
         // 🚫 Prevent password login for Google users
