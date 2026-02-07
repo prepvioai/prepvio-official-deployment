@@ -734,37 +734,37 @@ function DynamicModel({ speechText, onSpeechEnd, ...props }) {
   const offsetX = useRef(Math.random() * 0.05);
 
   useFrame((state) => {
-  // Only animate mouth (lip sync), NO head movement
-  if (!speechText || chars.length === 0) {
-    // Reset to neutral position when not speaking
+    // Only animate mouth (lip sync), NO head movement
+    if (!speechText || chars.length === 0) {
+      // Reset to neutral position when not speaking
+      if (headBoneRef.current) {
+        headBoneRef.current.rotation.y = 0;
+        headBoneRef.current.rotation.x = 0;
+      }
+      if (meshRef.current?.morphTargetInfluences) {
+        meshRef.current.morphTargetInfluences.fill(0);
+      }
+      return;
+    }
+
+    // Keep head completely still - remove all head rotation
     if (headBoneRef.current) {
       headBoneRef.current.rotation.y = 0;
       headBoneRef.current.rotation.x = 0;
     }
+
+    // Only do lip sync animation
     if (meshRef.current?.morphTargetInfluences) {
-      meshRef.current.morphTargetInfluences.fill(0);
+      const influences = meshRef.current.morphTargetInfluences;
+      influences.fill(0);
+      const char = chars[currentCharIndex];
+      if (char) {
+        const viseme = letterToViseme[char] || 'oh';
+        const index = morphKeys[viseme];
+        if (index !== undefined) influences[index] = 0.8;
+      }
     }
-    return;
-  }
-
-  // Keep head completely still - remove all head rotation
-  if (headBoneRef.current) {
-    headBoneRef.current.rotation.y = 0;
-    headBoneRef.current.rotation.x = 0;
-  }
-
-  // Only do lip sync animation
-  if (meshRef.current?.morphTargetInfluences) {
-    const influences = meshRef.current.morphTargetInfluences;
-    influences.fill(0);
-    const char = chars[currentCharIndex];
-    if (char) {
-      const viseme = letterToViseme[char] || 'oh';
-      const index = morphKeys[viseme];
-      if (index !== undefined) influences[index] = 0.8;
-    }
-  }
-});
+  });
 
   if (!nodes?.rp_carla_rigged_001_geo) return null;
 
@@ -2156,6 +2156,25 @@ Key points:
           <div className="lg:col-span-2 space-y-8">
             {/* Video Container */}
             <motion.div variants={itemUpVariants} className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-gray-900 to-black shadow-xl border border-gray-800">
+              {/* Stage Badge */}
+              <div className="absolute top-6 right-6 z-20 bg-black/50 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full flex items-center gap-3">
+                <div className="flex flex-col items-end">
+                  <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Current Round</span>
+                  <span className="text-sm font-bold text-white tracking-wide">
+                    {{
+                      intro: "Introduction",
+                      transition: "Pre-Technical",
+                      technical: "Technical Deep-Dive",
+                      coding: "Coding Challenge",
+                      final: "Final Discussion"
+                    }[interviewStage] || "Interview"}
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-[#D4F478]/20 flex items-center justify-center border border-[#D4F478]/30">
+                  <Briefcase size={18} className="text-[#D4F478]" />
+                </div>
+              </div>
+
               {isPreview ? (
                 <div className="w-full h-[500px] bg-gradient-to-br from-gray-800 to-black flex items-center justify-center">
                   <p className="text-gray-400">Video disabled in preview</p>
@@ -2258,9 +2277,9 @@ Key points:
                 bg-gradient-to-r from-[#D4F478]/20 to-emerald-500/20 
                 backdrop-blur-lg text-white px-7 py-2 rounded-full 
                 text-sm font-medium border border-[#D4F478]/30">
-  <span className="font-bold">Ms. Sira</span>
-  <span className="text-[#D4F478] ml-2">• AI Interviewer</span>
-</div>
+                <span className="font-bold">Ms. Sira</span>
+                <span className="text-[#D4F478] ml-2">• AI Interviewer</span>
+              </div>
 
             </motion.div>
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
+import { jsPDF } from "jspdf";
 import {
   Check,
   X,
@@ -16,7 +17,8 @@ import {
   Sparkles,
   Calendar,
   TrendingUp,
-  AlertCircle
+  AlertCircle,
+  FileText
 } from "lucide-react";
 import { useAuthStore } from "../store/authstore";
 
@@ -115,7 +117,9 @@ function Payment() {
   const [isCalculatingPrice, setIsCalculatingPrice] = useState(false);
   const [showPromoInput, setShowPromoInput] = useState(false);
   const [orderDetails, setOrderDetails] = useState(null);
-  const { refreshUser } = useAuthStore();
+  const [paymentHistory, setPaymentHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const { user, refreshUser } = useAuthStore();
 
   // ✅ Fetch current subscription
   useEffect(() => {
@@ -136,9 +140,30 @@ function Payment() {
     };
 
     fetchSubscription();
+    fetchSubscription();
   }, [paymentSuccess]);
 
-  // Validate promo code
+  // Fetch Payment History
+  useEffect(() => {
+    if (activeTab === 'paid-bills') {
+      const fetchHistory = async () => {
+        try {
+          setHistoryLoading(true);
+          const res = await axios.get("/api/payment/history", { withCredentials: true });
+          if (res.data.success) {
+            setPaymentHistory(res.data.history);
+          }
+        } catch (err) {
+          console.error("Failed to fetch payment history", err);
+        } finally {
+          setHistoryLoading(false);
+        }
+      };
+
+      fetchHistory();
+    }
+  }, [activeTab]);
+
   const validatePromoCode = async (planId) => {
     if (!promoCode.trim()) {
       setPromoValidation(null);
@@ -183,6 +208,103 @@ function Payment() {
     } finally {
       setIsValidating(false);
     }
+  };
+
+  // Generate and Download Invoice
+  const handleDownloadInvoice = (payment) => {
+    const doc = new jsPDF();
+
+    // -- Styling Constants --
+    const primaryColor = [26, 26, 26]; // #1A1A1A (Black)
+    const accentColor = [212, 244, 120]; // #D4F478 (Lime)
+    const grayColor = [107, 114, 128]; // Gray-500
+
+    // -- Header --
+    doc.setFillColor(...primaryColor);
+    doc.rect(0, 0, 210, 40, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.setFont("helvetica", "bold");
+    doc.text("PREPVIO", 20, 25);
+
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text("INVOICE", 180, 25, { align: "right" });
+
+    // -- Invoice Details --
+    doc.setTextColor(...primaryColor);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text("BILLED TO:", 20, 60);
+
+    doc.setFont("helvetica", "normal");
+    doc.text(user?.name || "Valued Customer", 20, 66);
+    doc.text(user?.email || "", 20, 72);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("INVOICE DETAILS:", 120, 60);
+
+    doc.setFont("helvetica", "normal");
+    const date = new Date(payment.paidAt || payment.updatedAt).toLocaleDateString('en-IN', {
+      day: 'numeric', month: 'short', year: 'numeric'
+    });
+
+    doc.text(`Invoice ID:`, 120, 66);
+    doc.text(`${payment.orderId.split('_')[1] || payment.orderId}`, 160, 66);
+
+    doc.text(`Date:`, 120, 72);
+    doc.text(`${date}`, 160, 72);
+
+    doc.text(`Status:`, 120, 78);
+    doc.setTextColor(0, 128, 0); // Green
+    doc.text(`PAID`, 160, 78);
+
+    // -- Table --
+    doc.setTextColor(...primaryColor);
+    const startY = 100;
+
+    // Table Header
+    doc.setFillColor(245, 245, 245);
+    doc.rect(20, startY, 170, 10, 'F');
+    doc.setFont("helvetica", "bold");
+    doc.text("DESCRIPTION", 25, startY + 7);
+    doc.text("AMOUNT (INR)", 185, startY + 7, { align: "right" });
+
+    // Table Content
+    const planName = payment.planId === 'monthly' ? 'Basic Plan' :
+      payment.planId === 'premium' ? 'Pro Access' :
+        payment.planId === 'yearly' ? 'Premium Plan' : payment.planId;
+
+    doc.setFont("helvetica", "normal");
+    doc.text(`${planName} Subscription`, 25, startY + 20);
+    doc.text(`Rs. ${payment.amount}`, 185, startY + 20, { align: "right" });
+
+    if (payment.promoCode) {
+      doc.setFontSize(9);
+      doc.setTextColor(...grayColor);
+      doc.text(`Promo Code Applied: ${payment.promoCode}`, 25, startY + 26);
+    }
+
+    // -- Total --
+    doc.setDrawColor(200, 200, 200);
+    doc.line(20, startY + 35, 190, startY + 35);
+
+    doc.setFontSize(12);
+    doc.setTextColor(...primaryColor);
+    doc.setFont("helvetica", "bold");
+    doc.text("TOTAL", 140, startY + 45);
+    doc.text(`Rs. ${payment.amount}`, 185, startY + 45, { align: "right" });
+
+    // -- Footer --
+    doc.setFontSize(9);
+    doc.setTextColor(...grayColor);
+    doc.setFont("helvetica", "normal");
+    doc.text("Thank you for choosing PrepVio for your interview preparation.", 105, 270, { align: "center" });
+    doc.text("For any queries, please verify at prepvio.in", 105, 275, { align: "center" });
+
+    // Save
+    doc.save(`Prepvio_Invoice_${payment.orderId}.pdf`);
   };
 
   // Razorpay Payment Handler
@@ -364,6 +486,15 @@ function Payment() {
                 Current Plan
               </button>
             )}
+            <button
+              onClick={() => setActiveTab('paid-bills')}
+              className={`px-6 py-3 rounded-xl font-bold text-sm transition-all cursor-pointer ${activeTab === 'paid-bills'
+                ? 'bg-[#D4F478] text-black shadow-lg'
+                : 'text-gray-600 hover:text-gray-900'
+                }`}
+            >
+              Paid Bills
+            </button>
           </div>
         </motion.div>
 
@@ -380,15 +511,20 @@ function Payment() {
             {activeTab === 'pricing' ? (
               <>Invest in your <br className="hidden md:block" />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Future Today.</span></>
-            ) : (
+            ) : activeTab === 'current-plan' ? (
               <>Your <br className="hidden md:block" />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600">Active Plan</span></>
+            ) : (
+              <>Payment <br className="hidden md:block" />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-600">History</span></>
             )}
           </h1>
           <p className="text-gray-500 text-lg md:text-xl font-medium max-w-xl mx-auto">
             {activeTab === 'pricing'
               ? 'Unlock access to AI-powered interview prep and career-boosting tools.'
-              : 'Manage your subscription and track your remaining credits.'}
+              : activeTab === 'current-plan'
+                ? 'Manage your subscription and track your remaining credits.'
+                : 'View your complete payment history and invoices.'}
           </p>
         </motion.div>
 
@@ -570,6 +706,132 @@ function Payment() {
                   </motion.div>
                 )}
               </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ✅ PAID BILLS TAB */}
+        {activeTab === 'paid-bills' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-5xl mx-auto"
+          >
+            <div className="bg-white rounded-[2.5rem] shadow-xl border border-gray-200 overflow-hidden">
+              <div className="p-8 border-b border-gray-100 bg-gray-50/50">
+                <h3 className="text-2xl font-black text-gray-900 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  Payment History
+                </h3>
+              </div>
+
+              {historyLoading ? (
+                <div className="p-12 text-center">
+                  <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                  <p className="text-gray-500 font-medium">Loading your payment history...</p>
+                </div>
+              ) : paymentHistory.length === 0 ? (
+                <div className="p-20 text-center">
+                  <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <FileText className="w-10 h-10 text-gray-300" />
+                  </div>
+                  <h4 className="text-xl font-bold text-gray-900 mb-2">No Payments Yet</h4>
+                  <p className="text-gray-500 max-w-xs mx-auto mb-8">
+                    You haven't made any payments yet. Choose a plan to get started!
+                  </p>
+                  <button
+                    onClick={() => setActiveTab('pricing')}
+                    className="bg-[#D4F478] text-black font-bold px-6 py-3 rounded-xl hover:scale-105 transition-transform"
+                  >
+                    View Plans
+                  </button>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50/50">
+                      <tr>
+                        <th className="px-8 py-5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
+                        <th className="px-8 py-5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Plan</th>
+                        <th className="px-8 py-5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Amount</th>
+                        <th className="px-8 py-5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                        <th className="px-8 py-5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Receipt ID</th>
+                        <th className="px-8 py-5 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Invoice</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {paymentHistory.map((payment) => (
+                        <tr key={payment._id || payment.orderId} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="px-8 py-6 whitespace-nowrap">
+                            <div className="font-bold text-gray-900">
+                              {new Date(payment.paidAt || payment.updatedAt).toLocaleDateString('en-IN', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric'
+                              })}
+                            </div>
+                            <div className="text-xs text-gray-500 font-medium mt-0.5">
+                              {new Date(payment.paidAt || payment.updatedAt).toLocaleTimeString('en-IN', {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </div>
+                          </td>
+                          <td className="px-8 py-6 whitespace-nowrap">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${payment.planId === 'premium' ? 'bg-[#D4F478] text-black' :
+                                payment.planId === 'yearly' ? 'bg-orange-100 text-orange-600' :
+                                  'bg-blue-100 text-blue-600'
+                                }`}>
+                                {payment.planId === 'premium' ? <Crown className="w-4 h-4" /> :
+                                  payment.planId === 'yearly' ? <Rocket className="w-4 h-4" /> :
+                                    <Zap className="w-4 h-4" />}
+                              </div>
+                              <span className="font-bold text-gray-900 capitalize">
+                                {payment.planId === 'monthly' ? 'Basic Plan' :
+                                  payment.planId === 'premium' ? 'Pro Access' :
+                                    payment.planId === 'yearly' ? 'Premium Plan' : payment.planId}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-8 py-6 whitespace-nowrap">
+                            <div className="font-black text-gray-900">
+                              ₹{payment.amount}
+                            </div>
+                            {payment.promoCode && (
+                              <div className="text-xs text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded-full inline-block mt-1">
+                                {payment.promoCode} APPLIED
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-8 py-6 whitespace-nowrap">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
+                              <CheckCircle2 className="w-3 h-3" />
+                              Paid
+                            </span>
+                          </td>
+                          <td className="px-8 py-6 whitespace-nowrap">
+                            <span className="font-mono text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md select-all">
+                              {payment.orderId.split('_')[1] || payment.orderId}
+                            </span>
+                          </td>
+                          <td className="px-8 py-6 whitespace-nowrap text-right">
+                            <button
+                              onClick={() => handleDownloadInvoice(payment)}
+                              className="text-sm font-bold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center justify-end gap-1 ml-auto group"
+                            >
+                              Download
+                              <FileText className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </motion.div>
         )}

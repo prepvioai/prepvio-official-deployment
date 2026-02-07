@@ -4,6 +4,8 @@ import crypto from "crypto";
 import { PLANS } from "../config/plans.js";
 import { User } from "../models/User.js";
 import { verifyToken } from "../middleware/verifytoken.js";
+import Notification from "../Models/Notification.js";
+import { io } from "../server.js";
 
 const router = express.Router();
 
@@ -287,6 +289,33 @@ router.post("/verify", verifyToken, async (req, res) => {
       );
     }
 
+    // --- PURCHASE NOTIFICATION ---
+    try {
+      const notificationTitle = "Subscription Activated";
+      const notificationMessage = `Your ${plan.name} subscription has been successfully activated. Enjoy your interview prep!`;
+
+      // Create notification in DB
+      const newNotification = await Notification.create({
+        userId,
+        title: notificationTitle,
+        message: notificationMessage,
+        type: "payment",
+        isRead: false,
+        metadata: {
+          planId: payment.planId,
+          orderId: razorpay_order_id,
+          amount: payment.amount
+        }
+      });
+
+      // Emit real-time notification
+      io.to(userId.toString()).emit("NEW_NOTIFICATION", newNotification);
+
+    } catch (notifErr) {
+      console.error("Error sending purchase notification:", notifErr);
+      // Proceed without failing the request
+    }
+
     const updatedUser = await User.findById(userId);
 
     // In paymentRoute.js, inside the /verify route, replace the final res.json() with:
@@ -411,6 +440,29 @@ router.post("/consume-interview", verifyToken, async (req, res) => {
   } catch (err) {
     console.error("Consume interview error:", err);
     res.status(500).json({ message: "Failed to consume interview credit" });
+  }
+});
+
+/* ===========================
+   GET PAYMENT HISTORY
+=========================== */
+router.get("/history", verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Filter for successful payments and sort by date (newest first)
+    const history = user.payments
+      .filter(p => p.status === 'success')
+      .sort((a, b) => new Date(b.paidAt) - new Date(a.paidAt));
+
+    res.json({ success: true, history });
+  } catch (err) {
+    console.error("Error fetching payment history:", err);
+    res.status(500).json({ message: "Failed to fetch payment history" });
   }
 });
 
