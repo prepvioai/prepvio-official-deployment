@@ -2,8 +2,6 @@ import "./env.js";
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import { verifyToken } from './Server/middleware/verifyToken.js';
 // import dotenv from 'dotenv';
 import servicesRouter from './Server/routes/services.route.js';
 import coursesRouter from './Server/routes/courses.route.js';
@@ -42,42 +40,28 @@ app.use(
   })
 );
 app.use(express.json());
-app.use(cookieParser());
 
 // Database Connection
 console.log('AdminBackend connecting to:', process.env.MONGO_URI);
-let isConnected = false;
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('MongoDB connected successfully'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
-async function connectDB() {
-  if (isConnected) return;
+// Routes
+app.use('/api/services', servicesRouter);
+app.use('/api/courses', coursesRouter);
+app.use('/api/channels', channelsRouter);
+app.use('/api/playlists', playlistsRouter);
+app.use('/api/quizzes', quizzesRouter);
+app.use('/api/videos', videosRouter);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/dashboard", dashboardRouter);
+app.use("/api/aptitude", AptitudeRouter);
+app.use('/api/projects', projectsRouter); // ✅ Register projects route
+app.use('/api/project-submissions', submissionsRouter); // ✅ Register submissions route
 
-  await mongoose.connect(process.env.MONGO_URI);
-  isConnected = true;
-}
-
-await connectDB();
-
-
-// Routes (Protected)
-app.use('/api/services', verifyToken, servicesRouter);
-app.use('/api/courses', verifyToken, coursesRouter);
-app.use('/api/channels', verifyToken, channelsRouter);
-app.use('/api/playlists', verifyToken, playlistsRouter);
-app.use('/api/quizzes', verifyToken, quizzesRouter);
-app.use('/api/videos', verifyToken, videosRouter);
-app.use("/api/categories", verifyToken, categoryRoutes);
-app.use("/api/dashboard", verifyToken, dashboardRouter);
-app.use("/api/aptitude", verifyToken, AptitudeRouter);
-app.use('/api/projects', verifyToken, projectsRouter); // ✅ Register projects route
-app.use('/api/project-submissions', verifyToken, submissionsRouter); // ✅ Register submissions route
-
-
-// Start the server
-// app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 app.get("/", (req, res) => {
-  res.status(200).json({ status: "ok", service: "admin-backend" });
+  res.json({ status: "Prepvio Admin Backend Running Successfully" });
 });
 
-
 export default app;
-
