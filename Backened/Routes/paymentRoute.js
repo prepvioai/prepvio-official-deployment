@@ -3,7 +3,7 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import { PLANS } from "../config/plans.js";
 import { User } from "../models/User.js";
-import { verifyToken } from "../middleware/verifytoken.js";
+import { verifyToken } from "../middleware/authMiddleware.js";
 import Notification from "../Models/Notification.js";
 import { io } from "../server.js";
 

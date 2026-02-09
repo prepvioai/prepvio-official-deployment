@@ -10,7 +10,10 @@ const Invoices = () => {
     useEffect(() => {
         const fetchInvoices = async () => {
             try {
-                const response = await axios.get('/api/revenue/invoices');
+                const token = localStorage.getItem("adminToken");
+                const response = await axios.get('/api/revenue/invoices', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
                 if (response.data.success) {
                     setInvoices(response.data.invoices);
                 }

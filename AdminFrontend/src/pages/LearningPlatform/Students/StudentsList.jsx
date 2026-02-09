@@ -35,44 +35,42 @@ export default function UserManagement() {
        FETCH USERS FROM BACKEND
     ================================ */
     useEffect(() => {
-        const token = localStorage.getItem("ADMIN_AUTH_TOKEN");
-        fetch('http://localhost:5000/api/users/admin/all-users', {
-            headers: {
-                "Authorization": `Bearer ${token}`
-            }
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    setUsers(data.data);
+        const fetchUsers = async () => {
+            try {
+                const token = localStorage.getItem("adminToken");
+                const res = await axios.get('/api/users/admin/all-users', {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (res.data.success) {
+                    setUsers(res.data.data);
                 }
-                setLoading(false);
-            })
-            .catch(err => {
+            } catch (err) {
                 console.error('Failed to fetch users', err);
+            } finally {
                 setLoading(false);
-            });
+            }
+        };
+        fetchUsers();
     }, []);
 
     /* ===============================
      FETCH GLOBAL INTERVIEW STATS (ADMIN)
   =============================== */
     useEffect(() => {
-        const token = localStorage.getItem("ADMIN_AUTH_TOKEN");
-        fetch('http://localhost:5000/api/interview-session/admin/stats', {
-            headers: {
-                "Authorization": `Bearer ${token}`
-            }
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    setInterviewStats(data.stats);
+        const fetchStats = async () => {
+            try {
+                const token = localStorage.getItem("adminToken");
+                const res = await axios.get('/api/interview-session/admin/stats', {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (res.data.success) {
+                    setInterviewStats(res.data.stats);
                 }
-            })
-            .catch(err => {
+            } catch (err) {
                 console.error('Failed to fetch interview stats', err);
-            });
+            }
+        };
+        fetchStats();
     }, []);
 
 
@@ -85,13 +83,11 @@ export default function UserManagement() {
         setLoadingDetails(prev => ({ ...prev, [userId]: true }));
 
         try {
-            const token = localStorage.getItem("ADMIN_AUTH_TOKEN");
-            const res = await fetch(`http://localhost:5000/api/users/admin/user/${userId}`, {
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                }
+            const token = localStorage.getItem("adminToken");
+            const res = await axios.get(`/api/users/admin/user/${userId}`, {
+                headers: { "Authorization": `Bearer ${token}` }
             });
-            const data = await res.json();
+            const data = res.data;
 
             if (data.success) {
                 setUserDetails(prev => ({ ...prev, [userId]: data }));
@@ -112,13 +108,11 @@ export default function UserManagement() {
         setLoadingInterviews(prev => ({ ...prev, [userId]: true }));
 
         try {
-            const token = localStorage.getItem("ADMIN_AUTH_TOKEN");
-            const res = await fetch(`http://localhost:5000/api/interview-session/admin/user/${userId}`, {
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                }
+            const token = localStorage.getItem("adminToken");
+            const res = await axios.get(`/api/interview-session/admin/user/${userId}`, {
+                headers: { "Authorization": `Bearer ${token}` }
             });
-            const data = await res.json();
+            const data = res.data;
 
             if (data.success) {
                 setInterviews(prev => ({ ...prev, [userId]: data.interviews }));
@@ -233,8 +227,8 @@ export default function UserManagement() {
     const confirmDeleteUser = async () => {
         if (userToDelete) {
             try {
-                const token = localStorage.getItem('ADMIN_AUTH_TOKEN');
-                await axios.delete(`http://localhost:5000/api/users/admin/delete/${userToDelete.id || userToDelete._id}`, {
+                const token = localStorage.getItem('adminToken');
+                await axios.delete(`/api/users/admin/delete/${userToDelete.id || userToDelete._id}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setUsers(prev => prev.filter(user => (user.id || user._id) !== (userToDelete.id || userToDelete._id)));
@@ -302,7 +296,7 @@ export default function UserManagement() {
                     <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100">
                         <div className="text-sm font-bold text-emerald-900/60 mb-1 uppercase tracking-wider">Completed</div>
                         <div className="text-3xl font-black text-emerald-900">
-                            {interviewStats ? interviewStats.completed : "—"}
+                            {interviewStats ? (interviewStats.completed ?? 0) : "—"}
                         </div>
                     </div>
                     <div className="bg-amber-50 p-6 rounded-2xl border border-amber-100">
@@ -316,7 +310,7 @@ export default function UserManagement() {
                     <div className="bg-purple-50 p-6 rounded-2xl border border-purple-100">
                         <div className="text-sm font-bold text-purple-900/60 mb-1 uppercase tracking-wider">Messages</div>
                         <div className="text-3xl font-black text-purple-900">
-                            {interviewStats ? interviewStats.totalMessages : "—"}
+                            {interviewStats ? (interviewStats.totalMessages ?? 0) : "—"}
                         </div>
                     </div>
 

@@ -19,8 +19,10 @@ const RevenueOverview = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const overviewRes = await axios.get('/api/revenue/overview');
-                const analyticsRes = await axios.get('/api/revenue/analytics');
+                const token = localStorage.getItem("adminToken");
+                const config = { headers: { Authorization: `Bearer ${token}` } };
+                const overviewRes = await axios.get('/api/revenue/overview', config);
+                const analyticsRes = await axios.get('/api/revenue/analytics', config);
 
                 if (overviewRes.data.success) {
                     setOverview(overviewRes.data);
@@ -70,7 +72,7 @@ const RevenueOverview = () => {
                             </div>
                         </div>
                         <div className="text-3xl font-black text-slate-800 tracking-tight mb-1">
-                            {loading ? "..." : `₹${overview.totalRevenue.toLocaleString('en-IN')}`}
+                            {loading ? "..." : `₹${(overview?.totalRevenue ?? 0).toLocaleString('en-IN')}`}
                         </div>
                         <p className="text-slate-400 font-bold text-sm">Total Revenue</p>
                     </div>
@@ -86,7 +88,7 @@ const RevenueOverview = () => {
                             </div>
                         </div>
                         <div className="text-3xl font-black text-slate-800 tracking-tight mb-1">
-                            {loading ? "..." : overview.activeSubs.toLocaleString('en-IN')}
+                            {loading ? "..." : (overview?.activeSubs ?? 0).toLocaleString('en-IN')}
                         </div>
                         <p className="text-slate-400 font-bold text-sm">Active Subscriptions</p>
                     </div>
@@ -99,7 +101,7 @@ const RevenueOverview = () => {
                             </div>
                         </div>
                         <div className="text-3xl font-black text-slate-800 tracking-tight mb-1">
-                            {loading ? "..." : `₹${overview.arpu.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`}
+                            {loading ? "..." : `₹${(overview?.arpu ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`}
                         </div>
                         <p className="text-slate-400 font-bold text-sm">Avg. Revenue/User</p>
                     </div>
@@ -112,7 +114,7 @@ const RevenueOverview = () => {
                             </div>
                         </div>
                         <div className="text-3xl font-black text-slate-800 tracking-tight mb-1">
-                            {loading ? "..." : `${overview.conversionRate.toFixed(1)}%`}
+                            {loading ? "..." : `${(overview?.conversionRate ?? 0).toFixed(1)}%`}
                         </div>
                         <p className="text-slate-400 font-bold text-sm">Conversion Rate</p>
                     </div>

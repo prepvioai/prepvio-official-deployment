@@ -32,8 +32,8 @@ const AllEmployees = () => {
     const fetchEmployees = async () => {
         try {
             setLoading(true);
-            const token = localStorage.getItem('ADMIN_AUTH_TOKEN');
-            const res = await axios.get('http://localhost:5000/api/employees/all', {
+            const token = localStorage.getItem('adminToken');
+            const res = await axios.get('/api/employees/all', {
                 headers: { Authorization: `Bearer ${token}` },
                 withCredentials: true
             });
@@ -61,8 +61,8 @@ const AllEmployees = () => {
         if (!employeeToDelete) return;
         try {
             setLoading(true);
-            const token = localStorage.getItem('ADMIN_AUTH_TOKEN');
-            const res = await axios.delete(`http://localhost:5000/api/employees/delete/${employeeToDelete._id}`, {
+            const token = localStorage.getItem('adminToken');
+            const res = await axios.delete(`/api/employees/delete/${employeeToDelete._id}`, {
                 headers: { Authorization: `Bearer ${token}` },
                 withCredentials: true
             });

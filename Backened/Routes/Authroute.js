@@ -10,7 +10,7 @@ import {
   checkAuth,
   googleAuthCallback,
 } from "../Controllers/Authcontrollers.js";
-import { verifyToken } from "../middleware/verifyToken.js";
+import { verifyToken } from "../middleware/authMiddleware.js";
 
 
 
@@ -18,12 +18,12 @@ const router = express.Router();
 
 router.get("/check-auth", verifyToken, checkAuth);
 
-router.post("/signup",signup);
-router.post("/login",login);
-router.post("/logout",logout);
+router.post("/signup", signup);
+router.post("/login", login);
+router.post("/logout", logout);
 
-router.post("/verify-email",verifyEmail);
-router.post("/forgot-password",forgotPassword);
+router.post("/verify-email", verifyEmail);
+router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:token", resetPassword);
 
 // ================= GOOGLE AUTH =================

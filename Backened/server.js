@@ -20,25 +20,19 @@ import interviewRoutes from "./check-your-ability/routes/interviewRoutes.js";
 import Authroute from "./Routes/Authroute.js";
 import interviewSessionRoutes from "./check-your-ability/routes/interviewSessionRoutes.js";
 import userRoutes from "./Routes/userRoutes.js";
-
 import notificationRoutes from "./Routes/notificationRoutes.js";
-
-
 import verifyPayment from "./Routes/paymentRoute.js";
 import promoCodeRoutes from "./Routes/promoCodeRoute.js";
-
 import chatRoutes from "./Routes/chatRoutes.js";
 import ticketRoutes from "./Routes/ticketRoutes.js";
 import aiRoutes from "./Routes/aiRoutes.js";
 import projectSubmissionRoutes from "./Routes/ProjectSubmission.route.js";
 import revenueRoutes from "./Routes/revenueRoutes.js";
 import employeeRoutes from "./Routes/employeeRoutes.js";
+import adminAuthRoutes from "./Routes/adminAuth.js";
 
 const nervousCaptures = new Map();
 import fs from "fs";
-
-
-
 
 const app = express();
 
@@ -51,11 +45,32 @@ app.use(cors({
   credentials: true
 }));
 
-// --- 2. Middleware ---
+// --- 2. Create HTTP Server & Socket.IO (Moved up to fix initialization order) ---
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5174"
+    ],
+    credentials: true
+  }
+});
+
+// --- 3. Middleware ---
 app.use(express.json());
 app.use(cookieParser());
-app.use("/api/interview-session", interviewSessionRoutes);
 app.use(passport.initialize());
+
+// Attach socket.io to request object (must be after io is created)
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
+// --- 4. Route Middleware ---
+app.use("/api/interview-session", interviewSessionRoutes);
 app.use("/api/payment", verifyPayment);
 app.use("/api/chat", chatRoutes);
 app.use("/api/tickets", ticketRoutes);
@@ -63,20 +78,21 @@ app.use("/api/ai", aiRoutes);
 app.use("/api/project-submissions", projectSubmissionRoutes);
 app.use("/api/revenue", revenueRoutes);
 app.use("/api/employees", employeeRoutes);
+app.use("/api/admin", adminAuthRoutes);
+app.use("/api/auth", Authroute);
+app.use("/api/companies", companyRoutes);
+app.use("/api/interview", interviewRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/promo", promoCodeRoutes);
 
-// Attach socket.io to request object
-app.use((req, res, next) => {
-  req.io = io;
-  next();
-});
-
-// --- 3. MongoDB Connection ---
+// --- 5. MongoDB Connection ---
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch((err) => console.error("❌ MongoDB Error:", err));
 
-// --- 4. Cloudflare R2 Configuration ---
+// --- 6. Cloudflare R2 Configuration ---
 const r2Client = new S3Client({
   region: "auto",
   endpoint: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
@@ -86,7 +102,7 @@ const r2Client = new S3Client({
   },
 });
 
-// --- 5. PDF Generation & Upload Route ---
+// --- 7. PDF Generation & Upload Route ---
 app.post("/api/upload", async (req, res) => {
   try {
     const {
@@ -133,8 +149,7 @@ app.post("/api/upload", async (req, res) => {
       doc.fontSize(11)
         .font("Helvetica")
         .text(
-          `Role: ${role || "N/A"}  •  Company Type: ${companyType || "N/A"
-          }  •  Date: ${new Date().toLocaleDateString()}`,
+          `Role: ${role || "N/A"}  •  Company Type: ${companyType || "N/A"}  •  Date: ${new Date().toLocaleDateString()}`,
           margin,
           55
         );
@@ -299,7 +314,6 @@ app.post("/api/upload", async (req, res) => {
     );
 
     // ✅ CLEANUP SESSION MEMORY
-
     console.log("UPLOAD sessionId:", sessionId);
     console.log("AVAILABLE sessions:", [...nervousCaptures.keys()]);
 
@@ -313,6 +327,7 @@ app.post("/api/upload", async (req, res) => {
   }
 });
 
+// --- 8. Nervous Frame Capture Route ---
 app.post("/api/nervous-frame", (req, res) => {
   const { sessionId, imageBase64, score } = req.body;
 
@@ -336,8 +351,7 @@ app.post("/api/nervous-frame", (req, res) => {
   res.json({ success: true });
 });
 
-
-// --- 6. Code Execution Route (Piston API) ---
+// --- 9. Code Execution Route (Piston API) ---
 app.post("/run", async (req, res) => {
   const { language, code, input } = req.body;
 
@@ -356,41 +370,17 @@ app.post("/run", async (req, res) => {
   }
 });
 
-// --- 7. Routes for Companies, Interviews, and Auth ---
-app.use("/api/auth", Authroute);
-app.use("/api/companies", companyRoutes);
-app.use("/api/interview", interviewRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/notifications", notificationRoutes);
-app.use("/api/promo", promoCodeRoutes);
-
-
-
-
-// --- 8. Health checks ---
+// --- 10. Health checks ---
 app.get("/", (req, res) => {
   res.send("🚀 Virtual Interview Backend Running Successfully!");
 });
+
 app.get("/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
 
-// --- 9. Create HTTP Server & Socket.IO ---
-const server = http.createServer(app);
-
-const io = new Server(server, {
-  cors: {
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:5174"
-    ],
-    credentials: true
-  }
-});
-
-// --- 10. Socket.IO Connection Handler (SINGLE SOURCE OF TRUTH) ---
+// --- 11. Socket.IO Connection Handler ---
 io.on("connection", (socket) => {
-
   console.log("🟢 Socket connected:", socket.id);
 
   // 🔥 BASIC CONNECTIVITY TEST
@@ -440,8 +430,7 @@ io.on("connection", (socket) => {
 // 🔥 EXPORT io FOR NOTIFICATION SERVICE
 export { io };
 
-
-// --- 11. Start Server ---
+// --- 12. Start Server ---
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   ConnectDB();

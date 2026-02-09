@@ -1,6 +1,6 @@
 import express from "express";
 import ProjectSubmission from "../Models/ProjectSubmission.js";
-import { verifyToken } from "../middleware/verifytoken.js";
+import { verifyToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 

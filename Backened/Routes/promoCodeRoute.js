@@ -1,7 +1,7 @@
 import express from "express";
 import { PromoCode } from "../Models/PromoCode.js";
 import { User } from "../Models/User.js";
-import { verifyToken } from "../middleware/verifytoken.js";
+import { verifyToken, isAdmin } from "../middleware/authMiddleware.js";
 import { PLANS } from "../config/plans.js";
 
 const router = express.Router();
@@ -103,7 +103,7 @@ router.post("/validate", verifyToken, async (req, res) => {
 /* ===========================
    GET ALL ACTIVE PROMO CODES (ADMIN)
 =========================== */
-router.get("/all", verifyToken, async (req, res) => {
+router.get("/all", verifyToken, isAdmin, async (req, res) => {
     try {
         const promoCodes = await PromoCode.find({ active: true })
             .select("-usedBy")
@@ -119,7 +119,7 @@ router.get("/all", verifyToken, async (req, res) => {
 /* ===========================
    CREATE PROMO CODE (ADMIN)
 =========================== */
-router.post("/create", verifyToken, async (req, res) => {
+router.post("/create", verifyToken, isAdmin, async (req, res) => {
     try {
         const {
             code,
@@ -183,7 +183,7 @@ router.post("/create", verifyToken, async (req, res) => {
 /* ===========================
    DEACTIVATE PROMO CODE (ADMIN)
 =========================== */
-router.patch("/deactivate/:code", verifyToken, async (req, res) => {
+router.patch("/deactivate/:code", verifyToken, isAdmin, async (req, res) => {
     try {
         const { code } = req.params;
 
@@ -210,7 +210,7 @@ router.patch("/deactivate/:code", verifyToken, async (req, res) => {
 /* ===========================
    GET PROMO CODE USAGE STATS (ADMIN)
 =========================== */
-router.get("/stats/:code", verifyToken, async (req, res) => {
+router.get("/stats/:code", verifyToken, isAdmin, async (req, res) => {
     try {
         const { code } = req.params;
 

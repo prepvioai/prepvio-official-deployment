@@ -1,6 +1,6 @@
 import express from "express";
 import Notification from "../Models/Notification.js";
-import { verifyToken } from "../middleware/verifyToken.js";
+import { verifyToken } from "../middleware/authMiddleware.js";
 import { io } from "../server.js";
 import { deduplicateNotifications } from "../Utils/notificationHelper.js";
 

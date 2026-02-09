@@ -4,6 +4,7 @@ import bcryptjs from "bcryptjs";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 
+
 import { generateTokenAndSetCookie } from "../Utils/generateTokenAndSetCookie.js";
 import {
   sendVerificationEmail,
@@ -48,7 +49,7 @@ export const checkAuth = async (req, res) => {
 
 /* ================= SIGNUP ================= */
 export const signup = async (req, res) => {
-  const { email, password, name, role } = req.body;
+  const { email, password, name } = req.body;
 
   try {
     if (!email || !password || !name) {
@@ -67,7 +68,6 @@ export const signup = async (req, res) => {
       email,
       password: hashedPassword,
       name,
-      role, // ✅ Allow setting role (user/admin)
       verificationToken,
       verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
     });
@@ -152,12 +152,11 @@ export const login = async (req, res) => {
     console.log("--------------- LOGIN DEBUG ---------------");
     console.log("Input Email/ID:", email);
 
-    // Assuming User model has a userId field, if not, you might need to check if email is also userId or adjust query
     const user = await User.findOne({
       $or: [{ email: email.toLowerCase() }, { userId: email }]
     }).select("+password");
 
-    console.log("DB User Found:", user ? `Yes (${user.email})` : "No");
+    console.log("DB User Found:", user ? `Yes (${user.email} / ${user.userId})` : "No");
 
     // 2. If user found in DB, verify password
     if (user) {
@@ -171,22 +170,14 @@ export const login = async (req, res) => {
       const isPasswordValid = await bcryptjs.compare(password, user.password);
 
       if (isPasswordValid) {
-        // Check if DB user is an ADMIN
-        if (user.role === "admin") {
-          const token = jwt.sign({ id: user._id, isAdmin: true }, process.env.JWT_SECRET, {
-            expiresIn: "7d"
-          });
+        console.log("Password valid. User Role:", user.role);
 
-          // ✅ SET SEPARATE ADMIN COOKIE
-          generateTokenAndSetCookie(res, user._id, "admin_token");
-
-          return res.status(200).json({
-            success: true,
-            message: "Admin logged in successfully",
-            token: token,
-            user: { ...user._doc, password: undefined },
-            isAdmin: true,
-            redirectUrl: process.env.ADMIN_DASHBOARD_URL || "http://localhost:5174"
+        // ❌ BLOCK ADMINS FROM LOGGING IN HERE
+        if (user.role === "admin" || user.role === "superadmin") {
+          console.log("⛔ Blocking Admin from User Portal");
+          return res.status(403).json({
+            success: false,
+            message: "Admins must login via the Admin Portal (port 5174)",
           });
         }
 
@@ -214,33 +205,53 @@ export const login = async (req, res) => {
     }
 
     // 3. FALLBACK: Check Hardcoded Admin (if DB login failed or user not found)
-    // Only if the input matches exact env email
+    // 3. FALLBACK: Check Hardcoded Admin
+    // ❌ BLOCK HARDCODED ADMIN FROM USER PORTAL
     if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-      const adminUser = {
-        _id: "admin",
-        email: process.env.ADMIN_EMAIL,
-        name: "Admin",
-        isAdmin: true
-      };
-
-      const token = jwt.sign({ id: "admin", isAdmin: true }, process.env.JWT_SECRET, {
-        expiresIn: "7d"
-      });
-
-      // ✅ SET SEPARATE ADMIN COOKIE for hardcoded admin
-      generateTokenAndSetCookie(res, "admin", "admin_token");
-
-      return res.status(200).json({
-        success: true,
-        message: "Admin logged in successfully",
-        token: token,
-        user: adminUser,
-        isAdmin: true,
-        redirectUrl: process.env.ADMIN_DASHBOARD_URL || "http://localhost:5174"
+      return res.status(403).json({
+        success: false,
+        message: "Admins must login via the Admin Portal (port 5174)"
       });
     }
 
     return res.status(400).json({ success: false, message: "Invalid credentials" });
+
+    if (user.authProvider === "google") {
+      return res.status(400).json({
+        success: false,
+        message: "This account uses Google sign-in",
+      });
+    }
+
+    const isPasswordValid = await bcryptjs.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(400).json({ success: false, message: "Invalid credentials" });
+    }
+
+    const token = generateTokenAndSetCookie(res, user._id, "user_token");
+
+    // ✅ CHECK IF THIS IS FIRST LOGIN
+    const isFirstLogin = !user.lastLogin;
+
+    user.lastLogin = new Date();
+    await user.save();
+
+    // ✅ SEND WELCOME NOTIFICATION FOR NEW USERS
+    if (isFirstLogin) {
+      await sendWelcomeNotification(user._id, user.name);
+
+      // ✅ SEND FREE INTERVIEW CREDIT NOTIFICATION (with delay)
+      setTimeout(async () => {
+        await sendFreeInterviewCreditNotification(user._id, user.name);
+      }, 2000);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Logged in successfully",
+      token: token,  // ✅ Return token to frontend for socket connection
+      user: { ...user._doc, password: undefined },
+    });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ success: false, message: "Login failed" });

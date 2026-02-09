@@ -6,9 +6,10 @@ import { BrowserRouter } from "react-router-dom";
 import axios from 'axios';
 
 // Global Axios Configuration
+axios.defaults.baseURL = 'http://localhost:5000';
 axios.defaults.withCredentials = true;
 axios.interceptors.request.use((config) => {
-  const token = localStorage.getItem("ADMIN_AUTH_TOKEN");
+  const token = localStorage.getItem("adminToken");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

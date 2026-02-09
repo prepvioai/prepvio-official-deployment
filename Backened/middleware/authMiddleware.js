@@ -3,12 +3,14 @@ import { User } from "../Models/User.js";
 
 export const verifyToken = async (req, res, next) => {
   try {
-    // 1️⃣ CHECK MULTIPLE COOKIE NAMES
-    let token = req.cookies?.token || req.cookies?.user_token || req.cookies?.admin_token || req.cookies?.user_auth_token;
+    // 1️⃣ CHECK AUTHORIZATION HEADER FIRST (Standard for APIs)
+    let token = req.headers.authorization?.startsWith("Bearer")
+      ? req.headers.authorization.split(" ")[1]
+      : null;
 
-    // 2️⃣ CHECK AUTHORIZATION HEADER
-    if (!token && req.headers.authorization?.startsWith("Bearer")) {
-      token = req.headers.authorization.split(" ")[1];
+    // 2️⃣ FALLBACK: CHECK MULTIPLE COOKIE NAMES
+    if (!token) {
+      token = req.cookies?.token || req.cookies?.user_token || req.cookies?.admin_token || req.cookies?.user_auth_token;
     }
 
     if (!token) {
@@ -66,7 +68,7 @@ export const verifyToken = async (req, res, next) => {
 export const isAdmin = (req, res, next) => {
   const userRole = req.user?.role?.toLowerCase();
 
-  if (userRole === 'admin') {
+  if (userRole === 'admin' || userRole === 'superadmin') {
     next();
   } else {
     res.status(403).json({

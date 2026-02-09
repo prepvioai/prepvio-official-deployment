@@ -10,7 +10,10 @@ const Pricing = () => {
     useEffect(() => {
         const fetchSubscribers = async () => {
             try {
-                const response = await axios.get('/api/revenue/active-subscriptions');
+                const token = localStorage.getItem("adminToken");
+                const response = await axios.get('/api/revenue/active-subscriptions', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
                 if (response.data.success) {
                     setSubscribers(response.data.subscribers);
                 }
