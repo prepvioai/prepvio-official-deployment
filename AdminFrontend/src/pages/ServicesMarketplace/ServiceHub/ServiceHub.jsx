@@ -15,7 +15,7 @@ import {
   Layers,
   Sparkles
 } from "lucide-react";
-import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
+import DeleteConfirmationModal from "../../../Components/DeleteConfirmationModal";
 
 /**
  * INTERNAL COMPONENT: ServiceThumbnail

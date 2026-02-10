@@ -36,7 +36,7 @@ const AddEmployee = () => {
     useEffect(() => {
         const fetchDepts = async () => {
             try {
-                const res = await axios.get('https://prepvio-main-backend.vercel.app/api/employees/departments');
+                const res = await axios.get('https://prepvio-main-backend.onrender.com/api/employees/departments');
                 if (res.data.success) {
                     setDepartments(res.data.departments);
                 }
@@ -62,7 +62,7 @@ const AddEmployee = () => {
                 salary: Number(formData.salary)
             };
 
-            const res = await axios.post('https://prepvio-main-backend.vercel.app/api/employees/add', payload);
+            const res = await axios.post('https://prepvio-main-backend.onrender.com/api/employees/add', payload);
             if (res.data.success) {
                 toast.success("Employee profile created successfully");
                 navigate('/employees/all');

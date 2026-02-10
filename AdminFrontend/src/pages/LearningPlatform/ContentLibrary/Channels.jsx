@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Plus, Trash2, Edit, Loader2, Globe, Search, LayoutGrid, List } from "lucide-react";
-import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
+import DeleteConfirmationModal from "../../../Components/DeleteConfirmationModal";
 
 const ChannelManagement = () => {
   // --- State Management ---

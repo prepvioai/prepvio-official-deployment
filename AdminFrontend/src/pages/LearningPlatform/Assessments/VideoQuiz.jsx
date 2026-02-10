@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Plus, Trash2, Edit, ArrowLeft, Clock, CheckCircle2, AlertCircle, HelpCircle, Save, X } from "lucide-react";
-import Modal from "../../../components/Modal";
-import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
+import Modal from "../../../Components/Modal";
+import DeleteConfirmationModal from "../../../Components/DeleteConfirmationModal";
 
 const QuizManagement = ({ playlistId, videoId, channelName, courseName, onBack }) => {
   const [quiz, setQuiz] = useState(null);

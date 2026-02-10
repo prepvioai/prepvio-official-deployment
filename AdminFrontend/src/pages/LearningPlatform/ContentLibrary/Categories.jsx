@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Plus, Trash2, Edit2, Loader2, FolderOpen, Search, X } from "lucide-react";
-import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
+import DeleteConfirmationModal from "../../../Components/DeleteConfirmationModal";
 
 const CategoryManagement = () => {
   // --- State Management ---

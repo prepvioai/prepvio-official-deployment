@@ -11,7 +11,7 @@ import {
   ArrowUpDown, // For sorting icons
   X // For closing the modal
 } from 'lucide-react';
-import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
+import DeleteConfirmationModal from '../../Components/DeleteConfirmationModal';
 
 // --- Mock Data ---
 const initialMockCustomers = [

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Plus, X, Trash2, Calendar as CalendarIcon, Clock, AlignLeft } from 'lucide-react';
-import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
+import DeleteConfirmationModal from '../../Components/DeleteConfirmationModal';
 
 const Calender = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -373,8 +373,8 @@ const Calender = () => {
                       <>
                         <div className="flex justify-between items-center mb-2">
                           <span className={`w-8 h-8 flex items-center justify-center rounded-xl text-sm font-black transition-all ${isToday
-                              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100'
-                              : 'text-slate-400 group-hover:text-slate-800'
+                            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100'
+                            : 'text-slate-400 group-hover:text-slate-800'
                             }`}>
                             {date.getDate()}
                           </span>

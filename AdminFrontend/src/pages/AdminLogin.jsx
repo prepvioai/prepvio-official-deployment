@@ -15,7 +15,7 @@ const AdminLogin = () => {
         setIsLoading(true);
 
         try {
-            const response = await axios.post('https://prepvio-main-backend.vercel.app/api/admin/login', {
+            const response = await axios.post('https://prepvio-main-backend.onrender.com/api/admin/login', {
                 email,
                 password
             });

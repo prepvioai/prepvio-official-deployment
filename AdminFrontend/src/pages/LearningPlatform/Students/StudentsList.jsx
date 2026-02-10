@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit2, X, Search, Filter, Eye, BookOpen, Video, Clock, ChevronDown, ChevronUp, Mic, FileText, Brain } from 'lucide-react';
-import DeleteConfirmationModal from '../../../components/DeleteConfirmationModal';
+import DeleteConfirmationModal from '../../../Components/DeleteConfirmationModal';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 

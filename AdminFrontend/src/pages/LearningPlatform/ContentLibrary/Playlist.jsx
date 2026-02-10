@@ -3,7 +3,7 @@ import axios from "axios";
 import { Plus, Trash2, Edit, Loader2, Link as LinkIcon, Youtube, PlaySquare, Video, ExternalLink, Search, ListVideo } from "lucide-react";
 import VideoList from "./VideoList";
 import QuizModal from "./QuizModal";
-import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
+import DeleteConfirmationModal from "../../../Components/DeleteConfirmationModal";
 
 const PlaylistManagement = () => {
   const [playlists, setPlaylists] = useState([]);
