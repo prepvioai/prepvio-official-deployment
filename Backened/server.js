@@ -41,6 +41,8 @@ app.set("trust proxy", 1);
 // --- 1. CORS Configuration ---
 app.use(cors({
   origin: [
+    "http://localhost:5173",
+    "http://localhost:5174",
     "https://prepvio-admin-frontend.vercel.app",
     "https://prepvio-main-frontend.vercel.app"
   ],
