@@ -40,12 +40,12 @@ const AdminHeader = () => {
             } catch (error) {
                 console.error("Failed to parse admin user data:", error);
                 // Redirect to login if data is corrupted
-                window.location.href = "http://localhost:5174/admin-login";
+                window.location.href = "/admin-login";
             }
         } else {
             // No admin data found, redirect to login
             console.warn("⚠️ No admin data found, redirecting to login");
-            window.location.href = "http://localhost:5174/admin-login";
+            window.location.href = "/admin-login";
         }
     }, []);
 
@@ -61,10 +61,10 @@ const AdminHeader = () => {
             localStorage.removeItem("adminRole");
 
             // Redirect to login
-            window.location.href = "http://localhost:5174/admin-login";
+            window.location.href = "/admin-login";
         } catch (error) {
             console.error("Logout failed:", error);
-            window.location.href = "http://localhost:5174/admin-login";
+            window.location.href = "/admin-login";
         }
     };
 

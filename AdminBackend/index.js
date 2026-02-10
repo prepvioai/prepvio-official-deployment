@@ -95,6 +95,7 @@ const allowedOrigins = [
   "http://localhost:5174",
   "https://prepvio.in",
   "https://admin.prepvio.in",
+  "https://prepvio-admin-frontend.vercel.app",
 ];
 
 app.use(
