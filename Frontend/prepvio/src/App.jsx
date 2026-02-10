@@ -140,6 +140,23 @@ function App() {
 	const [companyType, setCompanyType] = useState(null);
 	const [role, setRole] = useState(null);
 
+	// ✅ Handle Google OAuth token from URL
+	useEffect(() => {
+		const urlParams = new URLSearchParams(window.location.search);
+		const token = urlParams.get('token');
+
+		if (token) {
+			// Store token in localStorage
+			localStorage.setItem('USER_AUTH_TOKEN', token);
+
+			// Remove token from URL
+			window.history.replaceState({}, document.title, window.location.pathname);
+
+			// Trigger auth check to load user
+			checkAuth();
+		}
+	}, [checkAuth]);
+
 	useEffect(() => {
 		checkAuth();
 	}, [checkAuth]);
