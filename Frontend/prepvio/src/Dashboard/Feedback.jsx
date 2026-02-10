@@ -73,7 +73,7 @@ export default function Feedback() {
 
     try {
       await axios.post(
-        "/api/users/feedback",
+        "https://prepvio-main-backend.onrender.com/api/users/feedback",
         {
           courseId,
           channelId,

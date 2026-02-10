@@ -59,7 +59,7 @@ export default function AptitudeTest() {
     const fetchQuestions = async () => {
       try {
         const res = await fetch(
-          "/api/aptitude/test/mixed",
+          "https://prepvio-admin-backend.vercel.app/api/aptitude/test/mixed",
           { credentials: "include" }
         );
 
@@ -84,7 +84,7 @@ export default function AptitudeTest() {
     const fetchLatestAttempt = async () => {
       try {
         const res = await fetch(
-          "/api/users/aptitude/latest",
+          "https://prepvio-main-backend.onrender.com/api/users/aptitude/latest",
           {
             credentials: "include",
           }
@@ -165,7 +165,7 @@ export default function AptitudeTest() {
 
 
     try {
-      await fetch("/api/users/aptitude/submit", {
+      await fetch("https://prepvio-main-backend.onrender.com/api/users/aptitude/submit", {
         method: "POST",
         credentials: "include",
         headers: {

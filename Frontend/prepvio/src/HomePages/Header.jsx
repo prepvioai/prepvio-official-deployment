@@ -75,7 +75,7 @@ const Header = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const res = await fetch("/api/courses");
+        const res = await fetch("https://prepvio-admin-backend.vercel.app/api/courses");
         const data = await res.json();
 
         const list = Array.isArray(data)

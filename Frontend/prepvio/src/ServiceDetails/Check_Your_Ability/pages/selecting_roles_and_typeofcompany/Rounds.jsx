@@ -28,7 +28,7 @@ const Rounds = ({ companyType, role }) => {
     const fetchRounds = async () => {
       try {
         const res = await axios.get(
-          `/api/companies/${encodeURIComponent(
+          `https://prepvio-admin-backend.vercel.app/api/companies/${encodeURIComponent(
             companyType
           )}/${encodeURIComponent(role)}/rounds`
         );
@@ -61,7 +61,7 @@ const Rounds = ({ companyType, role }) => {
 
       // Start interview session (this will consume 1 credit)
       const res = await axios.post(
-        "/api/interview-session/start",
+        "https://prepvio-main-backend.onrender.com/api/interview-session/start",
         { companyType, role },
         { withCredentials: true }
       );

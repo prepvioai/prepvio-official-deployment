@@ -27,7 +27,7 @@ function RazorpayTest() {
     setIsValidating(true);
     try {
       const { data } = await axios.post(
-        "/api/promo/validate",
+        "https://prepvio-main-backend.onrender.com/api/promo/validate",
         { code: promoCode, planId }
       );
 
@@ -61,7 +61,7 @@ function RazorpayTest() {
 
       console.log("Creating order with data:", requestData);
       const { data } = await axios.post(
-        "/api/payment/create-order",
+        "https://prepvio-main-backend.onrender.com/api/payment/create-order",
         requestData
       );
 
@@ -77,7 +77,7 @@ function RazorpayTest() {
         handler: async function (response) {
           try {
             const verifyRes = await axios.post(
-              "/api/payment/verify",
+              "https://prepvio-main-backend.onrender.com/api/payment/verify",
               response
             );
 

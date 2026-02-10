@@ -56,7 +56,7 @@ const TicketDetail = () => {
     const fetchTicketDetails = async () => {
         try {
             setLoading(true);
-            const res = await axios.get(`/api/tickets/${ticketId}`, {
+            const res = await axios.get(`https://prepvio-main-backend.onrender.com/api/tickets/${ticketId}`, {
                 withCredentials: true
             });
 
@@ -80,7 +80,7 @@ const TicketDetail = () => {
 
         try {
             setSending(true);
-            const res = await axios.post(`/api/tickets/${ticketId}/reply`, {
+            const res = await axios.post(`https://prepvio-main-backend.onrender.com/api/tickets/${ticketId}/reply`, {
                 text: newMessage.trim()
             }, {
                 withCredentials: true

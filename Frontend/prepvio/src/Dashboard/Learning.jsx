@@ -19,8 +19,8 @@ import {
   Zap
 } from "lucide-react";
 
-const BASE_URL = "/api";
-const USER_API = "/api";
+const BASE_URL = "https://prepvio-main-backend.onrender.com/api";
+const USER_API = "https://prepvio-main-backend.onrender.com/api";
 
 // --- ANIMATION VARIANTS ---
 const containerVariants = {
@@ -136,7 +136,7 @@ function Learning() {
 
   const handleRemoveCourse = async (course) => {
     try {
-      await axios.delete(`/api/users/course-progress/${course.courseId}/${course.channelId}`, { withCredentials: true });
+      await axios.delete(`${USER_API}/users/course-progress/${course.courseId}/${course.channelId}`, { withCredentials: true });
       setCourses(courses.filter(c => c.id !== course.id));
     } catch (err) {
       console.error("Failed to remove course", err);

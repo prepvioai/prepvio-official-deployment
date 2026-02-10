@@ -23,7 +23,7 @@ const LoginPage = () => {
 
 
   const handleGoogleLogin = () => {
-    window.location.href = "/api/auth/google?mode=login";
+    window.location.href = "https://prepvio-main-backend.onrender.com/api/auth/google?mode=login";
   };
 
 

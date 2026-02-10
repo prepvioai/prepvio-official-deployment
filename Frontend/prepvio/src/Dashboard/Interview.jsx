@@ -255,7 +255,7 @@ const InterviewAnalysisPage = () => {
       try {
         setLoading(true);
         const res = await fetch(
-          "/api/interview-session/my",
+          "https://prepvio-main-backend.onrender.com/api/interview-session/my",
           { credentials: 'include' }
         );
         const data = await res.json();
@@ -334,7 +334,7 @@ const InterviewAnalysisPage = () => {
       setDeleting(true);
 
       await fetch(
-        `/api/interview-session/${deleteTarget}`,
+        `https://prepvio-main-backend.onrender.com/api/interview-session/${deleteTarget}`,
         { 
           method: 'DELETE',
           credentials: 'include'

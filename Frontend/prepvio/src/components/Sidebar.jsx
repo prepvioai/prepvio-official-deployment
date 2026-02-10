@@ -190,7 +190,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
     const fetchDashboard = async () => {
       try {
         const res = await axios.get(
-          "/api/users/dashboard",
+          "https://prepvio-main-backend.onrender.com/api/users/dashboard",
           { withCredentials: true }
         );
 

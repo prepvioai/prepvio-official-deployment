@@ -18,8 +18,8 @@ import MobileDashboardHeader from '../components/MobileDashboardHeader';
 
 axios.defaults.withCredentials = true;
 
-const BASE_URL = "/api";
-const USER_API = "/api";
+const BASE_URL = "https://prepvio-main-backend.onrender.com/api";
+const USER_API = "https://prepvio-main-backend.onrender.com/api";
 
 // --- ANIMATION VARIANTS ---
 const containerVariants = {

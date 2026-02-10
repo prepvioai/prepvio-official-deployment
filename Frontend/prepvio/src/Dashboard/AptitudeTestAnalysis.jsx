@@ -570,7 +570,7 @@ const AptitudeTestAnalysis = () => {
         setLoading(true);
         setError(null);
 
-        const res = await fetch("/api/users/aptitude/attempts", {
+        const res = await fetch("https://prepvio-main-backend.onrender.com/api/users/aptitude/attempts", {
           credentials: "include",
           headers: {
             'Accept': 'application/json',
@@ -680,7 +680,7 @@ const AptitudeTestAnalysis = () => {
 
     try {
       setDeleting(true);
-      const res = await fetch(`/api/users/aptitude/attempts/${deleteTarget}`, {
+      const res = await fetch(`https://prepvio-main-backend.onrender.com/api/users/aptitude/attempts/${deleteTarget}`, {
         method: 'DELETE',
         credentials: 'include'
       });

@@ -48,7 +48,7 @@ ChartJS.register(
   Legend
 );
 
-const USER_API = "/api";
+const USER_API = "https://prepvio-main-backend.onrender.com/api";
 
 // --- ASSETS & CONFIGURATION ---
 const ASSETS = {

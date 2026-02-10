@@ -25,7 +25,7 @@ const ZigZagServices = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const res = await axios.get("/api/services");
+        const res = await axios.get("https://prepvio-admin-backend.vercel.app/api/services");
         setServices(res.data);
         const initialIndexes = {};
         res.data.forEach((service, idx) => {

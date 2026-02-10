@@ -2,7 +2,7 @@
 import { create } from "zustand";
 import axios from "axios";
 
-const API_URL = "/api/auth";
+const API_URL = "https://prepvio-main-backend.onrender.com/api/auth";
 
 axios.defaults.withCredentials = true;
 

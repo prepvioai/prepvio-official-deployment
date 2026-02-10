@@ -43,7 +43,7 @@ const Tickets = () => {
             const params = {};
             if (filterStatus) params.status = filterStatus;
 
-            const res = await axios.get('/api/tickets/my-tickets', {
+            const res = await axios.get('https://prepvio-main-backend.onrender.com/api/tickets/my-tickets', {
                 params,
                 withCredentials: true
             });
@@ -67,7 +67,7 @@ const Tickets = () => {
         }
 
         try {
-            const res = await axios.post('/api/tickets/create', newTicket, {
+            const res = await axios.post('https://prepvio-main-backend.onrender.com/api/tickets/create', newTicket, {
                 withCredentials: true
             });
 

@@ -315,7 +315,7 @@ function AccountView({ onNavigate }) {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await axios.get("/api/users/me", { withCredentials: true });
+        const res = await axios.get("https://prepvio-main-backend.onrender.com/api/users/me", { withCredentials: true });
         const u = res.data.user;
         setUser(u);
 
@@ -348,7 +348,7 @@ function AccountView({ onNavigate }) {
     setSaving(true);
 
     try {
-      const res = await axios.put("/api/users/me", {
+      const res = await axios.put("https://prepvio-main-backend.onrender.com/api/users/me", {
         firstName: formData.firstName,
         lastName: formData.lastName,
         phone: formData.phone,
@@ -401,7 +401,7 @@ function AccountView({ onNavigate }) {
 
         try {
           const res = await axios.post(
-            "/api/users/upload-profile-pic",
+            "https://prepvio-main-backend.onrender.com/api/users/upload-profile-pic",
             { profilePic: base64Image },
             { withCredentials: true }
           );
@@ -551,7 +551,7 @@ function PortfolioView({ onBack }) {
 
   const fetchPortfolio = async () => {
     try {
-      const res = await axios.get("/api/users/portfolio", { withCredentials: true });
+      const res = await axios.get("https://prepvio-main-backend.onrender.com/api/users/portfolio", { withCredentials: true });
       setPortfolio(res.data);
     } catch (err) {
       console.error("Failed to fetch portfolio", err);
@@ -578,7 +578,7 @@ function PortfolioView({ onBack }) {
       } else {
         // Create new project
         await axios.post(
-          "/api/users/projects",
+          "https://prepvio-main-backend.onrender.com/api/users/projects",
           projectData,
           { withCredentials: true }
         );

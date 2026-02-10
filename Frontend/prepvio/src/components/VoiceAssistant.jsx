@@ -123,7 +123,7 @@ const VoiceAssistant = () => {
     const askAI = async (query) => {
         setIsLoading(true);
         try {
-            const response = await axios.post('/api/ai/chat', {
+            const response = await axios.post('https://prepvio-main-backend.onrender.com/api/ai/chat', {
                 message: query
             }, { withCredentials: true });
 
