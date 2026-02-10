@@ -142,7 +142,7 @@ const SelectRolesAndCompany = ({
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/companies");
+        const res = await axios.get("https://prepvio-main-backend.onrender.com/api/companies");
         if (Array.isArray(res.data)) setCompanies(res.data);
       } catch (error) {
         console.error("Error fetching companies:", error);
@@ -160,7 +160,7 @@ const SelectRolesAndCompany = ({
 
       try {
         const res = await axios.get(
-          `http://localhost:5000/api/companies/roles/${encodeURIComponent(
+          `https://prepvio-main-backend.onrender.com/api/companies/roles/${encodeURIComponent(
             companyType
           )}`
         );
@@ -521,7 +521,7 @@ export default SelectRolesAndCompany;
 //   useEffect(() => {
 //     const fetchCompanies = async () => {
 //       try {
-//         const res = await axios.get("http://localhost:5000/api/companies");
+//         const res = await axios.get("https://prepvio-main-backend.onrender.com/api/companies");
 //         if (Array.isArray(res.data)) setCompanies(res.data);
 //       } catch (error) {
 //         console.error("Error fetching companies:", error);
@@ -539,7 +539,7 @@ export default SelectRolesAndCompany;
 
 //       try {
 //         const res = await axios.get(
-//           `http://localhost:5000/api/companies/roles/${encodeURIComponent(
+//           `https://prepvio-main-backend.onrender.com/api/companies/roles/${encodeURIComponent(
 //             companyType
 //           )}`
 //         );

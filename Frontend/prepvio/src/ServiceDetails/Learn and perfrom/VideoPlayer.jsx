@@ -29,8 +29,8 @@ const youtubeaxios = axios.create({
 /* ======================================================
    CONFIG
 ====================================================== */
-const BASE_URL = "http://localhost:8000/api";
-const USER_API = "http://localhost:5000/api";
+const BASE_URL = "https://prepvio-admin-backend.vercel.app/api";
+const USER_API = "https://prepvio-main-backend.onrender.com/api";
 const YOUTUBE_API_KEY = "AIzaSyBs569PnYQUNFUXon5AMersGFuKS8aS1QQ";
 
 /* ======================================================

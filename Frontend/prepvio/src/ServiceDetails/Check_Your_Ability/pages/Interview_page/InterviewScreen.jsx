@@ -100,7 +100,7 @@ const CodeEditorModal = ({ isOpen, onClose, problem, onSuccess, onSkip }) => {
               ? `\n#include <iostream>\nint main(){ std::cout << ${problem.functionName}(${t.input}); }`
               : `\nconsole.log(${problem.functionName}(${t.input}));`;
 
-        const res = await fetch("/run", {
+        const res = await fetch("https://prepvio-main-backend.onrender.com/run", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -793,7 +793,7 @@ useGLTF.preload('/final_prepvio_model.glb');
 
 // --- API Constants ---
 const FIREWORKS_API_URL = "https://api.fireworks.ai/inference/v1/chat/completions";
-const BACKEND_UPLOAD_URL = "/api/upload";
+const BACKEND_UPLOAD_URL = "https://prepvio-main-backend.onrender.com/api/upload";
 const apiKey = "fw_3ZbHnsRsTg9cHxxESpgxzMim";
 
 // --- Utilities: format problem for chat (keeps chat+editor in sync) ---
@@ -928,7 +928,7 @@ const InterviewScreen = ({
         console.log("🔍 Fetching rounds for:", { companyType, role });
 
         const response = await axios.get(
-          `/api/companies/${encodeURIComponent(companyType)}/${encodeURIComponent(role)}/rounds`
+          `https://prepvio-main-backend.onrender.com/api/companies/${encodeURIComponent(companyType)}/${encodeURIComponent(role)}/rounds`
         );
 
         let roundsList = [];

@@ -15,7 +15,7 @@ const decodeToken = (token) => {
   }
 };
 
-const socket = io("http://localhost:5000", {
+const socket = io("https://prepvio-main-backend.onrender.com", {
   transports: ["websocket"],
   autoConnect: false,
   withCredentials: true, // Important for cookies

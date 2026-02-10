@@ -9,19 +9,19 @@ export default defineConfig({
   server: {
     proxy: {
       // 🟢 AdminBackend Routes (Port 8000)
-      '/api/services': { target: 'http://localhost:8000', changeOrigin: true },
-      '/api/courses': { target: 'http://localhost:8000', changeOrigin: true },
-      '/api/aptitude': { target: 'http://localhost:8000', changeOrigin: true },
-      '/api/categories': { target: 'http://localhost:8000', changeOrigin: true },
-      '/api/dashboard': { target: 'http://localhost:8000', changeOrigin: true },
-      '/api/channels': { target: 'http://localhost:8000', changeOrigin: true },
-      '/api/playlists': { target: 'http://localhost:8000', changeOrigin: true },
-      '/api/quizzes': { target: 'http://localhost:8000', changeOrigin: true },
-      '/api/videos': { target: 'http://localhost:8000', changeOrigin: true },
+      '/api/services': { target: 'https://prepvio-admin-backend.vercel.app', changeOrigin: true },
+      '/api/courses': { target: 'https://prepvio-admin-backend.vercel.app', changeOrigin: true },
+      '/api/aptitude': { target: 'https://prepvio-admin-backend.vercel.app', changeOrigin: true },
+      '/api/categories': { target: 'https://prepvio-admin-backend.vercel.app', changeOrigin: true },
+      '/api/dashboard': { target: 'https://prepvio-admin-backend.vercel.app', changeOrigin: true },
+      '/api/channels': { target: 'https://prepvio-admin-backend.vercel.app', changeOrigin: true },
+      '/api/playlists': { target: 'https://prepvio-admin-backend.vercel.app', changeOrigin: true },
+      '/api/quizzes': { target: 'https://prepvio-admin-backend.vercel.app', changeOrigin: true },
+      '/api/videos': { target: 'https://prepvio-admin-backend.vercel.app', changeOrigin: true },
 
       // 🔵 Main Backend Routes (Port 5000)
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'https://prepvio-main-backend.onrender.com',
         changeOrigin: true,
         secure: false,
       },
