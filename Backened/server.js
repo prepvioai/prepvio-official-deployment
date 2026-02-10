@@ -40,7 +40,8 @@ app.use(cors({
   origin: [
     "http://localhost:5173",
     "http://localhost:5174",
-    "https://prepvio-admin-frontend.vercel.app"
+    "https://prepvio-admin-frontend.vercel.app",
+    "https://prepvio-main-frontend.vercel.app"
   ],
   credentials: true
 }));
