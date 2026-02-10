@@ -140,19 +140,19 @@ function App() {
 	const [companyType, setCompanyType] = useState(null);
 	const [role, setRole] = useState(null);
 
-	// ✅ Handle Google OAuth token from URL
+	// Handle Google OAuth token from URL (cross-domain auth)
 	useEffect(() => {
 		const urlParams = new URLSearchParams(window.location.search);
-		const token = urlParams.get('token');
+		const authToken = urlParams.get('auth_token');
 
-		if (token) {
+		if (authToken) {
 			// Store token in localStorage
-			localStorage.setItem('USER_AUTH_TOKEN', token);
+			localStorage.setItem('USER_AUTH_TOKEN', authToken);
 
-			// Remove token from URL
+			// Clean URL
 			window.history.replaceState({}, document.title, window.location.pathname);
 
-			// Trigger auth check to load user
+			// Trigger auth check
 			checkAuth();
 		}
 	}, [checkAuth]);

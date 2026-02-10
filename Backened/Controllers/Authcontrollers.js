@@ -343,8 +343,8 @@ export const googleAuthCallback = async (req, res) => {
       }, 2000);
     }
 
-    // ✅ Pass token in URL for cross-domain authentication
-    res.redirect(`${process.env.CLIENT_URL}/?token=${token}`);
+    // Pass token in URL for cross-domain authentication (vercel.app <-> onrender.com)
+    res.redirect(`${process.env.CLIENT_URL}/?auth_token=${token}`);
   } catch (error) {
     console.error("Google auth error:", error);
     res.redirect(`${process.env.CLIENT_URL}/login?error=oauth_failed`);

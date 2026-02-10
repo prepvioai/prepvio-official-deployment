@@ -23,7 +23,9 @@ const LoginPage = () => {
 
 
   const handleGoogleLogin = () => {
-    window.location.href = "https://prepvio-main-backend.onrender.com/api/auth/google?mode=login";
+    // Use localhost backend for local testing
+    const backendUrl = "http://localhost:5000";
+    window.location.href = `${backendUrl}/api/auth/google?mode=login`;
   };
 
 

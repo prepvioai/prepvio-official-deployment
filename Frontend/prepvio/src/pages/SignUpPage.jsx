@@ -27,7 +27,9 @@ const SignUpPage = () => {
 
   const { signup, error, isLoading, user } = useAuthStore();
   const handleGoogleSignup = () => {
-    window.location.href = "https://prepvio-main-backend.onrender.com/api/auth/google?mode=signup";
+    // Use localhost backend for local testing
+    const backendUrl = "http://localhost:5000";
+    window.location.href = `${backendUrl}/api/auth/google?mode=signup`;
   };
 
 

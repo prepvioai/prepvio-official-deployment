@@ -6,6 +6,18 @@ const API_URL = "https://prepvio-main-backend.onrender.com/api/auth";
 
 axios.defaults.withCredentials = true;
 
+// Attach JWT token from localStorage to all requests
+axios.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem("USER_AUTH_TOKEN");
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
+
 export const useAuthStore = create((set) => ({
     user: null,
     isAuthenticated: false,
