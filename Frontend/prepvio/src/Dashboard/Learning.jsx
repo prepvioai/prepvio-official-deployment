@@ -3,6 +3,7 @@ import { useNavigate, useOutletContext } from "react-router-dom";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import MobileDashboardHeader from "../components/MobileDashboardHeader";
+import config from "../config";
 import {
   BookOpen,
   Play,
@@ -19,8 +20,8 @@ import {
   Zap
 } from "lucide-react";
 
-const BASE_URL = "https://prepvio-main-backend.onrender.com/api";
-const USER_API = "https://prepvio-main-backend.onrender.com/api";
+const BASE_URL = `${config.API_BASE_URL}/api`;
+const USER_API = `${config.API_BASE_URL}/api`;
 
 // --- ANIMATION VARIANTS ---
 const containerVariants = {

@@ -54,6 +54,7 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import crypto from "crypto";
 import { User } from "../Models/User.js";
+import config from "./config.js";
 
 passport.use(
   new GoogleStrategy(
@@ -61,7 +62,7 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: process.env.NODE_ENV === "production"
-        ? "https://prepvio-main-backend.onrender.com/api/auth/google/callback"
+        ? `${config.API_BASE_URL}/api/auth/google/callback`
         : "/api/auth/google/callback",
       passReqToCallback: true,
       scope: ["profile", "email"], // ✅ ADD THIS LINE

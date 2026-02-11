@@ -15,7 +15,9 @@ const decodeToken = (token) => {
   }
 };
 
-const socket = io("https://prepvio-main-backend.onrender.com", {
+import config from "./config";
+
+const socket = io(config.SOCKET_URL, {
   transports: ["websocket"],
   autoConnect: false,
   withCredentials: true, // Important for cookies

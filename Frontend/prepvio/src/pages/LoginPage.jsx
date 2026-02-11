@@ -3,6 +3,7 @@ import { Loader, Globe, Linkedin, ChevronLeft, Shield } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../store/authstore";
+import config from "../config";
 
 // UI Component for Social Buttons (Visual only)
 const SocialButton = ({ icon: Icon, label, onClick }) => (
@@ -24,7 +25,7 @@ const LoginPage = () => {
 
   const handleGoogleLogin = () => {
     // Use production backend for Google OAuth (works for both local and production)
-    const backendUrl = "https://prepvio-main-backend.onrender.com";
+    const backendUrl = config.API_BASE_URL;
     window.location.href = `${backendUrl}/api/auth/google?mode=login`;
   };
 

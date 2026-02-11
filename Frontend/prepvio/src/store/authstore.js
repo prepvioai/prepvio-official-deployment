@@ -1,8 +1,9 @@
 // src/store/authstore.js
 import { create } from "zustand";
 import axios from "axios";
+import config from "../config";
 
-const API_URL = "https://prepvio-main-backend.onrender.com/api/auth";
+const API_URL = `${config.API_BASE_URL}/api/auth`;
 
 axios.defaults.withCredentials = true;
 

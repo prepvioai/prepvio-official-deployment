@@ -5,6 +5,7 @@ import { Star, Users, Clock, Search, ArrowRight, BookOpen, Code, Database, PenTo
 import { motion, AnimatePresence } from "framer-motion";
 import UserAvatar from "../../components/UserAvatar.jsx";
 import { useAuthStore } from "../../store/authstore.js";
+import config from "../../config";
 
 
 
@@ -78,8 +79,8 @@ function LearnAndPerform() {
     const fetchData = async () => {
       try {
         const [coursesRes, categoriesRes] = await Promise.all([
-          axios.get("https://prepvio-admin-backend.vercel.app/api/courses"),
-          axios.get("https://prepvio-admin-backend.vercel.app/api/categories")
+          axios.get(`${config.ADMIN_API_BASE_URL}/api/courses`),
+          axios.get(`${config.ADMIN_API_BASE_URL}/api/categories`)
         ]);
 
         // 1. Handle Courses

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useOutletContext } from "react-router-dom";
 import MobileDashboardHeader from "../components/MobileDashboardHeader";
-import MobileRestrictionModal from "../components/MobileRestrictionModal"; // ✅ ADD THIS
+import MobileRestrictionModal from "../components/MobileRestrictionModal"; 
+import config from "../../config";
 
 import {
   FileText,
@@ -255,7 +256,7 @@ const InterviewAnalysisPage = () => {
       try {
         setLoading(true);
         const res = await fetch(
-          "https://prepvio-main-backend.onrender.com/api/interview-session/my",
+          `${config.API_BASE_URL}/api/interview-session/my`,
           { credentials: 'include' }
         );
         const data = await res.json();
@@ -334,7 +335,7 @@ const InterviewAnalysisPage = () => {
       setDeleting(true);
 
       await fetch(
-        `https://prepvio-main-backend.onrender.com/api/interview-session/${deleteTarget}`,
+        `${config.API_BASE_URL}/api/interview-session/${deleteTarget}`,
         { 
           method: 'DELETE',
           credentials: 'include'

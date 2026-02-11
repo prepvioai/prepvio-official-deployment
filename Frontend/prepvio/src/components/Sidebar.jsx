@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import socket from "../socket";
+import config from "../config";
 
 import {
   LayoutDashboard,
@@ -190,7 +191,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
     const fetchDashboard = async () => {
       try {
         const res = await axios.get(
-          "https://prepvio-main-backend.onrender.com/api/users/dashboard",
+          `${config.API_BASE_URL}/api/users/dashboard`,
           { withCredentials: true }
         );
 

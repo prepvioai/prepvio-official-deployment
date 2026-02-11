@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import config from '../config';
 
 export const useNotificationStore = create((set) => ({
   notifications: [], // All notifications (for dashboard)
@@ -8,7 +9,7 @@ export const useNotificationStore = create((set) => ({
   // Fetch recent notifications (for bell icon - 2 most recent)
   fetchRecentNotifications: async () => {
     try {
-      const response = await fetch('https://prepvio-main-backend.onrender.com/api/notifications/recent', {
+      const response = await fetch(`${config.API_BASE_URL}/api/notifications/recent`, {
         credentials: 'include'
       });
       if (!response.ok) throw new Error('Failed to fetch recent notifications');
@@ -24,7 +25,7 @@ export const useNotificationStore = create((set) => ({
   // Fetch all notifications (for dashboard)
   fetchNotifications: async () => {
     try {
-      const response = await fetch('https://prepvio-main-backend.onrender.com/api/notifications', {
+      const response = await fetch(`${config.API_BASE_URL}/api/notifications`, {
         credentials: 'include'
       });
       if (!response.ok) throw new Error('Failed to fetch notifications');
@@ -40,7 +41,7 @@ export const useNotificationStore = create((set) => ({
   // Fetch unread count
   fetchUnreadCount: async () => {
     try {
-      const response = await fetch('https://prepvio-main-backend.onrender.com/api/notifications/unread-count', {
+      const response = await fetch(`${config.API_BASE_URL}/api/notifications/unread-count`, {
         credentials: 'include'
       });
       if (!response.ok) throw new Error('Failed to fetch unread count');
@@ -54,7 +55,7 @@ export const useNotificationStore = create((set) => ({
   // Mark single notification as read
   markAsRead: async (id) => {
     try {
-      const response = await fetch(`https://prepvio-main-backend.onrender.com/api/notifications/${id}/read`, {
+      const response = await fetch(`${config.API_BASE_URL}/api/notifications/${id}/read`, {
         method: 'PATCH',
         credentials: 'include'
       });
@@ -79,7 +80,7 @@ export const useNotificationStore = create((set) => ({
   // Mark all notifications as read
   markAllAsRead: async () => {
     try {
-      const response = await fetch('https://prepvio-main-backend.onrender.com/api/notifications/read-all', {
+      const response = await fetch(`${config.API_BASE_URL}/api/notifications/read-all`, {
         method: 'PATCH',
         credentials: 'include'
       });
@@ -99,7 +100,7 @@ export const useNotificationStore = create((set) => ({
   // Delete a notification
   deleteNotification: async (id) => {
     try {
-      const response = await fetch(`https://prepvio-main-backend.onrender.com/api/notifications/${id}`, {
+      const response = await fetch(`${config.API_BASE_URL}/api/notifications/${id}`, {
         method: 'DELETE',
         credentials: 'include'
       });

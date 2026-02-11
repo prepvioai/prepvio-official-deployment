@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import MobileDashboardHeader from "../components/MobileDashboardHeader";
+import config from "../config";
 
 
 
@@ -73,7 +74,7 @@ export default function Feedback() {
 
     try {
       await axios.post(
-        "https://prepvio-main-backend.onrender.com/api/users/feedback",
+        `${config.API_BASE_URL}/api/users/feedback`,
         {
           courseId,
           channelId,

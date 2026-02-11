@@ -21,6 +21,7 @@ import {
   Award
 } from "lucide-react";
 import { useAuthStore } from "../../../../store/authstore";
+import config from "../../../../config";
 
 // --- ANIMATION VARIANTS ---
 const containerVariants = {
@@ -59,7 +60,7 @@ export default function AptitudeTest() {
     const fetchQuestions = async () => {
       try {
         const res = await fetch(
-          "https://prepvio-admin-backend.vercel.app/api/aptitude/test/mixed",
+          `${config.ADMIN_API_BASE_URL}/api/aptitude/test/mixed`,
           { credentials: "include" }
         );
 
@@ -84,7 +85,7 @@ export default function AptitudeTest() {
     const fetchLatestAttempt = async () => {
       try {
         const res = await fetch(
-          "https://prepvio-main-backend.onrender.com/api/users/aptitude/latest",
+          `${config.API_BASE_URL}/api/users/aptitude/latest`,
           {
             credentials: "include",
           }
@@ -165,7 +166,7 @@ export default function AptitudeTest() {
 
 
     try {
-      await fetch("https://prepvio-main-backend.onrender.com/api/users/aptitude/submit", {
+      await fetch(`${config.API_BASE_URL}/api/users/aptitude/submit`, {
         method: "POST",
         credentials: "include",
         headers: {

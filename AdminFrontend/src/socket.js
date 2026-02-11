@@ -1,6 +1,8 @@
 import { io } from "socket.io-client";
 
-const SOCKET_URL = "https://prepvio-main-backend.onrender.com";
+import config from "./config";
+
+const SOCKET_URL = config.SOCKET_URL;
 
 const getCookie = (name) => {
     const value = `; ${document.cookie}`;

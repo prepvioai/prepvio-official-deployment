@@ -1,6 +1,7 @@
 // import React, { useState, useEffect } from "react";
 // import axios from "axios";
 // import { CheckCircle2, Circle, Loader2, BookOpen, Award } from "lucide-react";
+// import config from "../config";
 
 // const CourseCompletion = () => {
 //     const [courses, setCourses] = useState([]);
@@ -16,11 +17,11 @@
 //         try {
 //             setLoading(true);
 //             // Fetch all courses
-//             const coursesRes = await axios.get("https://prepvio-admin-backend.vercel.app/api/courses");
+//             const coursesRes = await axios.get(`${config.ADMIN_API_BASE_URL}/api/courses`);
 //             setCourses(coursesRes.data);
 
 //             // Fetch user's completed courses
-//             const completedRes = await axios.get("https://prepvio-main-backend.onrender.com/api/users/completed-courses", {
+//             const completedRes = await axios.get(`${config.API_BASE_URL}/api/users/completed-courses`, {
 //                 withCredentials: true
 //             });
 //             setCompletedCourses(completedRes.data?.completedCourses || []);
@@ -42,7 +43,7 @@
 //         try {
 //             setActionLoading(courseId);
 //             await axios.post(
-//                 `https://prepvio-main-backend.onrender.com/api/users/complete-course/${courseId}`,
+//                 `${config.API_BASE_URL}/api/users/complete-course/${courseId}`,
 //                 {},
 //                 { withCredentials: true }
 //             );

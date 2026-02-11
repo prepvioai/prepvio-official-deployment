@@ -15,11 +15,12 @@ import {
   Clock
 } from 'lucide-react';
 import MobileDashboardHeader from '../components/MobileDashboardHeader';
+import config from "../config";
 
 axios.defaults.withCredentials = true;
 
-const BASE_URL = "https://prepvio-main-backend.onrender.com/api";
-const USER_API = "https://prepvio-main-backend.onrender.com/api";
+const BASE_URL = `${config.API_BASE_URL}/api`;
+const USER_API = `${config.API_BASE_URL}/api`;
 
 // --- ANIMATION VARIANTS ---
 const containerVariants = {

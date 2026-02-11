@@ -17,6 +17,7 @@ import {
   ChevronRight
 } from "lucide-react";
 import { useAuthStore } from "../store/authstore";
+import config from "../config";
 
 axios.defaults.withCredentials = true;
 
@@ -31,7 +32,7 @@ function CurrentPlan() {
       try {
         setLoading(true);
         const res = await axios.get(
-          "https://prepvio-main-backend.onrender.com/api/payment/interview-status",
+          `${config.API_BASE_URL}/api/payment/interview-status`,
           { withCredentials: true }
         );
 
@@ -71,7 +72,7 @@ function CurrentPlan() {
   const handleRefresh = async () => {
     await refreshUser();
     const res = await axios.get(
-      "https://prepvio-main-backend.onrender.com/api/payment/interview-status",
+      `${config.API_BASE_URL}/api/payment/interview-status`,
       { withCredentials: true }
     );
     if (res.data.success && res.data.subscription) {

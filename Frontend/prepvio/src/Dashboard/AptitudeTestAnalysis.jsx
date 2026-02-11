@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useOutletContext } from "react-router-dom";
 import MobileDashboardHeader from "../components/MobileDashboardHeader";
-import MobileRestrictionModal from "../components/MobileRestrictionModal"; // ✅ ADD THIS
+import MobileRestrictionModal from "../components/MobileRestrictionModal";
+import config from "../../config";
 
 import {
   Brain,
@@ -570,7 +571,7 @@ const AptitudeTestAnalysis = () => {
         setLoading(true);
         setError(null);
 
-        const res = await fetch("https://prepvio-main-backend.onrender.com/api/users/aptitude/attempts", {
+        const res = await fetch(`${config.API_BASE_URL}/api/users/aptitude/attempts`, {
           credentials: "include",
           headers: {
             'Accept': 'application/json',
@@ -680,7 +681,7 @@ const AptitudeTestAnalysis = () => {
 
     try {
       setDeleting(true);
-      const res = await fetch(`https://prepvio-main-backend.onrender.com/api/users/aptitude/attempts/${deleteTarget}`, {
+      const res = await fetch(`${config.API_BASE_URL}/api/users/aptitude/attempts/${deleteTarget}`, {
         method: 'DELETE',
         credentials: 'include'
       });

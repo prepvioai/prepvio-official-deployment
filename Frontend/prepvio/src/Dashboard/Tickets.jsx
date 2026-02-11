@@ -14,6 +14,7 @@ import {
 import axios from 'axios';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import MobileDashboardHeader from '../components/MobileDashboardHeader';
+import config from "../config";
 
 const Tickets = () => {
     const navigate = useNavigate();
@@ -43,7 +44,7 @@ const Tickets = () => {
             const params = {};
             if (filterStatus) params.status = filterStatus;
 
-            const res = await axios.get('https://prepvio-main-backend.onrender.com/api/tickets/my-tickets', {
+            const res = await axios.get(`${config.API_BASE_URL}/api/tickets/my-tickets`, {
                 params,
                 withCredentials: true
             });
@@ -67,7 +68,7 @@ const Tickets = () => {
         }
 
         try {
-            const res = await axios.post('https://prepvio-main-backend.onrender.com/api/tickets/create', newTicket, {
+            const res = await axios.post(`${config.API_BASE_URL}/api/tickets/create`, newTicket, {
                 withCredentials: true
             });
 

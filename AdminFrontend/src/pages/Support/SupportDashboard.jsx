@@ -14,7 +14,7 @@ import {
 } from "recharts";
 import { Link } from 'react-router-dom';
 
-const API_BASE = "https://prepvio-main-backend.onrender.com/api";
+const API_BASE = "${config.API_BASE_URL}/api";
 
 // --- Premium Card Component ---
 const PremiumCard = ({ title, children, info, className = "" }) => (

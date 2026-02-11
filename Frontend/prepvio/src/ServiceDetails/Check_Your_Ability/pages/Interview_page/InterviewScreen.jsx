@@ -9,6 +9,7 @@ import Editor from "@monaco-editor/react";
 import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
+import config from "../../../../config";
 
 // Import the coding questions
 import { codingQuestions } from "./codingQuestions";
@@ -100,7 +101,7 @@ const CodeEditorModal = ({ isOpen, onClose, problem, onSuccess, onSkip }) => {
               ? `\n#include <iostream>\nint main(){ std::cout << ${problem.functionName}(${t.input}); }`
               : `\nconsole.log(${problem.functionName}(${t.input}));`;
 
-        const res = await fetch("https://prepvio-main-backend.onrender.com/run", {
+        const res = await fetch(`${config.API_BASE_URL}/run`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -793,7 +794,7 @@ useGLTF.preload('/final_prepvio_model.glb');
 
 // --- API Constants ---
 const FIREWORKS_API_URL = "https://api.fireworks.ai/inference/v1/chat/completions";
-const BACKEND_UPLOAD_URL = "https://prepvio-main-backend.onrender.com/api/upload";
+const BACKEND_UPLOAD_URL = `${config.API_BASE_URL}/api/upload`;
 const apiKey = "fw_3ZbHnsRsTg9cHxxESpgxzMim";
 
 // --- Utilities: format problem for chat (keeps chat+editor in sync) ---

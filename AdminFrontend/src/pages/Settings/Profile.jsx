@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import config from '../../config';
 import { User, Mail, Phone, MapPin, Camera, Save, Shield, Key } from 'lucide-react';
 
 const ProfileSettings = () => {
@@ -16,7 +17,7 @@ const ProfileSettings = () => {
     React.useEffect(() => {
         const fetchUser = async () => {
             try {
-                const response = await axios.get("https://prepvio-main-backend.onrender.com/api/auth/check-auth", { withCredentials: true });
+                const response = await axios.get(`${config.API_BASE_URL}/api/auth/check-auth`, { withCredentials: true });
                 if (response.data.success) {
                     const { name, email, phone, bio, location } = response.data.user;
                     const names = name.split(" ");

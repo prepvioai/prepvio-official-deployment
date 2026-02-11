@@ -85,24 +85,17 @@ import submissionsRouter from "./Server/routes/submissions.route.js";
 
 const app = express();
 
+import { config } from "./config/config.js";
+
 /* =========================
    Middleware
 ========================= */
 app.use(express.json());
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:5174",
-  "https://prepvio.in",
-  "https://admin.prepvio.in",
-  "https://prepvio-admin-frontend.vercel.app",
-  "https://prepvio-main-frontend.vercel.app"
-];
-
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin || config.ALLOWED_ORIGINS.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error("CORS not allowed"));

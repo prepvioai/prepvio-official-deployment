@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import UserAvatar from "../../components/UserAvatar.jsx";
 import { useAuthStore } from "../../store/authstore.js";
 import { useRef } from "react";
+import config from "../../config";
 
 
 // --- ANIMATION VARIANTS ---
@@ -101,7 +102,7 @@ function Channels() {
         window.scrollTo(0, 0);
         const fetchChannels = async () => {
             try {
-                const res = await axios.get(`https://prepvio-admin-backend.vercel.app/api/channels/course/${courseId}`);
+                const res = await axios.get(`${config.ADMIN_API_BASE_URL}/api/channels/course/${courseId}`);
                 if (Array.isArray(res.data)) {
                     setChannels(res.data);
                 } else {

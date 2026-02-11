@@ -21,6 +21,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import UserAvatar from "../../components/UserAvatar.jsx";
 import { useAuthStore } from "../../store/authstore.js";
+import config from "../../config";
 
 const youtubeaxios = axios.create({
   withCredentials: false,
@@ -29,8 +30,8 @@ const youtubeaxios = axios.create({
 /* ======================================================
    CONFIG
 ====================================================== */
-const BASE_URL = "https://prepvio-admin-backend.vercel.app/api";
-const USER_API = "https://prepvio-main-backend.onrender.com/api";
+const BASE_URL = `${config.ADMIN_API_BASE_URL}/api`;
+const USER_API = `${config.API_BASE_URL}/api`;
 const YOUTUBE_API_KEY = "AIzaSyBs569PnYQUNFUXon5AMersGFuKS8aS1QQ";
 
 /* ======================================================

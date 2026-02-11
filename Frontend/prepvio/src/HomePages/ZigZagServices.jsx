@@ -5,6 +5,7 @@ import { ArrowRight, Sparkles, Activity } from "lucide-react";
 import { useAuthStore } from "../store/authstore"; // ✅ ADD THIS
 import AuthModal from "../components/AuthModal"; // ✅ ADD THIS
 import MobileRestrictionModal from "../components/MobileRestrictionModal"; // ✅ ADD THIS
+import config from "../config";
 
 const ZigZagServices = () => {
   // ==========================================
@@ -25,7 +26,7 @@ const ZigZagServices = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const res = await axios.get("https://prepvio-admin-backend.vercel.app/api/services");
+        const res = await axios.get(`${config.ADMIN_API_BASE_URL}/api/services`);
         setServices(res.data);
         const initialIndexes = {};
         res.data.forEach((service, idx) => {

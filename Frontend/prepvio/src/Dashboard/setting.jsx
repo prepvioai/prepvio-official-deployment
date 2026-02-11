@@ -9,6 +9,7 @@ import {
   Trophy, Users, Github, Twitter, Linkedin, ShieldCheck, Code2, Award, Zap, Target,
   Plus, X, Edit2, Trash2, Link as LinkIcon
 } from "lucide-react";
+import config from "../config";
 
 // --- ANIMATION VARIANTS (EXACTLY AS PROVIDED) ---
 const pageTransition = {
@@ -315,7 +316,7 @@ function AccountView({ onNavigate }) {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await axios.get("https://prepvio-main-backend.onrender.com/api/users/me", { withCredentials: true });
+        const res = await axios.get(`${config.API_BASE_URL}/api/users/me`, { withCredentials: true });
         const u = res.data.user;
         setUser(u);
 
@@ -348,7 +349,7 @@ function AccountView({ onNavigate }) {
     setSaving(true);
 
     try {
-      const res = await axios.put("https://prepvio-main-backend.onrender.com/api/users/me", {
+      const res = await axios.put(`${config.API_BASE_URL}/api/users/me`, {
         firstName: formData.firstName,
         lastName: formData.lastName,
         phone: formData.phone,
@@ -401,7 +402,7 @@ function AccountView({ onNavigate }) {
 
         try {
           const res = await axios.post(
-            "https://prepvio-main-backend.onrender.com/api/users/upload-profile-pic",
+            `${config.API_BASE_URL}/api/users/upload-profile-pic`,
             { profilePic: base64Image },
             { withCredentials: true }
           );
@@ -551,7 +552,7 @@ function PortfolioView({ onBack }) {
 
   const fetchPortfolio = async () => {
     try {
-      const res = await axios.get("https://prepvio-main-backend.onrender.com/api/users/portfolio", { withCredentials: true });
+      const res = await axios.get(`${config.API_BASE_URL}/api/users/portfolio`, { withCredentials: true });
       setPortfolio(res.data);
     } catch (err) {
       console.error("Failed to fetch portfolio", err);
@@ -570,7 +571,7 @@ function PortfolioView({ onBack }) {
       if (editingProject) {
         // Update existing project
         await axios.put(
-          `/api/users/projects/${editingProject._id}`,
+          `${config.API_BASE_URL}/api/users/projects/${editingProject._id}`,
           projectData,
           { withCredentials: true }
         );
@@ -578,7 +579,7 @@ function PortfolioView({ onBack }) {
       } else {
         // Create new project
         await axios.post(
-          "https://prepvio-main-backend.onrender.com/api/users/projects",
+          `${config.API_BASE_URL}/api/users/projects`,
           projectData,
           { withCredentials: true }
         );
@@ -600,7 +601,7 @@ function PortfolioView({ onBack }) {
 
     try {
       await axios.delete(
-        `/api/users/projects/${projectId}`,
+        `${config.API_BASE_URL}/api/users/projects/${projectId}`,
         { withCredentials: true }
       );
       alert("Project deleted successfully! ✅");

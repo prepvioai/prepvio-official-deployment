@@ -12,6 +12,7 @@ import passport from "passport";
 import "./config/passport.js";
 import http from "http";
 import { Server } from "socket.io";
+import config from "./config/config.js";
 
 // Route imports
 import companyRoutes from "./check-your-ability/routes/companyRoutes.js";
@@ -40,27 +41,17 @@ app.set("trust proxy", 1);
 
 // --- 1. CORS Configuration ---
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "https://prepvio-admin-frontend.vercel.app",
-    "https://prepvio-main-frontend.vercel.app"
-  ],
+  origin: config.ALLOWED_ORIGINS,
   credentials: true
 }));
 
 // --- 2. Create HTTP Server & Socket.IO (Moved up to fix initialization order) ---
 const server = http.createServer(app);
-const PORT = process.env.PORT || 5000;
+const PORT = config.PORT;
 
 const io = new Server(server, {
   cors: {
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "https://prepvio-admin-frontend.vercel.app",
-      "https://prepvio-main-frontend.vercel.app"
-    ],
+    origin: config.ALLOWED_ORIGINS,
     credentials: true
   }
 });
@@ -95,7 +86,7 @@ app.use("/api/promo", promoCodeRoutes);
 
 // --- 5. MongoDB Connection ---
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(config.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch((err) => console.error("❌ MongoDB Error:", err));
 

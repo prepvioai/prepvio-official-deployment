@@ -23,6 +23,7 @@ import {
   FileText
 } from "lucide-react";
 import { useAuthStore } from "../store/authstore";
+import config from "../config";
 
 // Configure axios
 axios.defaults.withCredentials = true;
@@ -129,7 +130,7 @@ function Payment() {
     const fetchSubscription = async () => {
       try {
         const res = await axios.get(
-          "https://prepvio-main-backend.onrender.com/api/payment/interview-status",
+          `${config.API_BASE_URL}/api/payment/interview-status`,
           { withCredentials: true }
         );
 
@@ -152,7 +153,7 @@ function Payment() {
       const fetchHistory = async () => {
         try {
           setHistoryLoading(true);
-          const res = await axios.get("https://prepvio-main-backend.onrender.com/api/payment/history", { withCredentials: true });
+          const res = await axios.get(`${config.API_BASE_URL}/api/payment/history`, { withCredentials: true });
           if (res.data.success) {
             setPaymentHistory(res.data.history);
           }
@@ -176,7 +177,7 @@ function Payment() {
     setIsValidating(true);
     try {
       const { data } = await axios.post(
-        "https://prepvio-main-backend.onrender.com/api/promo/validate",
+        `${config.API_BASE_URL}/api/promo/validate`,
         { code: promoCode, planId }
       );
 
@@ -190,7 +191,7 @@ function Payment() {
 
         // Refresh order details with promo applied
         try {
-          const orderData = await axios.post("https://prepvio-main-backend.onrender.com/api/payment/create-order", { planId, promoCode });
+          const orderData = await axios.post(`${config.API_BASE_URL}/api/payment/create-order`, { planId, promoCode });
           setOrderDetails({
             originalAmount: orderData.data.originalAmount,
             upgradeDiscount: orderData.data.upgradeDiscount || 0,
@@ -321,7 +322,7 @@ function Payment() {
       }
 
       const { data } = await axios.post(
-        "https://prepvio-main-backend.onrender.com/api/payment/create-order",
+        `${config.API_BASE_URL}/api/payment/create-order`,
         requestData
       );
 
@@ -345,7 +346,7 @@ function Payment() {
         handler: async function (response) {
           try {
             const verifyRes = await axios.post(
-              "https://prepvio-main-backend.onrender.com/api/payment/verify",
+              `${config.API_BASE_URL}/api/payment/verify`,
               response
             );
 
@@ -404,7 +405,7 @@ function Payment() {
 
     // Fetch order details to show upgrade pricing
     try {
-      const { data } = await axios.post("https://prepvio-main-backend.onrender.com/api/payment/create-order", { planId });
+      const { data } = await axios.post(`${config.API_BASE_URL}/api/payment/create-order`, { planId });
       setOrderDetails({
         originalAmount: data.originalAmount,
         upgradeDiscount: data.upgradeDiscount || 0,

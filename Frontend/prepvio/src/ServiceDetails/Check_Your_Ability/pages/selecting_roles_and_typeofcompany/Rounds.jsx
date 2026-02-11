@@ -5,6 +5,7 @@ import { ArrowLeft, PlayCircle, CheckCircle2, Clock, Sparkles, X, AlertCircle } 
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "../../../../store/authstore.js";
 import PlanBlockModal from "../../../../components/PlanBlockModal.jsx";
+import config from "../../../../config";
 
 const Rounds = ({ companyType, role }) => {
   const [rounds, setRounds] = useState([]);
@@ -28,7 +29,7 @@ const Rounds = ({ companyType, role }) => {
     const fetchRounds = async () => {
       try {
         const res = await axios.get(
-          `https://prepvio-admin-backend.vercel.app/api/companies/${encodeURIComponent(
+          `${config.ADMIN_API_BASE_URL}/api/companies/${encodeURIComponent(
             companyType
           )}/${encodeURIComponent(role)}/rounds`
         );
@@ -61,7 +62,7 @@ const Rounds = ({ companyType, role }) => {
 
       // Start interview session (this will consume 1 credit)
       const res = await axios.post(
-        "https://prepvio-main-backend.onrender.com/api/interview-session/start",
+        `${config.API_BASE_URL}/api/interview-session/start`,
         { companyType, role },
         { withCredentials: true }
       );

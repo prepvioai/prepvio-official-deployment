@@ -27,8 +27,9 @@ import {
 import axios from 'axios';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import socket from '../../socket';
+import config from '../../config';
 
-const API_BASE = "https://prepvio-main-backend.onrender.com/api";
+const API_BASE = `${config.API_BASE_URL}/api`;
 
 // --- Glass Card Component (Styled for Premium Light) ---
 const GlassCard = ({ children, className = "" }) => (

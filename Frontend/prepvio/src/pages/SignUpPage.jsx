@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import PasswordStrengthMeter from "../components/PasswordStrengthMeter";
 import { useAuthStore } from "../store/authstore";
 import toast from "react-hot-toast";
+import config from "../config";
 
 // UI Components extracted from the new design (Made smaller)
 const SocialButton = ({ icon: Icon, label, onClick }) => (
@@ -28,7 +29,7 @@ const SignUpPage = () => {
   const { signup, error, isLoading, user } = useAuthStore();
   const handleGoogleSignup = () => {
     // Use production backend for Google OAuth (works for both local and production)
-    const backendUrl = "https://prepvio-main-backend.onrender.com";
+    const backendUrl = config.API_BASE_URL;
     window.location.href = `${backendUrl}/api/auth/google?mode=signup`;
   };
 

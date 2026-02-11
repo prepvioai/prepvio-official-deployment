@@ -3,6 +3,7 @@ import { Check, ChevronDown, Sparkles, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import config from "../../../../config";
 
 /* ---------------- Selection Button (Updated with matching theme) ---------------- */
 
@@ -142,7 +143,7 @@ const SelectRolesAndCompany = ({
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const res = await axios.get("https://prepvio-main-backend.onrender.com/api/companies");
+        const res = await axios.get(`${config.API_BASE_URL}/api/companies`);
         if (Array.isArray(res.data)) setCompanies(res.data);
       } catch (error) {
         console.error("Error fetching companies:", error);
@@ -160,7 +161,7 @@ const SelectRolesAndCompany = ({
 
       try {
         const res = await axios.get(
-          `https://prepvio-main-backend.onrender.com/api/companies/roles/${encodeURIComponent(
+          `${config.API_BASE_URL}/api/companies/roles/${encodeURIComponent(
             companyType
           )}`
         );

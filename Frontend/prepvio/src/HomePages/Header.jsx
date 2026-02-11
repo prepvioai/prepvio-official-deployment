@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { DashboardModal } from "../Dashboard/DashBoardPage";
 import socket from "../socket";
 import { useNotificationStore } from "../store/notificationStore";
+import config from "../config";
 
 import {
   Menu,
@@ -75,7 +76,7 @@ const Header = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const res = await fetch("https://prepvio-admin-backend.vercel.app/api/courses");
+        const res = await fetch(`${config.ADMIN_API_BASE_URL}/api/courses`);
         const data = await res.json();
 
         const list = Array.isArray(data)

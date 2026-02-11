@@ -14,6 +14,7 @@ import axios from "axios";
 import { useOutletContext } from "react-router-dom";
 import MobileDashboardHeader from "../components/MobileDashboardHeader";
 import socket from "../socket";
+import config from "../config";
 
 // --- ANIMATION VARIANTS ---
 const messageVariants = {
@@ -37,7 +38,7 @@ function Message() {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const res = await axios.get("https://prepvio-main-backend.onrender.com/api/chat/messages", { withCredentials: true });
+        const res = await axios.get(`${config.API_BASE_URL}/api/chat/messages`, { withCredentials: true });
         if (res.data.success) {
           setNewMessages(res.data.messages);
         }
@@ -82,7 +83,7 @@ function Message() {
       setNewMessageText(""); // Clear immediately for UX
 
       try {
-        const res = await axios.post("https://prepvio-main-backend.onrender.com/api/chat/send", { text }, { withCredentials: true });
+        const res = await axios.post(`${config.API_BASE_URL}/api/chat/send`, { text }, { withCredentials: true });
         if (res.data.success) {
           // If we want to avoid double-adding if socket emits to sender too:
           // But usually we add manually for instant feedback and check ID

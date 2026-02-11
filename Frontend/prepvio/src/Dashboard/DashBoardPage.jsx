@@ -37,6 +37,7 @@ import {
   Legend
 } from "chart.js";
 import { useAuthStore } from "../store/authstore";
+import config from "../config";
 
 // Register Chart.js components
 ChartJS.register(
@@ -48,7 +49,7 @@ ChartJS.register(
   Legend
 );
 
-const USER_API = "https://prepvio-main-backend.onrender.com/api";
+const USER_API = `${config.API_BASE_URL}/api`;
 
 // --- ASSETS & CONFIGURATION ---
 const ASSETS = {
