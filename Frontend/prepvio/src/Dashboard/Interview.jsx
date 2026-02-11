@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useOutletContext } from "react-router-dom";
 import MobileDashboardHeader from "../components/MobileDashboardHeader";
 import MobileRestrictionModal from "../components/MobileRestrictionModal"; 
-import config from "../../config";
+import config from "../config";
 
 import {
   FileText,

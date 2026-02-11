@@ -23,9 +23,9 @@ const videoQuizSchema = new Schema({
 
 const quizSchema = new Schema(
   {
-    playlistId: { 
-      type: Schema.Types.ObjectId, 
-      ref: "Playlist", 
+    playlistId: {
+      type: Schema.Types.ObjectId,
+      ref: "Playlist",
       required: true,
       unique: true  // One quiz per playlist
     },
@@ -37,7 +37,6 @@ const quizSchema = new Schema(
 );
 
 // Index for efficient queries
-quizSchema.index({ playlistId: 1 });
 quizSchema.index({ "videos.videoId": 1 });
 
 const Quiz = mongoose.model("Quiz", quizSchema);

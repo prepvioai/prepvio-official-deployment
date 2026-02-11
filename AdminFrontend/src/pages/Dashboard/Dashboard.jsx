@@ -32,6 +32,7 @@ import { Skeleton } from '../../Components/ui/Skeleton';
 import DeleteConfirmationModal from '../../Components/DeleteConfirmationModal';
 import toast from 'react-hot-toast';
 import axios from 'axios';
+import config from '../../config';
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -72,7 +73,8 @@ const Dashboard = () => {
         setLoading(true);
 
         // Headers configuration with Authorization token
-        const config = {
+        // Headers configuration with Authorization token
+        const axiosConfig = {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -82,10 +84,10 @@ const Dashboard = () => {
 
         // Fetch all data with proper error handling
         const [revenueRes, analyticsRes, ticketsRes, usersRes] = await Promise.allSettled([
-          axios.get('https://prepvio-main-backend.onrender.com/api/revenue/overview', config),
-          axios.get('https://prepvio-main-backend.onrender.com/api/revenue/analytics', config),
-          axios.get('https://prepvio-main-backend.onrender.com/api/tickets/admin/all', config),
-          axios.get('https://prepvio-main-backend.onrender.com/api/users/admin/all-users', config)
+          axios.get(`${config.API_BASE_URL}/api/revenue/overview`, axiosConfig),
+          axios.get(`${config.API_BASE_URL}/api/revenue/analytics`, axiosConfig),
+          axios.get(`${config.API_BASE_URL}/api/tickets/admin/all`, axiosConfig),
+          axios.get(`${config.API_BASE_URL}/api/users/admin/all-users`, axiosConfig)
         ]);
 
         // Count how many requests failed with 401 (Unauthorized)
@@ -171,7 +173,7 @@ const Dashboard = () => {
     try {
       setIsDeleting(true);
       const token = localStorage.getItem('adminToken');
-      const res = await axios.delete(`https://prepvio-main-backend.onrender.com/api/users/admin/delete/${userToDelete.id || userToDelete._id}`, {
+      const res = await axios.delete(`${config.API_BASE_URL}/api/users/admin/delete/${userToDelete.id || userToDelete._id}`, {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true
       });

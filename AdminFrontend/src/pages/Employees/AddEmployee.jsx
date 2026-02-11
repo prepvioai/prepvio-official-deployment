@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import config from '../../config';
 import {
     User,
     Mail,
@@ -36,7 +37,7 @@ const AddEmployee = () => {
     useEffect(() => {
         const fetchDepts = async () => {
             try {
-                const res = await axios.get('https://prepvio-main-backend.onrender.com/api/employees/departments');
+                const res = await axios.get(`${config.API_BASE_URL}/api/employees/departments`);
                 if (res.data.success) {
                     setDepartments(res.data.departments);
                 }
@@ -62,7 +63,7 @@ const AddEmployee = () => {
                 salary: Number(formData.salary)
             };
 
-            const res = await axios.post('https://prepvio-main-backend.onrender.com/api/employees/add', payload);
+            const res = await axios.post(`${config.API_BASE_URL}/api/employees/add`, payload);
             if (res.data.success) {
                 toast.success("Employee profile created successfully");
                 navigate('/employees/all');

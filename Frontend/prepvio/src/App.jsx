@@ -91,6 +91,10 @@ const RedirectAuthenticatedUser = ({ children }) => {
 		return <Navigate to="/" replace />;
 	}
 
+	if (isAuthenticated && !user.isVerified) {
+		return <Navigate to="/verify-email" replace />;
+	}
+
 	return children;
 };
 

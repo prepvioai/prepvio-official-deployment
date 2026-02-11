@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Loader, Globe, Linkedin, ChevronLeft, Shield } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import PasswordStrengthMeter from "../components/PasswordStrengthMeter";
 import { useAuthStore } from "../store/authstore";
 import toast from "react-hot-toast";
@@ -25,6 +25,8 @@ const SignUpPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [authError, setAuthError] = useState("");
 
   const { signup, error, isLoading, user } = useAuthStore();
   const handleGoogleSignup = () => {
@@ -33,10 +35,22 @@ const SignUpPage = () => {
     window.location.href = `${backendUrl}/api/auth/google?mode=signup`;
   };
 
+  // Check for error parameter in URL
+  useEffect(() => {
+    const error = searchParams.get('error');
+    if (error === 'auth_failed') {
+      setAuthError("This email is already registered with email/password. Please login using your password instead.");
+      // Clear the error from URL
+      searchParams.delete('error');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
 
   // ✅ FIX: Add 'await' and proper error handling
   const handleSignUp = async (e) => {
     e.preventDefault();
+    setAuthError(""); // Clear auth error when submitting form
 
     try {
       await signup(email, password, name);
@@ -145,7 +159,7 @@ const SignUpPage = () => {
               />
             </div>
 
-            {error && <p className="text-red-500 font-semibold mt-1 text-xs">{error}</p>}
+            {(error || authError) && <p className="text-red-500 font-semibold mt-1 text-xs">{authError || error}</p>}
 
             {/* Password Strength Meter (Hidden if empty) */}
             {password.length > 0 && (

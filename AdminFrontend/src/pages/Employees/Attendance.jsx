@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import config from '../../config';
 import {
     Calendar,
     Clock,
@@ -22,7 +23,7 @@ const Attendance = () => {
     const fetchAttendance = async () => {
         try {
             setLoading(true);
-            const res = await axios.get('https://prepvio-main-backend.onrender.com/api/employees/attendance/daily');
+            const res = await axios.get(`${config.API_BASE_URL}/api/employees/attendance/daily`);
             if (res.data.success) {
                 setAttendanceData(res.data.attendance);
             }

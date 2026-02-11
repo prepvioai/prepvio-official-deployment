@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Loader, Globe, Linkedin, ChevronLeft, Shield } from "lucide-react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { useAuthStore } from "../store/authstore";
 import config from "../config";
 
@@ -21,6 +21,8 @@ const SocialButton = ({ icon: Icon, label, onClick }) => (
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [authError, setAuthError] = useState("");
 
 
   const handleGoogleLogin = () => {
@@ -29,11 +31,23 @@ const LoginPage = () => {
     window.location.href = `${backendUrl}/api/auth/google?mode=login`;
   };
 
+  // Check for error parameter in URL
+  useEffect(() => {
+    const error = searchParams.get('error');
+    if (error === 'auth_failed') {
+      setAuthError("This email is registered with email/password. Please login using your password instead.");
+      // Clear the error from URL
+      searchParams.delete('error');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
 
   const { login, isLoading, error } = useAuthStore();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setAuthError(""); // Clear auth error when submitting form
     await login(email, password);
   };
 
@@ -124,7 +138,7 @@ const LoginPage = () => {
               </div>
             </div>
 
-            {error && <p className="text-red-500 font-semibold mt-1 text-xs">{error}</p>}
+            {(error || authError) && <p className="text-red-500 font-semibold mt-1 text-xs">{authError || error}</p>}
 
             <motion.button
               whileHover={{ scale: 1.02 }}

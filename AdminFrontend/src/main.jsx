@@ -6,7 +6,9 @@ import { BrowserRouter } from "react-router-dom";
 import axios from 'axios';
 
 // Global Axios Configuration
-axios.defaults.baseURL = 'https://prepvio-main-backend.onrender.com';
+import config from './config';
+
+axios.defaults.baseURL = config.API_BASE_URL;
 axios.defaults.withCredentials = true;
 axios.interceptors.request.use((config) => {
   const token = localStorage.getItem("adminToken");
